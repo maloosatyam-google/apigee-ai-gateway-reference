@@ -42,3 +42,10 @@ load_denylist() {
     [ -n "$l" ] && [ "${l:0:1}" != "#" ] && DENYLIST+=("$l")
   done < "$f"
 }
+
+# lockfile_private_registry <file>: prints the first "resolved" URL that is not on the public
+# npm registry (internal mirrors leak hostnames and break `npm ci` for everyone else).
+# Fix with: npm install --package-lock-only --registry=https://registry.npmjs.org
+lockfile_private_registry() {
+  grep -oE '"resolved": *"[^"]+"' "$1" 2>/dev/null | grep -vE '"https://registry\.npmjs\.org/' | head -1
+}

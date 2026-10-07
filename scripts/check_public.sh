@@ -38,6 +38,12 @@ done
 bad=""
 while IFS= read -r f; do [ -n "$f" ] && is_forbidden_path "$f" && bad+="$f"$'\n'; done <<< "$FILES"
 if [ -n "$bad" ]; then echo "✖ forbidden files would be published:"; printf '%s' "$bad"; fail=1; fi
+# Lockfiles must resolve packages from the public npm registry.
+while IFS= read -r f; do
+  case "$f" in */package-lock.json|package-lock.json) ;; *) continue ;; esac
+  hit="$(lockfile_private_registry "$f")"
+  [ -n "$hit" ] && { echo "✖ $f resolves packages from a non-public registry: ${hit:0:90}"; fail=1; }
+done <<< "$FILES"
 rm -f "$LIST"
 
 if [ "$fail" -eq 0 ]; then echo "✔ public check passed ($(printf '%s\n' "$FILES" | wc -l | tr -d ' ') files)"; fi

@@ -71,6 +71,13 @@ if command -v gitleaks >/dev/null 2>&1; then
   fi
 fi
 
+section "Lockfile registries"
+for f in "${FILES[@]}"; do
+  case "$f" in */package-lock.json|package-lock.json) ;; *) continue ;; esac
+  hit="$(lockfile_private_registry "$STAGE_DIR/$f")"
+  [ -n "$hit" ] && err "$f resolves packages from a non-public registry (npm install --package-lock-only --registry=https://registry.npmjs.org)"
+done
+
 section "Merge conflict markers"
 while IFS= read -r f; do
   [ -n "$f" ] && err "$f contains merge conflict markers"
