@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage async="false" continueOnError="false" enabled="true" name="AM-PrepRouterRequest">
+  <DisplayName>AM-PrepRouterRequest</DisplayName>
+  <AssignTo createNew="true" transport="http" type="request">routerRequest</AssignTo>
+  <Set>
+    <Headers>
+      <Header name="Content-Type">application/json</Header>
+      <Header name="Authorization">Bearer {private.typesafe_api_key}</Header>
+    </Headers>
+    <Verb>POST</Verb>
+    <Payload contentType="application/json">{
+  "state": "{escapeJSON(flow.userPrompt)}",
+  "model": "jev-latest",
+  "questions": {
+    "category": {
+      "type": "choice",
+      "instructions": "Classify the user intent into exactly one category: coding, deep_reasoning, simple, general",
+      "criteria": {
+        "coding": "Programming, software engineering, writing/debugging/refactoring code, SQL queries, regex, API development",
+        "deep_reasoning": "Complex analysis, system architecture trade-offs, multi-step planning, root cause evaluation, benchmarking",
+        "simple": "Short greetings, factual trivia, definitions, quick lookups, basic single-sentence questions",
+        "general": "Open-ended writing, summarization, general discussion not requiring specialized code or deep architectural analysis"
+      }
+    }
+  }
+}</Payload>
+  </Set>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+</AssignMessage>

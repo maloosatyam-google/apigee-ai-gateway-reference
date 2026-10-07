@@ -1,0 +1,145 @@
+{
+  "name": "Banking Tools MCP - Analysts",
+  "displayName": "Banking Tools MCP - Analysts",
+  "description": "Banking Analysts: dispute and delinquency metrics, segment profitability and credit-loss forecasts. Aggregates only, no individual customer records.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "banking"
+    },
+    {
+      "name": "persona",
+      "value": "loans_agent"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getDisputeMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getDelinquencyTrends"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getSegmentProfitability"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getDepositTrends"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLoanPortfolioSummary"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getChannelUsage"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getFraudLossMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/runCreditLossForecast"
+          }
+        ],
+        "quota": {
+          "limit": "2",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

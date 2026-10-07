@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<APIProxy revision="1" name="business-insights-v1">
+  <DisplayName>business-insights-v1</DisplayName>
+  <Description>Business Insights API (aggregated revenue, support metrics, churn cohorts, margins, forecasts) on Cloud Run. No individual customer data.</Description>
+  <BasePaths>/business-insights/v1</BasePaths>
+  <Policies>
+    <Policy>KVM-GetConfig</Policy>
+    <Policy>JS-CheckCaller</Policy>
+    <Policy>RF-NotInternal</Policy>
+    <Policy>CORS-Allow</Policy>
+    <Policy>SA-Protect</Policy>
+    <Policy>RF-NotFound</Policy>
+    <Policy>AM-RemoveClientAuth</Policy>
+    <Policy>ML-CloudLogging</Policy>
+    <Policy>OAS-ValidateRequest</Policy>
+  </Policies>
+  <ProxyEndpoints>
+    <ProxyEndpoint>default</ProxyEndpoint>
+  </ProxyEndpoints>
+  <Resources>
+    <Resource>oas://business-insights.yaml</Resource>
+    <Resource>jsc://check-caller.js</Resource>
+  </Resources>
+  <TargetEndpoints>
+    <TargetEndpoint>default</TargetEndpoint>
+  </TargetEndpoints>
+</APIProxy>

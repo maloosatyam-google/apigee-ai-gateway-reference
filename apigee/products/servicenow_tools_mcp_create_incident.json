@@ -1,0 +1,46 @@
+{
+  "name": "ServiceNow Tools MCP - Create Incident",
+  "displayName": "ServiceNow Tools MCP - Create Incident",
+  "description": "Support & Sales may raise ServiceNow incidents (e.g. an approval request a business limit stopped), but not list, read or update them.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "servicenow-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "servicenow-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/createIncident"
+          }
+        ],
+        "quota": {
+          "limit": "5",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

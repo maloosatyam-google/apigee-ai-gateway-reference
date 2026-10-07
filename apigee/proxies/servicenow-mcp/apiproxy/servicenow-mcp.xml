@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<APIProxy revision="1" name="servicenow-mcp">
+  <DisplayName>servicenow-mcp</DisplayName>
+  <Description>Apigee native MCP server for ServiceNow Incident Management API</Description>
+  <BasePaths>/servicenow/mcp</BasePaths>
+  <BasePaths>/.well-known/oauth-protected-resource/servicenow/mcp</BasePaths>
+  <Policies>
+    <Policy>CORS-Allow</Policy>
+    <Policy>VA-VerifyAPIKey</Policy>
+    <Policy>AM-RemoveAuthorization</Policy>
+    <Policy>ML-CloudLogging</Policy>
+    <Policy>Q-Limit</Policy>
+    <Policy>PP-MCP</Policy>
+    <Policy>RF-MethodNotAllowed</Policy>
+  </Policies>
+  <ProxyEndpoints>
+    <ProxyEndpoint>default</ProxyEndpoint>
+    <ProxyEndpoint>oauth-prm-endpoint</ProxyEndpoint>
+  </ProxyEndpoints>
+  <TargetEndpoints>
+    <TargetEndpoint>default</TargetEndpoint>
+    <TargetEndpoint>oauth-prm-endpoint</TargetEndpoint>
+  </TargetEndpoints>
+</APIProxy>

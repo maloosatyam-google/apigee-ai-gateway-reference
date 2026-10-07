@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<LLMTokenQuota continueOnError="true" enabled="true" name="LTQ-TokenCount" type="rollingwindow">
+  <DisplayName>LTQ-TokenCount</DisplayName>
+  <Allow count="1000" countRef="verifyapikey.VA-VerifyAPIKey.apiproduct.developer.llmQuota.limit"/>
+  <Interval ref="verifyapikey.VA-VerifyAPIKey.apiproduct.developer.llmQuota.interval">1</Interval>
+  <TimeUnit ref="verifyapikey.VA-VerifyAPIKey.apiproduct.developer.llmQuota.timeunit">minute</TimeUnit>
+  <Distributed>true</Distributed>
+  <Synchronous>true</Synchronous>
+  <!--
+    MUST stay identical to the Identifier in LTQ-TokenEnforce. See the comment there.
+    This policy is the CountOnly half: it writes consumption into common-counter, and
+    LTQ-TokenEnforce reads it. Diverging identifiers means the enforcer reads a counter
+    nobody writes to, and the quota silently admits everything.
+  -->
+  <Identifier ref="flow.emailId"/>
+  <LLMTokenUsageSource>{jsonPath('$.usageMetadata.totalTokenCount',response.content,true)}</LLMTokenUsageSource>
+  <!-- flow.quota_model is "auto" on /auto (set by JS-ExtractPromptAndModel) so the limit
+       resolves from the product's /auto llmOperation even after JS-AutoRouting has
+       replaced flow.model with the routed model. MUST match the other LTQ policy. -->
+  <LLMModelSource>{firstnonnull(flow.quota_model,flow.model)}</LLMModelSource>
+  <CountOnly>true</CountOnly>
+  <SharedName>common-counter</SharedName>
+</LLMTokenQuota>

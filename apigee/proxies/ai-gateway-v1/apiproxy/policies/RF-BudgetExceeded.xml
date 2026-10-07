@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  Turns the developer-budget counter into an actual control.
+
+  Until now QC-EnforceBudgetLimit was continueOnError="true" with nothing inspecting
+  ratelimit.QC-EnforceBudgetLimit.exceeded, so crossing the cap raised a QuotaViolation
+  that was swallowed and the request was served regardless. The counter was accounting
+  wearing the name of an enforcer.
+
+  The quota policy stays continueOnError="true" deliberately: letting its native fault
+  propagate would surface Apigee's raw policies.ratelimit.QuotaViolation envelope, which
+  does not match the Google-API-style error shape every other guardrail in this proxy
+  returns. Raising explicitly here keeps the contract consistent.
+
+  Counts are micro-dollars, matching flow.tx_cost_micros.
+-->
+<RaiseFault continueOnError="false" enabled="true" name="RF-BudgetExceeded">
+  <DisplayName>RF-BudgetExceeded</DisplayName>
+  <Properties/>
+  <FaultResponse>
+    <Set>
+      <Payload contentType="application/json">
+{
+  "error": {
+    "code": 429,
+    "status": "RESOURCE_EXHAUSTED",
+    "message": "Developer budget exhausted for this interval. Used {ratelimit.QC-EnforceBudgetLimit.used.count} of {ratelimit.QC-EnforceBudgetLimit.allowed.count} micro-dollars; counter resets at epoch-ms {ratelimit.QC-EnforceBudgetLimit.expiry.time}."
+  }
+}
+      </Payload>
+      <StatusCode>429</StatusCode>
+      <ReasonPhrase>Too Many Requests</ReasonPhrase>
+    </Set>
+  </FaultResponse>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+</RaiseFault>

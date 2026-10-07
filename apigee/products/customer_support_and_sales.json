@@ -1,0 +1,136 @@
+{
+  "name": "Customer Support and Sales",
+  "displayName": "Customer Support & Sales",
+  "description": "Customer Support & Sales persona: fast, low-cost models (Gemini Flash-Lite, Gemini Flash, Claude Haiku), with Gemini Pro on /auto only for questions that need deep reasoning.",
+  "approvalType": "auto",
+  "environments": [
+    "prod"
+  ],
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "developer.budget.limit",
+      "value": "5000000"
+    },
+    {
+      "name": "developer.budget.interval",
+      "value": "1"
+    },
+    {
+      "name": "developer.budget.timeunit",
+      "value": "month"
+    },
+    {
+      "name": "routing.model.coding",
+      "value": "claude-haiku-4-5@20251001"
+    },
+    {
+      "name": "routing.model.deep_reasoning",
+      "value": "gemini-3.1-pro-preview"
+    },
+    {
+      "name": "routing.model.simple",
+      "value": "gemini-3.1-flash-lite"
+    },
+    {
+      "name": "routing.model.general",
+      "value": "gemini-3-flash-preview"
+    },
+    {
+      "name": "persona",
+      "value": "Customer Support & Sales"
+    }
+  ],
+  "llmOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "ai-gateway-v1",
+        "llmOperations": [
+          {
+            "resource": "/auto",
+            "methods": [
+              "POST"
+            ],
+            "model": "auto"
+          }
+        ],
+        "llmTokenQuota": {
+          "limit": "20000",
+          "interval": "2",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "ai-gateway-v1",
+        "llmOperations": [
+          {
+            "resource": "/auto:*",
+            "methods": [
+              "POST"
+            ],
+            "model": "auto"
+          }
+        ],
+        "llmTokenQuota": {
+          "limit": "20000",
+          "interval": "2",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "ai-gateway-v1",
+        "llmOperations": [
+          {
+            "resource": "/models/gemini-3.1-flash-lite:*",
+            "methods": [
+              "POST"
+            ],
+            "model": "gemini-3.1-flash-lite"
+          }
+        ],
+        "llmTokenQuota": {
+          "limit": "2000",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "ai-gateway-v1",
+        "llmOperations": [
+          {
+            "resource": "/models/gemini-3-flash-preview:*",
+            "methods": [
+              "POST"
+            ],
+            "model": "gemini-3-flash-preview"
+          }
+        ],
+        "llmTokenQuota": {
+          "limit": "2000",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "ai-gateway-v1",
+        "llmOperations": [
+          {
+            "resource": "/models/claude-haiku-4-5@20251001:*",
+            "methods": [
+              "POST"
+            ],
+            "model": "claude-haiku-4-5@20251001"
+          }
+        ],
+        "llmTokenQuota": {
+          "limit": "300",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

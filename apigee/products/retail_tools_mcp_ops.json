@@ -1,0 +1,210 @@
+{
+  "name": "Retail Tools MCP - Customer Service",
+  "displayName": "Retail Tools MCP - Customer Service",
+  "description": "Retail Customer Service: look up shoppers, orders, stock, loyalty, store pickups and gift cards; start returns, extend pickup holds, grant goodwill points, open cases and refund order lines (gateway limit $50). No category finance or merchandising analytics.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "retail"
+    },
+    {
+      "name": "persona",
+      "value": "sales_agent"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/searchShoppers"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getShopperProfile"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listShopperOrders"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getOrderLines"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/checkStoreInventory"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/initiateMerchReturn"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/refundOrderLine"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLoyaltyRewards"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/grantLoyaltyPoints"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getStorePickupStatus"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/extendStorePickupHold"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getGiftCardBalance"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/openCustomerCase"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

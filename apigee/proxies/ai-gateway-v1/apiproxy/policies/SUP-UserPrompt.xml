@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<SanitizeUserPrompt async="false" continueOnError="false" enabled="true" name="SUP-UserPrompt">
+  <DisplayName>SUP-UserPrompt</DisplayName>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+  <ModelArmor>
+    <TemplateName>projects/__GCP_PROJECT_ID__/locations/__GCP_REGION__/templates/apigee-sanitize-user-prompt</TemplateName>
+  </ModelArmor>
+  <UserPromptSource>{flow.userPrompt}</UserPromptSource>
+</SanitizeUserPrompt>

@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# pre-push: last local gate before anything leaves the machine.
+#   1. Full-tree public check (secrets, denylisted identifiers, forbidden files).
+#   2. UI unit tests (skip with SKIP_PREPUSH_TESTS=1).
+set -uo pipefail
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT" || exit 1
+
+echo "▸ Public check (full tree)"
+bash scripts/check_public.sh || { echo "✖ pre-push blocked: fix the findings above."; exit 1; }
+
+if [ "${SKIP_PREPUSH_TESTS:-0}" != "1" ] && [ -d ui/node_modules ]; then
+  echo "▸ UI unit tests"
+  if ! out="$(cd ui && npm test --silent 2>&1)"; then
+    echo "$out" | grep -E '^not ok|✖|Error' | head -20
+    echo "✖ pre-push blocked: unit tests failed (SKIP_PREPUSH_TESTS=1 to skip)."
+    exit 1
+  fi
+  echo "$out" | grep -E 'ℹ (pass|fail) ' | tr '\n' ' '; echo
+fi
+echo "✔ pre-push checks passed"

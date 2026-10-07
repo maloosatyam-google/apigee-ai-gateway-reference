@@ -1,0 +1,314 @@
+{
+  "name": "Banking Tools MCP Admin",
+  "displayName": "Banking Tools MCP Admin",
+  "description": "Banking: every tool, no business-rule limits. Used by admins and by the ungoverned agent in the Agent Showcase.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "banking"
+    },
+    {
+      "name": "persona",
+      "value": "admin"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/searchCustomers"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getAccountSummary"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listRecentTransactions"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getCardStatus"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/blockCard"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/createServiceRequest"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/reverseFee"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPaymentStatus"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/cancelScheduledPayment"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLoanDetails"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLoanPayoffQuote"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listFraudAlerts"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/resolveFraudAlert"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getDisputeMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getDelinquencyTrends"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getSegmentProfitability"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getDepositTrends"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLoanPortfolioSummary"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getChannelUsage"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getFraudLossMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "banking-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/runCreditLossForecast"
+          }
+        ],
+        "quota": {
+          "limit": "2",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  Read side of the developer-budget counter. The write side is QC-DeductBudget in the
+  PostFlow, which applies <Weight ref="flow.tx_cost_micros"/>.
+
+  EnforceOnly is REQUIRED, not cosmetic. Without it this policy has no <Weight> and so
+  defaults to a weight of 1, meaning it silently added a flat 1 micro-dollar per request
+  to the shared counter on top of the real cost - a 0.000001 call advanced the counter by
+  0.000002. EnforceOnly makes it check without counting, mirroring the
+  LTQ-TokenEnforce / LTQ-TokenCount pair.
+
+  continueOnError stays "true" so that the raw QuotaViolation is swallowed; RF-BudgetExceeded
+  in the PreFlow raises the client-facing 429 instead, in the same error envelope as every
+  other guardrail. Removing that RaiseFault step silently disables budget enforcement.
+
+  THE LIMIT COMES FROM THE API PRODUCT. Each AI product sets the custom attributes
+  developer.budget.limit / .interval / .timeunit, which is what the three refs below read
+  (Engineering and IT = 20000000 micros = $20/month, Analysts and Knowledge Workers =
+  10000000 = $10/month, Customer Support and Sales = 5000000 = $5/month).
+  The literals on those elements are a FALLBACK ONLY, used when a product omits the
+  attribute - they are not the effective limit. Keep the pair in QC-DeductBudget identical;
+  a read side and write side that disagree would enforce against one budget while counting
+  into another.
+
+  Measured 2026-09-20: a product attribute change reaches the message processors in roughly
+  10s and NOT uniformly - during that window different requests can observe the old and new
+  limits. Poll until the change is observed rather than sleeping a fixed time.
+-->
+<Quota async="false" continueOnError="true" enabled="true" name="QC-EnforceBudgetLimit">
+  <DisplayName>QC-EnforceBudgetLimit</DisplayName>
+  <Identifier ref="verifyapikey.VA-VerifyAPIKey.developer.id"/>
+  <Allow count="100000000" countRef="verifyapikey.VA-VerifyAPIKey.apiproduct.developer.budget.limit"/>
+  <Interval ref="verifyapikey.VA-VerifyAPIKey.apiproduct.developer.budget.interval">1</Interval>
+  <TimeUnit ref="verifyapikey.VA-VerifyAPIKey.apiproduct.developer.budget.timeunit">month</TimeUnit>
+  <EnforceOnly>true</EnforceOnly>
+  <Distributed>true</Distributed>
+  <Synchronous>true</Synchronous>
+  <SharedName>developer-budget-counter</SharedName>
+</Quota>

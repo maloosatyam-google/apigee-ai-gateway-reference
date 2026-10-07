@@ -1,0 +1,210 @@
+{
+  "name": "Real Estate Tools MCP - Sales and Leasing",
+  "displayName": "Real Estate Tools MCP - Sales & Leasing",
+  "description": "Real Estate Sales & Leasing: look up buyers, tenants, units, inventory, reservations, payment schedules, leases and statements; reserve units, renew leases, log maintenance, book handovers and waive statement charges (gateway limit $50). No project finance or portfolio analytics.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "real-estate"
+    },
+    {
+      "name": "persona",
+      "value": "sales_agent"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "real-estate-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "real-estate-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/searchPropertyBuyers"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "real-estate-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getBuyerProfile"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "real-estate-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getUnitDetails"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "real-estate-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/checkUnitInventory"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "real-estate-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getReservationStatus"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "real-estate-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/holdUnitReservation"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "real-estate-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPaymentSchedule"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "real-estate-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLeaseAgreement"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "real-estate-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/renewTenantLease"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "real-estate-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/logMaintenanceRequest"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "real-estate-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/scheduleUnitHandover"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "real-estate-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getStatementOfAccount"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "real-estate-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/waiveStatementCharge"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

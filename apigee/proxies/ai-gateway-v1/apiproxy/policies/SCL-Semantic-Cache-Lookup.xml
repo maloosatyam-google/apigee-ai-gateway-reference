@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<SemanticCacheLookup async="false" continueOnError="true" enabled="true" name="SCL-Semantic-Cache-Lookup">
+  <DisplayName>SCL-Semantic-Cache-Lookup</DisplayName>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+  <UserPromptSource>{flow.userPrompt}</UserPromptSource>
+  <Embeddings>
+    <VertexAI>
+      <URL>https://__GCP_REGION__-aiplatform.googleapis.com/v1/projects/__GCP_PROJECT_ID__/locations/__GCP_REGION__/publishers/google/models/text-embedding-004:predict</URL>
+    </VertexAI>
+  </Embeddings>
+  <SimilaritySearch>
+    <VertexAI>
+      <URL>https://__VECTOR_SEARCH_ENDPOINT_HOST__/v1/projects/__GCP_PROJECT_ID__/locations/__GCP_REGION__/indexEndpoints/__VECTOR_SEARCH_INDEX_ENDPOINT_ID__:findNeighbors</URL>
+      <DeployedIndexID>semantic_cache</DeployedIndexID>
+      <Threshold>0.95</Threshold>
+    </VertexAI>
+  </SimilaritySearch>
+</SemanticCacheLookup>

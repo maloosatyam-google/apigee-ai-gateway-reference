@@ -1,0 +1,145 @@
+{
+  "name": "Manufacturing Tools MCP - Supply Chain",
+  "displayName": "Manufacturing Tools MCP - Supply Chain",
+  "description": "Manufacturing Supply Chain analysts: supplier delivery, defect rates, warranty cost, parts inventory, dealer fill rates and plant throughput, plant margins and parts demand forecasts. Aggregates only, no individual dealer contact records.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "manufacturing"
+    },
+    {
+      "name": "persona",
+      "value": "loans_agent"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "manufacturing-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "manufacturing-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getSupplierOnTimeDelivery"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "manufacturing-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getProductDefectRates"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "manufacturing-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getWarrantyCostTrends"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "manufacturing-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPartsInventoryHealth"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "manufacturing-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getDealerFillRates"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "manufacturing-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPlantThroughput"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "manufacturing-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPlantMargins"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "manufacturing-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/runPartsDemandForecast"
+          }
+        ],
+        "quota": {
+          "limit": "2",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

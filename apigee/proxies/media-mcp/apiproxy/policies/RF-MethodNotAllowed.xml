@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  Rejects any JSON-RPC method outside the MCP allowlist before it reaches the backend.
+  Without this, unauthenticated requests for methods other than tools/list and tools/call
+  (e.g. resources/list, prompts/get) were forwarded upstream with the proxy's own
+  credentials attached. The MCP handshake (initialize, ping, notifications/*) stays
+  keyless because the MCP products only define tools/* operations, so VerifyAPIKey
+  would reject it and break every MCP client.
+-->
+<RaiseFault async="false" continueOnError="false" enabled="true" name="RF-MethodNotAllowed">
+  <DisplayName>RF-MethodNotAllowed</DisplayName>
+  <FaultResponse>
+    <Set>
+      <StatusCode>400</StatusCode>
+      <ReasonPhrase>Bad Request</ReasonPhrase>
+      <Payload contentType="application/json">{"jsonrpc":"2.0","id":null,"error":{"code":-32601,"message":"Method not allowed by gateway"}}</Payload>
+    </Set>
+  </FaultResponse>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+</RaiseFault>

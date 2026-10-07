@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<APIProxy revision="3" name="bigquery-mcp">
+  <DisplayName>bigquery-mcp</DisplayName>
+  <Description>Apigee MCP gateway for Google Cloud BigQuery MCP server</Description>
+  <BasePaths>/bigquery/mcp</BasePaths>
+  <BasePaths>/.well-known/oauth-protected-resource/bigquery/mcp</BasePaths>
+  <Policies>
+    <Policy>CORS-Allow</Policy>
+    <Policy>VA-VerifyAPIKey</Policy>
+    <Policy>AM-RemoveAuthorization</Policy>
+    <Policy>ML-CloudLogging</Policy>
+    <Policy>Q-Limit</Policy>
+    <Policy>PP-MCP</Policy>
+    <Policy>RF-MethodNotAllowed</Policy>
+  </Policies>
+  <ProxyEndpoints>
+    <ProxyEndpoint>default</ProxyEndpoint>
+    <ProxyEndpoint>oauth-prm-endpoint</ProxyEndpoint>
+  </ProxyEndpoints>
+  <TargetEndpoints>
+    <TargetEndpoint>default</TargetEndpoint>
+    <TargetEndpoint>oauth-prm-endpoint</TargetEndpoint>
+  </TargetEndpoints>
+</APIProxy>

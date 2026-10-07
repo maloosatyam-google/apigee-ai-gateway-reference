@@ -1,0 +1,79 @@
+{
+  "_comment": [
+    "CANONICAL MODEL RATE CARD \u2014 source of truth for the 'ai-model-rates' KVM, key 'rate_card'.",
+    "Push with: apigee/scripts/sync_rate_card.sh --org <org> --env <env>",
+    "",
+    "Rates are USD per 1,000,000 tokens (Vertex AI PAYG list price).",
+    "",
+    "RULES:",
+    " 1. Every key here MUST be a model that exists in this project. Verify with",
+    "    GET https://aiplatform.googleapis.com/v1/publishers/{google|anthropic}/models/{id}",
+    "    before adding one. Three non-existent Claude IDs previously sat in this KVM.",
+    " 2. Every entitled model MUST appear here. A model that is granted in an API product",
+    "    but missing from this card is silently billed at the 'default' rate.",
+    " 3. 'tier' is a COST band, not an entitlement. Bands by output rate:",
+    "    low <= 0.30, medium 0.31-4.99, high >= 5.00.",
+    " 4. Do NOT infer tier from the model name. gemini-3.7-flash and gemini-3.8-flash are",
+    "    'flash' models that cost more than the Pro models."
+  ],
+  "gemini-3.1-flash-lite": {
+    "input": 0.075,
+    "output": 0.3,
+    "provider": "google",
+    "tier": "low"
+  },
+  "gemini-3-flash-preview": {
+    "input": 0.15,
+    "output": 0.6,
+    "provider": "google",
+    "tier": "medium"
+  },
+  "gemini-2.5-flash": {
+    "input": 0.3,
+    "output": 2.5,
+    "provider": "google",
+    "tier": "medium"
+  },
+  "gemini-3.7-flash": {
+    "input": 1.5,
+    "output": 7.5,
+    "provider": "google",
+    "tier": "high"
+  },
+  "gemini-3.8-flash": {
+    "input": 1.5,
+    "output": 7.5,
+    "provider": "google",
+    "tier": "high"
+  },
+  "gemini-3.1-pro-preview": {
+    "input": 1.25,
+    "output": 5.0,
+    "provider": "google",
+    "tier": "high"
+  },
+  "gemini-2.5-pro": {
+    "input": 1.25,
+    "output": 5.0,
+    "provider": "google",
+    "tier": "high"
+  },
+  "claude-haiku-4-5": {
+    "input": 1.0,
+    "output": 5.0,
+    "provider": "anthropic",
+    "tier": "high"
+  },
+  "claude-opus-4-5": {
+    "input": 15.0,
+    "output": 75.0,
+    "provider": "anthropic",
+    "tier": "high"
+  },
+  "default": {
+    "input": 0.15,
+    "output": 0.6,
+    "provider": "google",
+    "tier": "medium"
+  }
+}

@@ -1,0 +1,295 @@
+openapi: 3.0.3
+info:
+  title: Customer Service API
+  version: 1.0.0
+  description: >-
+    Look up customers, orders and prices, log support cases and issue refunds.
+    Used by customer support and sales assistants. Refunds above the configured
+    limit (default 50 USD) are refused by the gateway and need supervisor approval.
+servers:
+  - url: https://__APIGEE_HOST_PROD__/customer-service/v1
+paths:
+  /customers:
+    get:
+      operationId: searchCustomers
+      summary: Search customers
+      description: Find customers by name, customer ID or email prefix. Emails are masked in results. Use getCustomer for the full profile.
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Name, customer ID (e.g. CUST-1001) or the start of an email address. At least 2 characters.
+          schema: { type: string, minLength: 2, maxLength: 60, example: jane }
+      responses:
+        '200':
+          description: Matching customers (max 10)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CustomerSearchResult' }
+  /customers/{customerId}:
+    get:
+      operationId: getCustomer
+      summary: Get a customer's full profile
+      description: Full customer profile including contact details, tier, the discount the customer is allowed, and open cases. Contains personal data.
+      parameters:
+        - $ref: '#/components/parameters/customerId'
+      responses:
+        '200':
+          description: Customer profile
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Customer' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /customers/{customerId}/orders:
+    get:
+      operationId: listCustomerOrders
+      summary: List a customer's orders
+      description: The customer's orders, newest first, with status and total.
+      parameters:
+        - $ref: '#/components/parameters/customerId'
+      responses:
+        '200':
+          description: Orders
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  customerId: { type: string }
+                  count: { type: integer }
+                  orders:
+                    type: array
+                    items: { $ref: '#/components/schemas/OrderSummary' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /orders/{orderId}:
+    get:
+      operationId: getOrderStatus
+      summary: Get order status and delivery details
+      description: Status, items, delivery promise, carrier tracking, how many days late, delay reason and refunds already issued.
+      parameters:
+        - $ref: '#/components/parameters/orderId'
+      responses:
+        '200':
+          description: Order details
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Order' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /orders/{orderId}/refunds:
+    post:
+      operationId: issueRefund
+      summary: Issue a refund on an order
+      description: >-
+        Refund part or all of an order. Refunds up to 50 USD are approved immediately;
+        larger refunds are refused with 403 REFUND_LIMIT and need supervisor approval.
+      parameters:
+        - $ref: '#/components/parameters/orderId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount, reason]
+              properties:
+                amount: { type: number, minimum: 0.01, maximum: 10000, description: Refund amount in USD, example: 25 }
+                reason: { type: string, maxLength: 200, example: Late delivery goodwill credit }
+      responses:
+        '201':
+          description: Refund approved
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Refund' }
+        '403':
+          description: Above the refund limit; needs supervisor approval
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Amount is more than the refundable balance of the order
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /products/{sku}/price:
+    get:
+      operationId: getProductPrice
+      summary: Get a product's price and the discount allowed for a customer tier
+      description: List price, the maximum discount a rep may offer for the customer's tier, and the lowest price that results.
+      parameters:
+        - name: sku
+          in: path
+          required: true
+          description: Product SKU
+          schema:
+            type: string
+            enum: [PLN-BASIC, PLN-PRO, PLN-TEAM, DEV-HUB, DEV-CAM, DEV-SENSOR, ACC-MOUNT, ACC-BATT, ACC-CABLE, SVC-SETUP, SVC-CARE, SVC-RUSH]
+        - name: tier
+          in: query
+          required: false
+          description: Customer tier (from getCustomer). Defaults to Standard.
+          schema: { type: string, enum: [Standard, Gold, Platinum], default: Standard }
+      responses:
+        '200':
+          description: Price
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Price' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /cases:
+    post:
+      operationId: createSupportCase
+      summary: Log a support case
+      description: Open a support case for a customer, optionally linked to an order.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [customerId, subject]
+              properties:
+                customerId: { type: string, pattern: '^CUST-\d{4}$', example: CUST-1001 }
+                orderId: { type: string, pattern: '^ORD-\d{4}$', example: ORD-1042 }
+                subject: { type: string, maxLength: 120, example: Late delivery }
+                priority: { type: string, enum: [Low, Medium, High], default: Medium }
+                description: { type: string, maxLength: 1000 }
+      responses:
+        '201':
+          description: Case created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Case' }
+        '404': { $ref: '#/components/responses/NotFound' }
+components:
+  parameters:
+    customerId:
+      name: customerId
+      in: path
+      required: true
+      description: Customer ID, e.g. CUST-1001
+      schema: { type: string, pattern: '^CUST-\d{4}$', example: CUST-1001 }
+    orderId:
+      name: orderId
+      in: path
+      required: true
+      description: Order ID, e.g. ORD-1042
+      schema: { type: string, pattern: '^ORD-\d{4}$', example: ORD-1042 }
+  responses:
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+  schemas:
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+        message: { type: string }
+    CustomerSearchResult:
+      type: object
+      properties:
+        count: { type: integer }
+        customers:
+          type: array
+          items:
+            type: object
+            properties:
+              customerId: { type: string }
+              name: { type: string }
+              email: { type: string, description: Masked }
+              tier: { type: string }
+              segment: { type: string }
+              city: { type: string }
+    Customer:
+      type: object
+      properties:
+        customerId: { type: string }
+        name: { type: string }
+        email: { type: string }
+        phone: { type: string }
+        tier: { type: string, enum: [Standard, Gold, Platinum] }
+        segment: { type: string }
+        city: { type: string }
+        region: { type: string }
+        customerSince: { type: string, format: date }
+        lifetimeValue: { type: number }
+        allowedDiscountPct: { type: number }
+        orderCount: { type: integer }
+        openCases:
+          type: array
+          items:
+            type: object
+            properties:
+              caseId: { type: string }
+              subject: { type: string }
+              priority: { type: string }
+    OrderSummary:
+      type: object
+      properties:
+        orderId: { type: string }
+        placedOn: { type: string, format: date }
+        status: { type: string }
+        total: { type: number }
+        currency: { type: string }
+    Order:
+      type: object
+      properties:
+        orderId: { type: string }
+        customerId: { type: string }
+        placedOn: { type: string, format: date }
+        status: { type: string, enum: [Processing, Shipped, Delayed, Delivered] }
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              sku: { type: string }
+              name: { type: string }
+              quantity: { type: integer }
+              unitPrice: { type: number }
+        discountPct: { type: number }
+        total: { type: number }
+        currency: { type: string }
+        promisedDelivery: { type: string, format: date }
+        deliveredOn: { type: string, format: date, nullable: true }
+        newEstimatedDelivery: { type: string, format: date }
+        delayReason: { type: string }
+        daysLate: { type: integer }
+        carrier: { type: string }
+        trackingNumber: { type: string }
+        refundedTotal: { type: number }
+        refundableRemaining: { type: number }
+    Refund:
+      type: object
+      properties:
+        orderId: { type: string }
+        refundId: { type: string }
+        amount: { type: number }
+        currency: { type: string }
+        reason: { type: string }
+        status: { type: string }
+        issuedOn: { type: string, format: date }
+        refundableRemaining: { type: number }
+    Price:
+      type: object
+      properties:
+        sku: { type: string }
+        name: { type: string }
+        category: { type: string }
+        currency: { type: string }
+        listPrice: { type: number }
+        tier: { type: string }
+        maxDiscountPct: { type: number }
+        lowestPrice: { type: number }
+    Case:
+      type: object
+      properties:
+        caseId: { type: string }
+        customerId: { type: string }
+        orderId: { type: string, nullable: true }
+        subject: { type: string }
+        priority: { type: string }
+        status: { type: string }
+        openedOn: { type: string, format: date }

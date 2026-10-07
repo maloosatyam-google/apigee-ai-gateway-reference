@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<APIProxy revision="1" name="customer-service-v1">
+  <DisplayName>customer-service-v1</DisplayName>
+  <Description>Customer Service API (customers, orders, pricing, cases, refunds) on Cloud Run. Refunds over the configured limit are refused at the gateway.</Description>
+  <BasePaths>/customer-service/v1</BasePaths>
+  <Policies>
+    <Policy>KVM-GetConfig</Policy>
+    <Policy>JS-CheckCaller</Policy>
+    <Policy>RF-NotInternal</Policy>
+    <Policy>CORS-Allow</Policy>
+    <Policy>SA-Protect</Policy>
+    <Policy>RF-NotFound</Policy>
+    <Policy>AM-RemoveClientAuth</Policy>
+    <Policy>ML-CloudLogging</Policy>
+    <Policy>KVM-GetRefundLimit</Policy>
+    <Policy>AE-CallerKey</Policy>
+    <Policy>JS-CheckRefundLimit</Policy>
+    <Policy>RF-RefundLimit</Policy>
+    <Policy>OAS-ValidateRequest</Policy>
+  </Policies>
+  <ProxyEndpoints>
+    <ProxyEndpoint>default</ProxyEndpoint>
+  </ProxyEndpoints>
+  <Resources>
+    <Resource>oas://customer-service.yaml</Resource>
+    <Resource>jsc://check-caller.js</Resource>
+    <Resource>jsc://check-refund-limit.js</Resource>
+  </Resources>
+  <TargetEndpoints>
+    <TargetEndpoint>default</TargetEndpoint>
+  </TargetEndpoints>
+</APIProxy>

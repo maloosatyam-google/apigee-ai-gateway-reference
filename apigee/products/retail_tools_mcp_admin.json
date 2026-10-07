@@ -1,0 +1,314 @@
+{
+  "name": "Retail Tools MCP Admin",
+  "displayName": "Retail Tools MCP Admin",
+  "description": "Retail: every tool, no business-rule limits. Used by the e-commerce technology team and by the ungoverned agent in the Agent Showcase.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "retail"
+    },
+    {
+      "name": "persona",
+      "value": "admin"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/searchShoppers"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getShopperProfile"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listShopperOrders"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getOrderLines"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/checkStoreInventory"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/initiateMerchReturn"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/refundOrderLine"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLoyaltyRewards"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/grantLoyaltyPoints"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getStorePickupStatus"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/extendStorePickupHold"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getGiftCardBalance"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/openCustomerCase"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getCategorySalesTrends"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getReturnRateMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getStockHealthSummary"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLoyaltyProgramMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getOmnichannelFulfilment"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getMarkdownPerformance"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getCategoryMarginReport"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "retail-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/runHolidayDemandForecast"
+          }
+        ],
+        "quota": {
+          "limit": "2",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

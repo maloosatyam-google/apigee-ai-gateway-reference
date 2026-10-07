@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage async="false" continueOnError="false" enabled="true" name="AM-PrepGeminiDirect">
+  <DisplayName>AM-PrepGeminiDirect</DisplayName>
+  <AssignVariable>
+    <Name>flow.target_model</Name>
+    <Ref>flow.model</Ref>
+    <Value>gemini-3-flash-preview</Value>
+  </AssignVariable>
+  <AssignVariable>
+    <Name>flow.target_provider</Name>
+    <Value>google</Value>
+  </AssignVariable>
+  <AssignVariable>
+    <Name>flow.autoRouted</Name>
+    <Value>false</Value>
+  </AssignVariable>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+  <AssignTo createNew="false" transport="http" type="request"/>
+</AssignMessage>

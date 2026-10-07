@@ -1,0 +1,21 @@
+# gitleaks configuration: default rules plus repo-specific allowlist.
+# Used by .githooks/pre-commit (when gitleaks is installed) and .github/workflows/ci.yml.
+title = "apigee-ai-gateway-reference"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Lockfiles, documented placeholders and test fixtures"
+paths = [
+  '''(^|/)package-lock\.json$''',
+  '''(^|/)scripts/lib/secret_patterns\.sh$''',
+]
+regexes = [
+  # Placeholder values used in .env.example, docs and unit-test fixtures.
+  '''(?i)your[-_]?(api[-_]?key|secret|token)''',
+  '''(?i)example\.com''',
+  '''demo-project''',
+  # Apigee proxy names such as "llm-passthrough-v1" (matched by generic-api-key on apiSource).
+  '''^[a-z0-9]+(-[a-z0-9]+)*-v[0-9]+$''',
+]

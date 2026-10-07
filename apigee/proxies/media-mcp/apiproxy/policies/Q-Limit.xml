@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Quota continueOnError="false" enabled="true" name="Q-Limit">
+  <DisplayName>Q-Limit</DisplayName>
+  <Properties/>
+  <UseQuotaConfigInAPIProduct stepName="VA-VerifyAPIKey">
+    <DefaultConfig>
+      <Allow>10</Allow>
+      <Interval>1</Interval>
+      <TimeUnit>minute</TimeUnit>
+    </DefaultConfig>
+  </UseQuotaConfigInAPIProduct>
+  <Distributed>true</Distributed>
+  <Synchronous>true</Synchronous>
+</Quota>

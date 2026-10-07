@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  COMPENSATION_APPROVAL_LIMIT: Booking refunds over $50 need revenue-accounting approval. Generated from industries/aviation.json by
+  apigee/scripts/gen_industry_mcp.py. Returned as HTTP 403 with a JSON-RPC tool error so the
+  agent sees the reason; the x-gateway-limit header marks it for traces and tests (Apigee strips
+  x-apigee-* response headers).
+-->
+<RaiseFault async="false" continueOnError="false" enabled="true" name="RF-LimitNumericId">
+  <DisplayName>RF-LimitNumericId</DisplayName>
+  <FaultResponse>
+    <Set>
+      <Headers>
+        <Header name="x-gateway-limit">COMPENSATION_APPROVAL_LIMIT</Header>
+      </Headers>
+      <StatusCode>403</StatusCode>
+      <ReasonPhrase>Forbidden</ReasonPhrase>
+      <Payload contentType="application/json" variablePrefix="@" variableSuffix="#">{"jsonrpc":"2.0","id":@mcp.rpcId#,"result":{"isError":true,"content":[{"type":"text","text":"{\"status\": 403, \"error\": \"COMPENSATION_APPROVAL_LIMIT\", \"message\": \"Booking refunds over $50 need revenue-accounting approval. Requested $@mcp.amountText#.\", \"limit\": 50, \"requested\": @mcp.amountText#, \"enforcedBy\": \"Apigee\"}"}]}}</Payload>
+    </Set>
+  </FaultResponse>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+</RaiseFault>

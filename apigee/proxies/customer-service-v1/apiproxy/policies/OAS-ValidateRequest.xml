@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<OASValidation continueOnError="false" enabled="true" name="OAS-ValidateRequest">
+  <Source>request</Source>
+  <OASResource>oas://customer-service.yaml</OASResource>
+  <Options>
+    <ValidateMessageBody>true</ValidateMessageBody>
+    <AllowUnspecifiedParameters>
+      <Header>true</Header>
+      <Query>false</Query>
+      <Cookie>true</Cookie>
+    </AllowUnspecifiedParameters>
+  </Options>
+</OASValidation>

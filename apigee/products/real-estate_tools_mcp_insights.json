@@ -1,0 +1,145 @@
+{
+  "name": "Real Estate Tools MCP - Portfolio Analysts",
+  "displayName": "Real Estate Tools MCP - Portfolio Analysts",
+  "description": "Real Estate Portfolio Analysts: sales velocity, absorption, occupancy, rent roll, collections and maintenance metrics, project margins and demand forecasts. Aggregates only, no individual buyer or tenant records.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "real-estate"
+    },
+    {
+      "name": "persona",
+      "value": "loans_agent"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "real-estate-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "real-estate-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getSalesVelocity"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "real-estate-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getProjectAbsorptionRates"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "real-estate-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPortfolioOccupancy"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "real-estate-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getRentRollSummary"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "real-estate-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getCollectionsAging"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "real-estate-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getMaintenanceSlaMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "real-estate-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getProjectMarginReport"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "real-estate-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/runHomeDemandForecast"
+          }
+        ],
+        "quota": {
+          "limit": "2",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

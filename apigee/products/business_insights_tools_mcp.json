@@ -1,0 +1,98 @@
+{
+  "name": "Business Insights Tools MCP",
+  "displayName": "Business Insights Tools MCP",
+  "description": "Analysts & Knowledge Workers: aggregated revenue, support metrics, churn cohorts, margins and forecasts. No individual customer records.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getRevenueTrends"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getSupportMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getChurnRisk"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getProductMargins"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "mcp",
+        "operations": [
+          {
+            "operation": "tools/call/runForecast"
+          }
+        ],
+        "quota": {
+          "limit": "2",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

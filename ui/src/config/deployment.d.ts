@@ -1,0 +1,11 @@
+export declare const GCP_PROJECT_ID: string;
+export declare const APIGEE_ORG: string;
+export declare const APIGEE_HOST_PROD: string;
+export declare const APIGEE_HOST_DEV: string;
+export declare const APIGEE_BASE_PROD: string;
+export declare const APIGEE_BASE_DEV: string;
+export declare const AI_BASE_PROD: string;
+export declare const AI_BASE_DEV: string;
+export declare const MCP_BASE_PROD: string;
+export declare const MCP_BASE_DEV: string;
+export declare function apigeeBase(env: string): string;

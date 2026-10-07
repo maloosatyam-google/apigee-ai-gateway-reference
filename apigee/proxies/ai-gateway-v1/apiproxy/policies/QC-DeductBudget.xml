@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  Write side of the developer-budget counter. The read side is QC-EnforceBudgetLimit in the
+  PreFlow, which is EnforceOnly. This policy carries the Weight and is what actually spends
+  the budget: <Weight ref="flow.tx_cost_micros"/>, the real model cost in micro-dollars
+  computed by JS-CalculateCost from the ai-model-rates KVM.
+
+  The limit comes from the API product attributes developer.budget.limit / .interval /
+  .timeunit; the literals below are a FALLBACK ONLY. This block must stay identical to the
+  one in QC-EnforceBudgetLimit - a read side and write side configured against different
+  limits or different intervals would enforce against one counter bucket while counting
+  into another, and the cap would never fire.
+
+  Gated on flow.cached != "true" by the flow that calls it, so semantic-cache hits are
+  deliberately not charged; JS-AuditBudgetAccounting reports those as skipped_cached.
+-->
+<Quota async="false" continueOnError="true" enabled="true" name="QC-DeductBudget">
+  <DisplayName>QC-DeductBudget</DisplayName>
+  <Identifier ref="verifyapikey.VA-VerifyAPIKey.developer.id"/>
+  <Allow count="100000000" countRef="verifyapikey.VA-VerifyAPIKey.apiproduct.developer.budget.limit"/>
+  <Interval ref="verifyapikey.VA-VerifyAPIKey.apiproduct.developer.budget.interval">1</Interval>
+  <TimeUnit ref="verifyapikey.VA-VerifyAPIKey.apiproduct.developer.budget.timeunit">month</TimeUnit>
+  <Weight ref="flow.tx_cost_micros"/>
+  <Distributed>true</Distributed>
+  <Synchronous>true</Synchronous>
+  <SharedName>developer-budget-counter</SharedName>
+</Quota>

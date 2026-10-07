@@ -1,0 +1,145 @@
+{
+  "name": "Aviation Tools MCP - Flight Ops",
+  "displayName": "Aviation Tools MCP - Flight Ops",
+  "description": "Aviation Flight Ops & Network Analysts: on-time performance, load factors, disruption costs, baggage, loyalty and satisfaction metrics, route profitability and demand forecasts. Aggregates only, no individual passenger records.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "aviation"
+    },
+    {
+      "name": "persona",
+      "value": "loans_agent"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "aviation-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "aviation-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getOnTimePerformance"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "aviation-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLoadFactorTrends"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "aviation-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getDisruptionCostSummary"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "aviation-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getBaggageMishandlingRates"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "aviation-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getFrequentFlyerMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "aviation-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getCabinSatisfactionScores"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "aviation-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getRouteProfitability"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "aviation-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/runPassengerDemandForecast"
+          }
+        ],
+        "quota": {
+          "limit": "2",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

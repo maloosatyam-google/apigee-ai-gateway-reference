@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage async="false" continueOnError="false" enabled="true" name="AM-RouteGeminiTarget">
+  <DisplayName>AM-RouteGeminiTarget</DisplayName>
+  <AssignVariable>
+    <Name>flow.projectId</Name>
+    <Value>__GCP_PROJECT_ID__</Value>
+  </AssignVariable>
+  <AssignVariable>
+    <Name>flow.location</Name>
+    <Value>global</Value>
+  </AssignVariable>
+  <AssignVariable>
+    <Name>target.copy.pathsuffix</Name>
+    <Value>false</Value>
+  </AssignVariable>
+  <AssignVariable>
+    <Name>target.url</Name>
+    <Template>https://aiplatform.googleapis.com/v1/projects/{flow.projectId}/locations/{flow.location}/publishers/google/models/{flow.target_model}:generateContent</Template>
+  </AssignVariable>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+</AssignMessage>

@@ -1,0 +1,136 @@
+{
+  "name": "BigQuery Tools MCP",
+  "displayName": "BigQuery Tools MCP",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "bigquery-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "bigquery-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/list_dataset_ids"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "bigquery-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/get_dataset_info"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "bigquery-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/list_table_ids"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "bigquery-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/get_table_info"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "bigquery-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/execute_sql_readonly"
+          }
+        ],
+        "quota": {
+          "limit": "5",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "bigquery-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/execute_sql"
+          }
+        ],
+        "quota": {
+          "limit": "5",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "bigquery-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/get_query_results"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "bigquery-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/cancel_job"
+          }
+        ],
+        "quota": {
+          "limit": "5",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

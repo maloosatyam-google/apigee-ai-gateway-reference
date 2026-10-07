@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  Observability only. continueOnError MUST stay "true": this policy exists to report on a
+  fail-open accounting path, and it would be perverse for the reporter to be the thing that
+  starts failing requests. It writes flow variables and nothing else.
+-->
+<Javascript async="false" continueOnError="true" enabled="true" name="JS-AuditBudgetAccounting">
+  <DisplayName>JS-AuditBudgetAccounting</DisplayName>
+  <Properties/>
+  <ResourceURL>jsc://AuditBudgetAccounting.js</ResourceURL>
+</Javascript>

@@ -1,0 +1,145 @@
+{
+  "name": "Travel Tools MCP - Revenue Mgmt",
+  "displayName": "Travel Tools MCP - Revenue Mgmt",
+  "description": "Travel Revenue Management: occupancy, RevPAR, channel mix, cancellations, guest satisfaction and loyalty metrics, property margins and occupancy forecasts. Aggregates only, no individual guest records.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "travel"
+    },
+    {
+      "name": "persona",
+      "value": "loans_agent"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getOccupancyTrends"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getRevparByProperty"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getBookingChannelMix"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getCancellationRates"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getGuestSatisfactionIndex"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLoyaltyTierMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPropertyMargins"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/runOccupancyForecast"
+          }
+        ],
+        "quota": {
+          "limit": "2",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

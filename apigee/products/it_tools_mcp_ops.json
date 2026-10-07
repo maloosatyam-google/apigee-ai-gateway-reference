@@ -1,0 +1,210 @@
+{
+  "name": "IT Services Tools MCP - Client Success",
+  "displayName": "IT Services Tools MCP - Client Success",
+  "description": "IT Services Client Success & Service Desk: look up client contacts, incidents, SLA status, charges, licences, change requests and project milestones; log and escalate incidents, adjust licence seats, raise changes and issue SLA credits (gateway limit $50). No delivery finance or portfolio analytics.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "it"
+    },
+    {
+      "name": "persona",
+      "value": "sales_agent"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/searchClientContacts"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getClientContact"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listServiceIncidents"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/logServiceIncident"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/escalateServiceIncident"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getSlaStatus"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listServiceCharges"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/issueSlaCredit"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listSoftwareLicences"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/adjustLicenceSeats"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/submitChangeRequest"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getChangeRequestStatus"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getProjectMilestones"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

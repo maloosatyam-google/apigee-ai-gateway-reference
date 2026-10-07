@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  DecodeJWT, deliberately — not VerifyJWT.
+
+  The signature, issuer, audience and expiry are NOT checked. The claims extracted here are
+  used for ATTRIBUTION ONLY (dc_user_email, the audit trail, the wallet charge, the per-user
+  dashboard). Authorization is carried entirely by x-apikey via VA-VerifyAPIKey, and the
+  routing tier comes from the API product name — never from this token.
+
+  Consequence, accepted knowingly: any well-formed three-segment token sets flow.emailId, so
+  an already-entitled caller can misattribute their own traffic to someone else. They cannot
+  gain access they did not already have.
+
+  Do NOT add an authorization check that reads the email claim. And do not swap this for
+  VerifyJWT without first fixing the UI, which currently forwards a locally-minted token
+  rather than the IAP assertion — verification would reject every request on day one.
+  The correct JWKS for IAP is the ES256 set at
+  https://www.gstatic.com/iap/verify/public_key-jwk (not the RS256 oauth2/v3/certs endpoint).
+
+  Full trust model: docs/proxy_architecture_design_plan.md §3.1.1
+-->
+<DecodeJWT async="false" continueOnError="true" enabled="true" name="DJWT-ExtractUserIdentity">
+  <DisplayName>DJWT-ExtractUserIdentity</DisplayName>
+  <Source>flow.rawToken</Source>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+</DecodeJWT>

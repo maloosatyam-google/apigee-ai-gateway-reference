@@ -1,0 +1,145 @@
+{
+  "name": "Telecom Tools MCP - Revenue Analysts",
+  "displayName": "Telecom Tools MCP - Revenue Analysts",
+  "description": "Telecom Revenue Analysts: ARPU, churn, network quality, porting, care-contact and roaming metrics, plan margins and subscriber growth forecasts. Aggregates only, no individual subscriber records.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "telecom"
+    },
+    {
+      "name": "persona",
+      "value": "loans_agent"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getArpuTrends"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getChurnRiskSummary"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getNetworkQualityMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPortingActivity"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getCareContactMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getRoamingRevenueMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPlanMarginAnalysis"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/runNetAddsForecast"
+          }
+        ],
+        "quota": {
+          "limit": "2",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,314 @@
+{
+  "name": "Travel Tools MCP Admin",
+  "displayName": "Travel Tools MCP Admin",
+  "description": "Travel: every tool, no business-rule limits. Used by admins and by the ungoverned agent in the Agent Showcase.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "travel"
+    },
+    {
+      "name": "persona",
+      "value": "admin"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/searchHotelGuests"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getGuestProfile"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listGuestReservations"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/checkRoomAvailability"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/extendHotelStay"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/cancelHotelReservation"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/requestRoomChange"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getGuestFolio"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/issueFolioCredit"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLoyaltyBalance"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/creditMissingStayPoints"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/bookHotelAmenity"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/logGuestComplaint"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getOccupancyTrends"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getRevparByProperty"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getBookingChannelMix"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getCancellationRates"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getGuestSatisfactionIndex"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLoyaltyTierMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPropertyMargins"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/runOccupancyForecast"
+          }
+        ],
+        "quota": {
+          "limit": "2",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

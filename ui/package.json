@@ -1,0 +1,50 @@
+{
+  "name": "apigee-ai-gateway-demo-ui",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "node --import ./tests/setup-env.mjs --test tests/autorouting.unit.test.mjs tests/calculatecost.unit.test.mjs tests/intentlabel.unit.test.mjs tests/cachemodelattribution.unit.test.mjs tests/cacheanalytics.unit.test.mjs tests/products.unit.test.mjs tests/monetizationsorting.unit.test.mjs tests/guardrailpolicies.unit.test.mjs tests/adminagent.unit.test.mjs tests/adminagentroutes.unit.test.mjs tests/insights.unit.test.mjs tests/askapigeefinance.unit.test.mjs tests/askapigeeguardrails.unit.test.mjs tests/askapigeemcp.unit.test.mjs tests/proxybundle.unit.test.mjs tests/walletLedger.unit.test.mjs tests/tokenquota.unit.test.mjs tests/routingsavings.unit.test.mjs tests/toolsanalytics.unit.test.mjs tests/scenarioprereqs.unit.test.mjs tests/consoleenv.unit.test.mjs tests/toollogs.unit.test.mjs tests/adminroles.unit.test.mjs tests/mcpplayground.unit.test.mjs tests/agentshowcase.unit.test.mjs tests/refundlimit.unit.test.mjs tests/agentcomparison.unit.test.mjs tests/agentanalytics.unit.test.mjs tests/customertheme.unit.test.mjs tests/themelibrary.unit.test.mjs tests/industrypacks.unit.test.mjs",
+    "test:unit": "node --import ./tests/setup-env.mjs --test tests/autorouting.unit.test.mjs tests/calculatecost.unit.test.mjs tests/intentlabel.unit.test.mjs tests/cachemodelattribution.unit.test.mjs tests/cacheanalytics.unit.test.mjs tests/products.unit.test.mjs tests/monetizationsorting.unit.test.mjs tests/guardrailpolicies.unit.test.mjs tests/adminagent.unit.test.mjs tests/adminagentroutes.unit.test.mjs tests/insights.unit.test.mjs tests/askapigeefinance.unit.test.mjs tests/askapigeeguardrails.unit.test.mjs tests/askapigeemcp.unit.test.mjs tests/proxybundle.unit.test.mjs tests/walletLedger.unit.test.mjs tests/tokenquota.unit.test.mjs tests/routingsavings.unit.test.mjs tests/toolsanalytics.unit.test.mjs tests/scenarioprereqs.unit.test.mjs tests/consoleenv.unit.test.mjs tests/toollogs.unit.test.mjs tests/adminroles.unit.test.mjs tests/mcpplayground.unit.test.mjs tests/agentshowcase.unit.test.mjs tests/refundlimit.unit.test.mjs tests/agentcomparison.unit.test.mjs tests/agentanalytics.unit.test.mjs tests/customertheme.unit.test.mjs tests/themelibrary.unit.test.mjs tests/industrypacks.unit.test.mjs",
+    "test:autorouting": "node --import ./tests/setup-env.mjs --test tests/autorouting.unit.test.mjs",
+    "test:cost": "node --import ./tests/setup-env.mjs --test tests/calculatecost.unit.test.mjs",
+    "test:products": "node --import ./tests/setup-env.mjs --test tests/products.unit.test.mjs",
+    "test:monetization": "node --import ./tests/setup-env.mjs --test tests/monetizationsorting.unit.test.mjs",
+    "test:bundle": "node --import ./tests/setup-env.mjs --test tests/proxybundle.unit.test.mjs",
+    "test:mcp": "node --import ./tests/setup-env.mjs --test tests/mcpplayground.unit.test.mjs tests/agentshowcase.unit.test.mjs tests/refundlimit.unit.test.mjs tests/agentcomparison.unit.test.mjs tests/agentanalytics.unit.test.mjs",
+    "test:theme": "node --import ./tests/setup-env.mjs --test tests/customertheme.unit.test.mjs tests/themelibrary.unit.test.mjs tests/industrypacks.unit.test.mjs",
+    "test:admin-agent": "node --import ./tests/setup-env.mjs --test tests/adminagent.unit.test.mjs tests/adminagentroutes.unit.test.mjs tests/insights.unit.test.mjs tests/askapigeefinance.unit.test.mjs tests/askapigeeguardrails.unit.test.mjs tests/askapigeemcp.unit.test.mjs",
+    "test:admin-agent:live": "node --test tests/adminagent.live.test.mjs",
+    "gen:guardrail-catalog": "node server/generateGuardrailCatalog.js",
+    "gen:skill-digest": "node server/generateSkillDigest.js",
+    "docs:presets": "node scripts/generate_scenario_presets_doc.mjs",
+    "docs:industry-prompts": "node scripts/generate_industry_prompts_doc.mjs",
+    "test:live": "TEST_ALLOW_PROD=1 node --test tests/gateway-live.test.mjs",
+    "test:live:prod": "TEST_ALLOW_PROD=1 node --test tests/gateway-live.test.mjs",
+    "test:all": "node --import ./tests/setup-env.mjs --test tests/autorouting.unit.test.mjs tests/calculatecost.unit.test.mjs tests/intentlabel.unit.test.mjs tests/cachemodelattribution.unit.test.mjs tests/cacheanalytics.unit.test.mjs tests/products.unit.test.mjs tests/monetizationsorting.unit.test.mjs tests/guardrailpolicies.unit.test.mjs tests/adminagent.unit.test.mjs tests/adminagentroutes.unit.test.mjs tests/insights.unit.test.mjs tests/askapigeefinance.unit.test.mjs tests/askapigeeguardrails.unit.test.mjs tests/askapigeemcp.unit.test.mjs tests/proxybundle.unit.test.mjs tests/walletLedger.unit.test.mjs tests/tokenquota.unit.test.mjs tests/routingsavings.unit.test.mjs tests/toolsanalytics.unit.test.mjs tests/scenarioprereqs.unit.test.mjs tests/consoleenv.unit.test.mjs tests/toollogs.unit.test.mjs tests/adminroles.unit.test.mjs && TEST_ALLOW_PROD=1 node --test tests/gateway-live.test.mjs"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "highlight.js": "^11.11.1",
+    "lucide-react": "^0.378.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-markdown": "^10.1.0",
+    "rehype-highlight": "^7.0.1",
+    "remark-gfm": "^4.0.1",
+    "tailwind-merge": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.3",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11"
+  }
+}

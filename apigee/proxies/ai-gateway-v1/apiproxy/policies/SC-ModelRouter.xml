@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceCallout async="false" continueOnError="true" enabled="true" name="SC-ModelRouter">
+  <DisplayName>SC-ModelRouter</DisplayName>
+  <Properties>
+    <Property name="io.timeout.millis">2500</Property>
+  </Properties>
+  <Request clearPayload="true" variable="routerRequest">
+    <IgnoreUnresolvedVariables>false</IgnoreUnresolvedVariables>
+  </Request>
+  <Response>routerResponse</Response>
+  <Timeout>2500</Timeout>
+  <HTTPTargetConnection>
+    <URL>https://api.typesafe.ai/v1/systemone</URL>
+  </HTTPTargetConnection>
+</ServiceCallout>

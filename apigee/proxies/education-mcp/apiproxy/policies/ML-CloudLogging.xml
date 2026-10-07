@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<MessageLogging continueOnError="false" enabled="true" name="ML-CloudLogging">
+  <DisplayName>ML-CloudLogging</DisplayName>
+  <CloudLogging>
+    <LogName>projects/{organization.name}/logs/apigee</LogName>
+    <Message contentType="application/json">
+      {
+        "organizationName": "{organization.name}",
+        "environmentName": "{environment.name}",
+        "apiProxyName": "{apiproxy.name}",
+        "apiProxyRevision": "{apiproxy.revision}",
+        "proxyPathSuffix": "{proxy.pathsuffix}",
+        "trackingId": "{flow.uuid}",
+        "developerApp": "{verifyapikey.VA-VerifyAPIKey.app.name}",
+        "developerEmail": "{verifyapikey.VA-VerifyAPIKey.developer.email}",
+        "requestVerb": "{request.verb}",
+        "clientIp": "{client.ip}",
+        "clientReceivedStartTime": "{client.received.start.time}",
+        "clientReceivedStartTimeEpoch": "{client.received.start.timestamp}",
+        "clientReceivedEndTimeEpoch": "{client.received.end.timestamp}",
+        "requestQueryString": "{request.querystring}",
+        "requestContent": "{escapeJSON(request.content)}",
+        "responseStatusCode": "{response.status.code}",
+        "responseReasonPhrase": "{response.reason.phrase}",
+        "responseContent": "{escapeJSON(response.content)}",
+        "targetName": "{target.name}",
+        "targetUrl": "{target.url}",
+        "targetSentStartTimeEpoch": "{target.sent.start.timestamp}",
+        "targetSentEndTimeEpoch": "{target.sent.end.timestamp}",
+        "targetReceivedStartTimeEpoch": "{target.received.start.timestamp}",
+        "targetReceivedEndTimeEpoch": "{target.received.end.timestamp}",
+        "faultName": "{fault.name}",
+        "errorMessage": "{error.message}"
+      }
+    </Message>
+    <ResourceType>api</ResourceType>
+  </CloudLogging>
+</MessageLogging>

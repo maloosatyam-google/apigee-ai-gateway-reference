@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- Reads the tool name, the limit argument and the JSON-RPC id for the business-rule check. -->
+<ExtractVariables async="false" continueOnError="false" enabled="true" name="EV-ToolCall">
+  <DisplayName>EV-ToolCall</DisplayName>
+  <Source clearPayload="false">request</Source>
+  <VariablePrefix>mcp</VariablePrefix>
+  <JSONPayload>
+    <Variable name="tool">
+      <JSONPath>$.params.name</JSONPath>
+    </Variable>
+    <Variable name="amount" type="double">
+      <JSONPath>$.params.arguments.amount</JSONPath>
+    </Variable>
+    <Variable name="amountText">
+      <JSONPath>$.params.arguments.amount</JSONPath>
+    </Variable>
+    <Variable name="rpcId">
+      <JSONPath>$.id</JSONPath>
+    </Variable>
+  </JSONPayload>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+</ExtractVariables>

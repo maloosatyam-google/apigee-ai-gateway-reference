@@ -1,0 +1,22 @@
+{
+  "name": "Unified Loans App",
+  "displayName": "Unified Loans App",
+  "apiProducts": [
+    "Analysts and Knowledge Workers",
+    "Business Insights Tools MCP"
+  ],
+  "attributes": [
+    {
+      "name": "DisplayName",
+      "value": "Unified Loans App"
+    },
+    {
+      "name": "persona",
+      "value": "loans_agent"
+    },
+    {
+      "name": "description",
+      "value": "Analysts & Knowledge Workers persona credential: Gemini Pro and Flash family (no Claude), plus Loans MCP tools"
+    }
+  ]
+}

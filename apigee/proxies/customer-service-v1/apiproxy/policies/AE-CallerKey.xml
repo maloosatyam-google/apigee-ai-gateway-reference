@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AccessEntity continueOnError="true" enabled="true" name="AE-CallerKey">
+  <!-- The caller's app, looked up by the key the Apigee MCP server forwards; the API products on
+           that key decide
+       whether the refund limit applies (see check-refund-limit.js). -->
+  <EntityType value="app"/>
+  <EntityIdentifier ref="request.header.x-apikey" type="consumerkey"/>
+</AccessEntity>

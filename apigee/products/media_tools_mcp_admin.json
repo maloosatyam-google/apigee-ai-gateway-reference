@@ -1,0 +1,314 @@
+{
+  "name": "Media Tools MCP Admin",
+  "displayName": "Media Tools MCP Admin",
+  "description": "Media: every tool, no business-rule limits. Used by streaming engineering admins and by the ungoverned agent in the Agent Showcase.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "media"
+    },
+    {
+      "name": "persona",
+      "value": "admin"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/searchSubscribers"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getSubscriberAccount"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listStreamingPlans"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/changeStreamingPlan"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/pauseStreamingSubscription"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listStreamingDevices"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/deregisterStreamingDevice"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listSubscriptionCharges"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/issueSubscriptionCredit"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPlaybackDiagnostics"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/openPlaybackCase"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/checkTitleAvailability"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getWatchHistory"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getSubscriberChurnMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getViewershipTrends"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getTitlePerformance"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getAdRevenueMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getStreamingQualityMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPlanMixSummary"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getContentMarginReport"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/runSubscriberGrowthForecast"
+          }
+        ],
+        "quota": {
+          "limit": "2",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

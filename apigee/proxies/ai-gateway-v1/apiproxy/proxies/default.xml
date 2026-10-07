@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ProxyEndpoint name="default">
+  <PreFlow name="PreFlow">
+    <Request>
+      <Step>
+        <Name>CORS-Headers</Name>
+        <Condition>request.verb != "OPTIONS"</Condition>
+      </Step>
+      <Step>
+        <Name>OAS-ValidateRequest</Name>
+        <Condition>request.verb != "OPTIONS"</Condition>
+      </Step>
+      <Step>
+        <Name>EV-RequestDetails</Name>
+        <Condition>request.verb != "OPTIONS"</Condition>
+      </Step>
+      <Step>
+        <Name>EV-ExtractBearerToken</Name>
+        <Condition>request.verb != "OPTIONS"</Condition>
+      </Step>
+      <Step>
+        <Name>DJWT-ExtractUserIdentity</Name>
+        <Condition>request.verb != "OPTIONS" and flow.rawToken != null</Condition>
+      </Step>
+      <Step>
+        <Name>AM-SetUserIdentity</Name>
+        <Condition>request.verb != "OPTIONS" and (jwt.DJWT-ExtractUserIdentity.decoded.claim.email != null or jwt.DJWT-ExtractUserIdentity.claim.email != null)</Condition>
+      </Step>
+      <Step>
+        <Name>RF-MissingUserEmail</Name>
+        <Condition>request.verb != "OPTIONS" and flow.emailId = null</Condition>
+      </Step>
+      <Step>
+        <Name>JS-ExtractPromptAndModel</Name>
+        <Condition>request.verb != "OPTIONS"</Condition>
+      </Step>
+      <Step>
+        <Name>VA-VerifyAPIKey</Name>
+        <Condition>request.verb != "OPTIONS"</Condition>
+      </Step>
+      <!--
+        Per-product guardrail toggles (guardrail.* product attributes, default "on").
+        Only the Dev sandbox products ever carry "off"; see AM-ResolveGuardrailToggles.
+      -->
+      <Step>
+        <Name>AM-ResolveGuardrailToggles</Name>
+        <Condition>request.verb != "OPTIONS"</Condition>
+      </Step>
+      <!--
+        Placed after VA-VerifyAPIKey so an unauthenticated caller still gets 401 rather than
+        learning which capabilities exist, and before SUP-UserPrompt so we do not pay for a
+        Model Armor screen on a request we are about to refuse.
+      -->
+      <Step>
+        <Name>RF-StreamingNotSupported</Name>
+        <Condition>request.verb != "OPTIONS" and proxy.pathsuffix JavaRegex "^.*:streamGenerateContent$"</Condition>
+      </Step>
+      <Step>
+        <Name>SUP-UserPrompt</Name>
+        <Condition>request.verb != "OPTIONS" and flow.userPrompt != null and flow.userPrompt != "" and flow.guardrail.armorPrompt != "off"</Condition>
+      </Step>
+      <Step>
+        <Name>MLC-EnforceMonetizationLimits</Name>
+        <Condition>request.verb != "OPTIONS"</Condition>
+      </Step>
+      <Step>
+        <Name>QC-EnforceBudgetLimit</Name>
+        <Condition>request.verb != "OPTIONS"</Condition>
+      </Step>
+      <!--
+        QC-EnforceBudgetLimit is continueOnError="true", so its QuotaViolation never reaches
+        the client. This step is what actually enforces the budget; without it the cap is
+        purely decorative. Kept separate from the quota policy so the 429 matches the
+        Google-API-style envelope used by RF-MissingUserEmail and MLC-EnforceMonetizationLimits.
+      -->
+      <Step>
+        <Name>RF-BudgetExceeded</Name>
+        <Condition>request.verb != "OPTIONS" and ratelimit.QC-EnforceBudgetLimit.failed = true and ratelimit.QC-EnforceBudgetLimit.exceed.count &gt; 0</Condition>
+      </Step>
+      <Step>
+        <Name>AM-RemoveAuthorization</Name>
+        <Condition>request.verb != "OPTIONS"</Condition>
+      </Step>
+      <Step>
+        <Name>AM-InitCacheStatus</Name>
+        <Condition>request.verb != "OPTIONS"</Condition>
+      </Step>
+      <Step>
+        <Name>AM-PrepGeminiDirect</Name>
+        <Condition>request.verb != "OPTIONS" and ((proxy.pathsuffix MatchesPath "/models/gemini*") or (proxy.pathsuffix JavaRegex "^/models/gemini.*"))</Condition>
+      </Step>
+      <Step>
+        <Name>AM-PrepClaudeDirect</Name>
+        <Condition>request.verb != "OPTIONS" and ((proxy.pathsuffix MatchesPath "/models/claude*") or (proxy.pathsuffix JavaRegex "^/models/claude.*"))</Condition>
+      </Step>
+      <Step>
+        <Name>AM-SetCacheHitExpected</Name>
+        <Condition>request.verb != "OPTIONS" and ((request.header.use-cache is true) or (request.header.use-cache = "true") or (request.header.x-use-cache is true) or (request.header.x-use-cache = "true")) and flow.guardrail.semanticCache != "off"</Condition>
+      </Step>
+      <Step>
+        <Name>SCL-Semantic-Cache-Lookup</Name>
+        <Condition>request.verb != "OPTIONS" and ((request.header.use-cache is true) or (request.header.use-cache = "true") or (request.header.x-use-cache is true) or (request.header.x-use-cache = "true")) and flow.guardrail.semanticCache != "off"</Condition>
+      </Step>
+    </Request>
+    <Response/>
+  </PreFlow>
+  <Flows>
+    <Flow name="OptionsPreFlight">
+      <Request>
+        <Step>
+          <Name>CORS-Headers</Name>
+        </Step>
+      </Request>
+      <Response/>
+      <Condition>request.verb == "OPTIONS" AND request.header.origin != null AND request.header.Access-Control-Request-Method != null</Condition>
+    </Flow>
+    <Flow name="LLMTokenLimitFlow">
+      <Description>Strict Rate Limit Enforcement Flow for Token Limits Demo</Description>
+      <Request>
+        <Step>
+          <Name>LTQ-TokenEnforce</Name>
+        </Step>
+      </Request>
+      <Response/>
+      <!-- Token-quota demo model. Moved off gemini-2.5-flash ahead of its 2026-10-20
+           retirement. Claude works here because JS-FormatClaudeResponse synthesises
+           usageMetadata.totalTokenCount in the TARGET response flow, which completes before
+           LTQ-TokenCount reads it in PostFlow. The third clause deliberately omits the
+           @date suffix so a future revision of the same model still matches. -->
+      <Condition>(proxy.pathsuffix MatchesPath "/models/claude-haiku-4-5@20251001:generateContent") or (flow.model == "claude-haiku-4-5@20251001") or (proxy.pathsuffix JavaRegex "^/models/claude-haiku-4-5.*")</Condition>
+    </Flow>
+    <!--
+      The /auto router chain.
+
+      It lives here rather than in the PreFlow for two reasons.
+
+      1. Ordering. Conditional flows run after the whole PreFlow, so the chain lands
+         after SCL-Semantic-Cache-Lookup. The cache keys on {flow.userPrompt} alone -
+         the model is not part of the key - so the router's verdict is not an input to
+         the lookup, and classifying before it bought nothing on a hit while costing the
+         full round trip (~926 ms, roughly half of a "$0 instant cache hit"). On a hit
+         the lookup short-circuits and this flow does not run; on a miss it runs and
+         selects the target.
+
+      2. One condition instead of four. The path test used to be repeated verbatim on
+         every step, so the four could drift apart silently. The flow owns it now.
+
+      Do NOT reintroduce a flow.cached guard on these steps. AM-SetCacheHitExpected sets
+      flow.cached="true" OPTIMISTICALLY before the lookup, and it is only corrected to
+      "false" by AM-SetCacheMiss in the TARGET PreFlow, which runs later than this flow.
+      The variable therefore reads "true" on a miss as well as on a hit, and such a guard
+      suppresses routing on every cache-enabled request, leaving flow.target_model unset
+      and producing a 404 from the target with an empty model in the URL. Observed 5/5 on
+      dev rev 41.
+
+      This flow must stay after VA-VerifyAPIKey (PreFlow), because JS-AutoRouting reads
+      verifyapikey.VA-VerifyAPIKey.apiproduct.routing.model.<category>. Being a
+      conditional flow guarantees that.
+
+      It must also stay below LLMTokenLimitFlow: Apigee executes only the first matching
+      conditional flow, and that one matches on flow.model, which for an /auto request is
+      still "auto" at selection time rather than the router's output.
+    -->
+    <Flow name="AutoRoutingFlow">
+      <Description>Dedicated intelligent auto-routing flow</Description>
+      <Request>
+        <!-- Per-user LLM token quota for /auto. Runs before the router call so a caller over
+             quota costs nothing. Only reachable on a cache miss: a semantic-cache hit
+             short-circuits in the PreFlow and consumes no quota. -->
+        <Step>
+          <Name>LTQ-TokenEnforce</Name>
+        </Step>
+        <Step>
+          <Name>KVM-GetRouterCredentials</Name>
+          <Condition>flow.userPrompt != null and flow.userPrompt != ""</Condition>
+        </Step>
+        <Step>
+          <Name>AM-PrepRouterRequest</Name>
+          <Condition>flow.userPrompt != null and flow.userPrompt != ""</Condition>
+        </Step>
+        <Step>
+          <Name>SC-ModelRouter</Name>
+          <Condition>flow.userPrompt != null and flow.userPrompt != ""</Condition>
+        </Step>
+        <Step>
+          <Name>JS-AutoRouting</Name>
+        </Step>
+      </Request>
+      <Response/>
+      <Condition>request.verb != "OPTIONS" and ((proxy.pathsuffix MatchesPath "/auto*") or (proxy.pathsuffix JavaRegex "^/auto.*"))</Condition>
+    </Flow>
+    <Flow name="GeminiDirectFlow">
+      <Description>Direct Google Gemini routing flow</Description>
+      <Request/>
+      <Response/>
+      <Condition>(proxy.pathsuffix MatchesPath "/models/gemini*") or (proxy.pathsuffix JavaRegex "^/models/gemini.*")</Condition>
+    </Flow>
+    <Flow name="AnthropicDirectFlow">
+      <Description>Direct Anthropic Claude routing flow</Description>
+      <Request/>
+      <Response/>
+      <Condition>(proxy.pathsuffix MatchesPath "/models/claude*") or (proxy.pathsuffix JavaRegex "^/models/claude.*")</Condition>
+    </Flow>
+  </Flows>
+  <PostFlow name="PostFlow">
+    <Request>
+      <Step>
+        <Name>CORS-Headers</Name>
+      </Step>
+    </Request>
+    <Response>
+      <Step>
+        <Name>EV-ModelResponse</Name>
+      </Step>
+      <!--
+        Rate lookup and costing DO run on a semantic-cache hit. JS-CalculateCost is
+        the single costing authority: it derives flow.costTier from the KVM rate so
+        x-gateway-cost-tier is populated on a hit, and zeroes the cost itself.
+        QC-DeductBudget and LTQ-TokenCount below stay excluded on hits - a cached
+        answer must not spend budget or burn token quota.
+      -->
+      <Step>
+        <Name>KVM-GetModelRates</Name>
+        <Condition>response.status.code = 200</Condition>
+      </Step>
+      <Step>
+        <Name>JS-CalculateCost</Name>
+        <Condition>response.status.code = 200</Condition>
+      </Step>
+      <Step>
+        <Name>QC-DeductBudget</Name>
+        <Condition>flow.tx_cost_micros != null and flow.cached != "true"</Condition>
+      </Step>
+      <!--
+        Deliberately UNCONDITIONAL, unlike the step above. Every failure mode of the budget
+        counter is silent: QC-DeductBudget is continueOnError="true" so a fault there is
+        swallowed, and its own condition means a JS-CalculateCost failure skips it with no
+        fault raised at all. A conditional audit would inherit exactly the blind spot it
+        exists to close, so this runs on every response and names the outcome in
+        flow.budget_status. It changes no failure behaviour.
+      -->
+      <Step>
+        <Name>JS-AuditBudgetAccounting</Name>
+      </Step>
+      <Step>
+        <Name>LTQ-TokenCount</Name>
+        <Condition>response.status.code = 200 and flow.cached != "true"</Condition>
+      </Step>
+      <!--
+        Reads LTQ-TokenCount's used/allowed counters and flags consumption above 50% of the
+        product's llmTokenQuota (x-gateway-token-quota-status: near-threshold) so clients can
+        warn before LTQ-TokenEnforce starts returning 429. Same condition as LTQ-TokenCount:
+        its counters only exist when that step ran.
+      -->
+      <Step>
+        <Name>JS-TokenQuotaThreshold</Name>
+        <Condition>response.status.code = 200 and flow.cached != "true"</Condition>
+      </Step>
+      <Step>
+        <Name>DC-ModelAnalytics</Name>
+        <Condition>response.status.code = 200</Condition>
+      </Step>
+      <Step>
+        <Name>SCP-Semantic-Cache-Populate</Name>
+        <Condition>response.status.code = 200 and ((request.header.use-cache is true) or (request.header.use-cache = "true") or (request.header.x-use-cache is true) or (request.header.x-use-cache = "true")) and flow.cached != "true" and flow.guardrail.semanticCache != "off"</Condition>
+      </Step>
+      <Step>
+        <Name>SMR-SanitizeModelResponse</Name>
+        <Condition>response.status.code = 200 and (flow.target_provider != "anthropic" or flow.convert_claude_to_gemini_resp == "true") and flow.guardrail.armorResponse != "off"</Condition>
+      </Step>
+      <Step>
+        <Name>AM-SetResponseHeaders</Name>
+      </Step>
+    </Response>
+  </PostFlow>
+  <PostClientFlow>
+    <Response>
+      <Step>
+        <Name>ML-CloudLogging</Name>
+      </Step>
+    </Response>
+  </PostClientFlow>
+  <!--
+    Faults skip the PostFlow entirely, so DC-ModelAnalytics never runs for a
+    blocked request. Without this rule the fleet-wide sum(is_error) counted the
+    failure but no dc_user_email row existed to attribute it to, so every
+    per-user success rate read a false 100%.
+    alwaysEnforce keeps it running even once explicit FaultRules are added.
+  -->
+  <DefaultFaultRule name="attribute-fault-to-user">
+    <AlwaysEnforce>true</AlwaysEnforce>
+    <Step>
+      <Name>DC-FaultAnalytics</Name>
+    </Step>
+  </DefaultFaultRule>
+  <HTTPProxyConnection>
+    <BasePath>/ai/v1</BasePath>
+    <Properties/>
+  </HTTPProxyConnection>
+  <RouteRule name="claude-target">
+    <Condition>flow.target_provider == "anthropic"</Condition>
+    <TargetEndpoint>claude-vertex-target</TargetEndpoint>
+  </RouteRule>
+  <RouteRule name="gemini-target">
+    <TargetEndpoint>gemini-vertex-target</TargetEndpoint>
+  </RouteRule>
+</ProxyEndpoint>

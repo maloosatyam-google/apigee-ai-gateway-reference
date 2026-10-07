@@ -1,0 +1,145 @@
+{
+  "name": "IT Services Tools MCP - Delivery",
+  "displayName": "IT Services Tools MCP - Delivery",
+  "description": "IT Services Delivery & Operations Analysts: incident, SLA, utilisation, change, licence-compliance and client-health metrics, delivery margin and capacity forecasts. Aggregates only, no individual client contacts.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "it"
+    },
+    {
+      "name": "persona",
+      "value": "loans_agent"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getIncidentMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getSlaAttainment"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getEngineerUtilisation"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getChangeSuccessRates"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLicenceComplianceSummary"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getClientHealthScores"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getDeliveryMarginReport"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/runCapacityForecast"
+          }
+        ],
+        "quota": {
+          "limit": "2",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

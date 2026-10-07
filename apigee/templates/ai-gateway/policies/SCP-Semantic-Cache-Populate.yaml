@@ -1,0 +1,11 @@
+SemanticCachePopulate:
+  .async: false
+  .continueOnError: false
+  .enabled: true
+  .name: SCP-Semantic-Cache-Populate
+  DisplayName: SCP-Semantic-Cache-Populate
+  IgnoreUnresolvedVariables: false
+  SimilaritySearch:
+    VertexAI:
+      URL: https://__GCP_REGION__-aiplatform.googleapis.com/v1/projects/__GCP_PROJECT_ID__/locations/__GCP_REGION__/indexes/__VECTOR_SEARCH_INDEX_ID__:upsertDatapoints
+  TTLInSeconds: 600

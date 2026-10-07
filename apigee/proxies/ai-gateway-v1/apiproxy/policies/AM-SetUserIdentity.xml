@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage async="false" continueOnError="false" enabled="true" name="AM-SetUserIdentity">
+  <DisplayName>AM-SetUserIdentity</DisplayName>
+  <AssignVariable>
+    <Name>flow.emailId</Name>
+    <Ref>jwt.DJWT-ExtractUserIdentity.decoded.claim.email</Ref>
+  </AssignVariable>
+  <AssignVariable>
+    <Name>flow.emailId</Name>
+    <Ref>jwt.DJWT-ExtractUserIdentity.claim.email</Ref>
+  </AssignVariable>
+  <AssignVariable>
+    <Name>flow.userEmail</Name>
+    <Ref>jwt.DJWT-ExtractUserIdentity.decoded.claim.email</Ref>
+  </AssignVariable>
+  <AssignVariable>
+    <Name>flow.userEmail</Name>
+    <Ref>jwt.DJWT-ExtractUserIdentity.claim.email</Ref>
+  </AssignVariable>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+</AssignMessage>

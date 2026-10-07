@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  Per-product guardrail toggles. Ask Apigee flips these API product attributes
+  on the (Dev) persona products:
+    guardrail.modelArmor.prompt    on | off   -> SUP-UserPrompt
+    guardrail.modelArmor.response  on | off   -> SMR-SanitizeModelResponse
+    guardrail.semanticCache        on | off   -> AM-SetCacheHitExpected / SCL / SCP
+  A missing attribute resolves to "on" (<Value> is the fallback when <Ref> is unresolved),
+  so every existing product keeps today's behaviour. Runs right after VA-VerifyAPIKey,
+  the first point where the product attributes exist.
+-->
+<AssignMessage async="false" continueOnError="false" enabled="true" name="AM-ResolveGuardrailToggles">
+  <DisplayName>AM-ResolveGuardrailToggles</DisplayName>
+  <AssignVariable>
+    <Name>flow.guardrail.armorPrompt</Name>
+    <Ref>verifyapikey.VA-VerifyAPIKey.apiproduct.guardrail.modelArmor.prompt</Ref>
+    <Value>on</Value>
+  </AssignVariable>
+  <AssignVariable>
+    <Name>flow.guardrail.armorResponse</Name>
+    <Ref>verifyapikey.VA-VerifyAPIKey.apiproduct.guardrail.modelArmor.response</Ref>
+    <Value>on</Value>
+  </AssignVariable>
+  <AssignVariable>
+    <Name>flow.guardrail.semanticCache</Name>
+    <Ref>verifyapikey.VA-VerifyAPIKey.apiproduct.guardrail.semanticCache</Ref>
+    <Value>on</Value>
+  </AssignVariable>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+</AssignMessage>

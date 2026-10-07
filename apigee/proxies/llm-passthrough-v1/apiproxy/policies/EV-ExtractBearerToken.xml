@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ExtractVariables async="false" continueOnError="true" enabled="true" name="EV-ExtractBearerToken">
+  <DisplayName>EV-ExtractBearerToken</DisplayName>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+  <Header name="Authorization">
+    <Pattern ignoreCase="true">Bearer {rawToken}</Pattern>
+    <Pattern ignoreCase="true">{rawToken}</Pattern>
+  </Header>
+  <Header name="X-Identity-Token">
+    <Pattern ignoreCase="true">{rawToken}</Pattern>
+  </Header>
+  <Source clearPayload="false">request</Source>
+  <VariablePrefix>flow</VariablePrefix>
+</ExtractVariables>

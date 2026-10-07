@@ -1,0 +1,314 @@
+{
+  "name": "Education Tools MCP Admin",
+  "displayName": "Education Tools MCP Admin",
+  "description": "Education: every tool, no business-rule limits. Used by admins and by the ungoverned agent in the Agent Showcase.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "education"
+    },
+    {
+      "name": "persona",
+      "value": "admin"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/searchStudents"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getStudentProfile"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listEnrolments"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getCourseDetails"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/enrollInCourse"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/dropCourse"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getAssignmentStatus"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/grantDeadlineExtension"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listInvoices"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/issueTuitionRefund"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/createSupportTicket"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getCertificateStatus"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getApplicationStatus"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getEnrolmentTrends"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getCourseCompletionRates"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getDropoutRiskSummary"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getAdmissionsFunnel"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLearnerEngagement"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getAssessmentIntegrityMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getProgrammeProfitability"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/runEnrolmentForecast"
+          }
+        ],
+        "quota": {
+          "limit": "2",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

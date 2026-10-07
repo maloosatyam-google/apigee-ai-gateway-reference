@@ -1,0 +1,145 @@
+{
+  "name": "Energy Tools MCP - Asset Analysts",
+  "displayName": "Energy Tools MCP - Asset Analysts",
+  "description": "Energy Asset Analysts: reliability (SAIDI/SAIFI), consumption, asset health, arrears, clean-energy uptake and meter-read accuracy metrics, segment margin and load forecasts. Aggregates only, no individual customer records.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "energy"
+    },
+    {
+      "name": "persona",
+      "value": "loans_agent"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getOutageReliabilityMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getEnergyConsumptionTrends"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getGridAssetHealth"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getUtilityArrearsSummary"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getCleanEnergyUptake"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getMeterReadAccuracy"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getTariffSegmentMargin"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/runGridLoadForecast"
+          }
+        ],
+        "quota": {
+          "limit": "2",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

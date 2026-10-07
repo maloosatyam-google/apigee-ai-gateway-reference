@@ -1,0 +1,210 @@
+{
+  "name": "Oil and Gas Tools MCP - Retail and LPG",
+  "displayName": "Oil & Gas Tools MCP - Retail & LPG",
+  "description": "Oil & Gas Retail & LPG: look up fuel customers, fleet cards and transactions, stations, LPG connections and deliveries, and lubricant orders; block cards, book LPG refills, order lubricants, open service cases and credit fleet card charges (gateway limit $50). No margins or supply analytics.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "oil-gas"
+    },
+    {
+      "name": "persona",
+      "value": "sales_agent"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/searchFuelCustomers"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getFuelCustomerAccount"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listFleetCardTransactions"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/blockFleetCard"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/creditFleetCardCharge"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/findRetailOutlets"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getRetailOutletDetails"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLpgConnection"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/bookLpgCylinderRefill"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/trackLpgDelivery"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/placeLubricantOrder"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLubricantOrderStatus"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/openFuelServiceCase"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

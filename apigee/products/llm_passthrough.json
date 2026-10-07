@@ -1,0 +1,32 @@
+{
+  "name": "LLM Passthrough",
+  "displayName": "LLM Passthrough",
+  "description": "Agent Showcase baseline: plain Gemini calls through llm-passthrough-v1 (/passthrough/v1). Recorded in analytics and logs, no governance. Attached to the Unified Admin app.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "operationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "llm-passthrough-v1",
+        "operations": [
+          {
+            "resource": "/models/**",
+            "methods": [
+              "POST"
+            ]
+          }
+        ]
+      }
+    ],
+    "operationConfigType": "proxy"
+  }
+}

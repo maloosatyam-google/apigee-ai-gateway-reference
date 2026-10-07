@@ -1,0 +1,170 @@
+{
+  "name": "Analysts and Knowledge Workers",
+  "displayName": "Analysts & Knowledge Workers",
+  "description": "Analysts & Knowledge Workers persona: Gemini Pro and Flash family for research and analysis; no Claude.",
+  "approvalType": "auto",
+  "environments": [
+    "prod"
+  ],
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "developer.budget.limit",
+      "value": "10000000"
+    },
+    {
+      "name": "developer.budget.interval",
+      "value": "1"
+    },
+    {
+      "name": "developer.budget.timeunit",
+      "value": "month"
+    },
+    {
+      "name": "routing.model.coding",
+      "value": "gemini-3.1-pro-preview"
+    },
+    {
+      "name": "routing.model.deep_reasoning",
+      "value": "gemini-3.1-pro-preview"
+    },
+    {
+      "name": "routing.model.simple",
+      "value": "gemini-3.1-flash-lite"
+    },
+    {
+      "name": "routing.model.general",
+      "value": "gemini-3-flash-preview"
+    },
+    {
+      "name": "persona",
+      "value": "Analysts & Knowledge Workers"
+    }
+  ],
+  "llmOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "ai-gateway-v1",
+        "llmOperations": [
+          {
+            "resource": "/auto",
+            "methods": [
+              "POST"
+            ],
+            "model": "auto"
+          }
+        ],
+        "llmTokenQuota": {
+          "limit": "30000",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "ai-gateway-v1",
+        "llmOperations": [
+          {
+            "resource": "/auto:*",
+            "methods": [
+              "POST"
+            ],
+            "model": "auto"
+          }
+        ],
+        "llmTokenQuota": {
+          "limit": "30000",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "ai-gateway-v1",
+        "llmOperations": [
+          {
+            "resource": "/models/gemini-3.1-pro-preview:*",
+            "methods": [
+              "POST"
+            ],
+            "model": "gemini-3.1-pro-preview"
+          }
+        ],
+        "llmTokenQuota": {
+          "limit": "5000",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "ai-gateway-v1",
+        "llmOperations": [
+          {
+            "resource": "/models/gemini-3.1-flash-lite:*",
+            "methods": [
+              "POST"
+            ],
+            "model": "gemini-3.1-flash-lite"
+          }
+        ],
+        "llmTokenQuota": {
+          "limit": "5000",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "ai-gateway-v1",
+        "llmOperations": [
+          {
+            "resource": "/models/gemini-3-flash-preview:*",
+            "methods": [
+              "POST"
+            ],
+            "model": "gemini-3-flash-preview"
+          }
+        ],
+        "llmTokenQuota": {
+          "limit": "5000",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "ai-gateway-v1",
+        "llmOperations": [
+          {
+            "resource": "/models/gemini-3.7-flash:*",
+            "methods": [
+              "POST"
+            ],
+            "model": "gemini-3.7-flash"
+          }
+        ],
+        "llmTokenQuota": {
+          "limit": "5000",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "ai-gateway-v1",
+        "llmOperations": [
+          {
+            "resource": "/models/gemini-3.8-flash:*",
+            "methods": [
+              "POST"
+            ],
+            "model": "gemini-3.8-flash"
+          }
+        ],
+        "llmTokenQuota": {
+          "limit": "5000",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

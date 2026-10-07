@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<LLMTokenQuota continueOnError="false" enabled="true" name="LTQ-TokenEnforce" type="rollingwindow">
+  <DisplayName>LTQ-TokenEnforce</DisplayName>
+  <Allow count="1000" countRef="verifyapikey.VA-VerifyAPIKey.apiproduct.developer.llmQuota.limit"/>
+  <Interval ref="verifyapikey.VA-VerifyAPIKey.apiproduct.developer.llmQuota.interval">1</Interval>
+  <TimeUnit ref="verifyapikey.VA-VerifyAPIKey.apiproduct.developer.llmQuota.timeunit">minute</TimeUnit>
+  <Distributed>true</Distributed>
+  <Synchronous>true</Synchronous>
+  <!--
+    Keyed on the SSO user, not the consumer key.
+
+    This was verifyapikey.VA-VerifyAPIKey.client_id. Every demo user signs in through IAP but
+    shares the same "Unified Admin ... App" credential, so one 50-token window was shared by
+    everyone: a second person demoing concurrently got a 429 they did not cause, which looks
+    exactly like a bug on stage.
+
+    flow.emailId is set by AM-SetUserIdentity at PreFlow step 6, well before this policy, and
+    survives into PostFlow for LTQ-TokenCount.
+
+    MUST stay identical to the Identifier in LTQ-TokenCount. The two policies share
+    <SharedName>common-counter</SharedName>: this one only reads (EnforceOnly) and that one
+    only writes (CountOnly). If the identifiers diverge, the enforcer reads a counter nobody
+    writes to and the quota silently stops working.
+  -->
+  <Identifier ref="flow.emailId"/>
+  <!-- flow.quota_model is "auto" on /auto (set by JS-ExtractPromptAndModel) so the limit
+       resolves from the product's /auto llmOperation even after JS-AutoRouting has
+       replaced flow.model with the routed model. MUST match the other LTQ policy. -->
+  <LLMModelSource>{firstnonnull(flow.quota_model,flow.model)}</LLMModelSource>
+  <EnforceOnly>true</EnforceOnly>
+  <SharedName>common-counter</SharedName>
+</LLMTokenQuota>

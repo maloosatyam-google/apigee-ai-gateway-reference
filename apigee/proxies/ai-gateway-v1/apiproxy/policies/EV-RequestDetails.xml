@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ExtractVariables continueOnError="true" enabled="true" name="EV-RequestDetails">
+  <DisplayName>EV-RequestDetails</DisplayName>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+  <URIPath>
+    <Pattern ignoreCase="true">/models/{model}:generateContent</Pattern>
+    <Pattern ignoreCase="true">/models/{model}:streamGenerateContent</Pattern>
+    <Pattern ignoreCase="true">/models/{model}</Pattern>
+    <Pattern ignoreCase="true">/v1/projects/*/locations/*/publishers/google/models/{model}:generateContent</Pattern>
+    <Pattern ignoreCase="true">/v1/projects/*/locations/*/publishers/anthropic/models/{model}:rawPredict</Pattern>
+  </URIPath>
+  <JSONPayload>
+    <Variable name="payloadModel">
+      <JSONPath>$.model</JSONPath>
+    </Variable>
+  </JSONPayload>
+  <Source clearPayload="false">request</Source>
+  <VariablePrefix>flow</VariablePrefix>
+</ExtractVariables>

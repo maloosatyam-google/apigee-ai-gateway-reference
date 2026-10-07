@@ -1,0 +1,319 @@
+openapi: 3.0.3
+info:
+  title: Apigee AI Gateway API
+  description: Enterprise Model-Agnostic AI Gateway with Multi-Provider Auto-Routing, Model Armor Guardrails, Token Quotas, Dynamic Cost Governance, and Vertex AI Semantic Caching.
+  version: 1.0.0
+servers:
+  - url: /
+paths:
+  /auto:generateContent:
+    post:
+      summary: Intelligent Auto-Routing (generateContent)
+      description: Evaluates prompt heuristics and automatically routes to optimal model/provider.
+      operationId: autoGenerateContent
+      parameters:
+        - $ref: '#/components/parameters/UseCacheHeader'
+        - $ref: '#/components/parameters/XUseCacheHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GeminiRequest'
+      responses:
+        '200':
+          description: Successful model generation response.
+          headers:
+            x-gateway-cached:
+              $ref: '#/components/headers/XGatewayCached'
+            x-gateway-cache-status:
+              $ref: '#/components/headers/XGatewayCacheStatus'
+            x-gateway-model:
+              $ref: '#/components/headers/XGatewayModel'
+            x-gateway-cost-usd:
+              $ref: '#/components/headers/XGatewayCostUsd'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeminiResponse'
+        '400':
+          description: Bad Request / Validation Failure / Prompt Safety Violation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auto:
+    post:
+      summary: Intelligent Auto-Routing
+      description: Auto-routing endpoint alias without method suffix.
+      operationId: autoRoute
+      parameters:
+        - $ref: '#/components/parameters/UseCacheHeader'
+        - $ref: '#/components/parameters/XUseCacheHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GeminiRequest'
+      responses:
+        '200':
+          description: Successful model generation response.
+          headers:
+            x-gateway-cached:
+              $ref: '#/components/headers/XGatewayCached'
+            x-gateway-cache-status:
+              $ref: '#/components/headers/XGatewayCacheStatus'
+            x-gateway-model:
+              $ref: '#/components/headers/XGatewayModel'
+            x-gateway-cost-usd:
+              $ref: '#/components/headers/XGatewayCostUsd'
+        '400':
+          description: Bad Request.
+
+  /models/{modelId}:generateContent:
+    post:
+      summary: Direct Model Execution (Non-Streaming)
+      description: Routes request directly to specified Gemini or Claude model.
+      operationId: modelGenerateContent
+      parameters:
+        - name: modelId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: gemini-3-flash-preview
+        - $ref: '#/components/parameters/UseCacheHeader'
+        - $ref: '#/components/parameters/XUseCacheHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GeminiRequest'
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            x-gateway-cached:
+              $ref: '#/components/headers/XGatewayCached'
+            x-gateway-cache-status:
+              $ref: '#/components/headers/XGatewayCacheStatus'
+            x-gateway-model:
+              $ref: '#/components/headers/XGatewayModel'
+            x-gateway-cost-usd:
+              $ref: '#/components/headers/XGatewayCostUsd'
+        '400':
+          description: Bad Request.
+
+  /models/{modelId}:streamGenerateContent:
+    post:
+      summary: Direct Model Execution (Streaming)
+      description: Streams model generation chunks via Server-Sent Events.
+      operationId: modelStreamGenerateContent
+      parameters:
+        - name: modelId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: gemini-3-flash-preview
+        - $ref: '#/components/parameters/UseCacheHeader'
+        - $ref: '#/components/parameters/XUseCacheHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GeminiRequest'
+      responses:
+        '200':
+          description: Streaming event response.
+
+components:
+  parameters:
+    UseCacheHeader:
+      name: use-cache
+      in: header
+      required: false
+      description: Controls semantic vector cache lookup and storage. Set to 'true' to query the Vector Search semantic cache before routing.
+      schema:
+        type: string
+        enum: ['true', 'false']
+        default: 'false'
+      example: 'true'
+    XUseCacheHeader:
+      name: x-use-cache
+      in: header
+      required: false
+      description: Alternative header alias controlling semantic vector cache lookup and storage.
+      schema:
+        type: string
+        enum: ['true', 'false']
+        default: 'false'
+      example: 'true'
+
+  headers:
+    XGatewayCached:
+      description: Boolean string indicating whether the response was served from Apigee Semantic Cache.
+      schema:
+        type: string
+        example: 'true'
+    XGatewayCacheStatus:
+      description: Semantic cache status indicator (HIT, MISS, or DISABLED).
+      schema:
+        type: string
+        enum: [HIT, MISS, DISABLED]
+        example: 'HIT'
+    XGatewayModel:
+      description: Model name and identifier resolved and executed.
+      schema:
+        type: string
+        example: 'gemini-3.1-flash-lite'
+    XGatewayCostUsd:
+      description: Computed monetary spend for this request in USD.
+      schema:
+        type: string
+        example: '0.000000'
+    XGatewayMonetizationStatus:
+      description: Apigee Monetization limit check status.
+      schema:
+        type: string
+        example: 'limits_check_success'
+    XGatewayPrepaidBalance:
+      description: Current developer prepaid wallet balance in USD.
+      schema:
+        type: string
+        example: '100.00'
+    XGatewayPrepaidCurrency:
+      description: Currency of the developer prepaid balance.
+      schema:
+        type: string
+        example: 'USD'
+    XGatewayBalanceRemaining:
+      description: Estimated developer prepaid balance remaining after transaction deduction.
+      schema:
+        type: string
+        example: '99.999815'
+
+  schemas:
+    GeminiRequest:
+      type: object
+      required:
+        - contents
+      properties:
+        contents:
+          type: array
+          items:
+            type: object
+            required:
+              - parts
+            properties:
+              role:
+                type: string
+              parts:
+                type: array
+                items:
+                  type: object
+                  # A part is a union, not just text. Omitting these made the
+                  # validator reject any multi-turn tool conversation at
+                  # /contents/N/parts/0 with HTTP 400, which forced callers to
+                  # flatten tool calls back into prose between turns and made
+                  # the model imitate that prose as if it were an answer.
+                  properties:
+                    text:
+                      type: string
+                    functionCall:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        args:
+                          type: object
+                    functionResponse:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        response:
+                          type: object
+                    inlineData:
+                      type: object
+                    # Emitted by thinking-capable models; echoed back verbatim.
+                    thoughtSignature:
+                      type: string
+                    thought:
+                      type: boolean
+        systemInstruction:
+          type: object
+          properties:
+            # Some SDKs set role: "system" here. Harmless, so accept it.
+            role:
+              type: string
+            parts:
+              type: array
+              items:
+                type: object
+                properties:
+                  text:
+                    type: string
+        generationConfig:
+          type: object
+        safetySettings:
+          type: array
+          items:
+            type: object
+        tools:
+          type: array
+          items:
+            type: object
+        toolConfig:
+          type: object
+
+    GeminiResponse:
+      type: object
+      properties:
+        candidates:
+          type: array
+          items:
+            type: object
+            properties:
+              content:
+                type: object
+                properties:
+                  parts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        text:
+                          type: string
+              finishReason:
+                type: string
+        usageMetadata:
+          type: object
+          properties:
+            promptTokenCount:
+              type: integer
+            candidatesTokenCount:
+              type: integer
+            totalTokenCount:
+              type: integer
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: integer
+            status:
+              type: string
+            message:
+              type: string

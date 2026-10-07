@@ -1,0 +1,210 @@
+{
+  "name": "Media Tools MCP - Subscriber Care",
+  "displayName": "Media Tools MCP - Subscriber Care",
+  "description": "Media Subscriber Care: look up subscribers, plans, devices, charges, playback errors, regional title rights and watch history; change or pause plans, remove devices, open cases and credit charges (gateway limit $50). No content finance or audience analytics.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "media"
+    },
+    {
+      "name": "persona",
+      "value": "sales_agent"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/searchSubscribers"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getSubscriberAccount"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listStreamingPlans"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/changeStreamingPlan"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/pauseStreamingSubscription"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listStreamingDevices"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/deregisterStreamingDevice"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listSubscriptionCharges"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/issueSubscriptionCredit"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPlaybackDiagnostics"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/openPlaybackCase"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/checkTitleAvailability"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getWatchHistory"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

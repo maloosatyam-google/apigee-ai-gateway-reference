@@ -1,0 +1,124 @@
+{
+  "name": "Customer Service Tools MCP",
+  "displayName": "Customer Service Tools MCP",
+  "description": "Customer Support & Sales: look up customers, orders and prices, log cases, refunds (gateway limit $50). No cost or margin data.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "mcp",
+        "operations": [
+          {
+            "operation": "tools/call/searchCustomers"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getCustomer"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listCustomerOrders"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getOrderStatus"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getProductPrice"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "mcp",
+        "operations": [
+          {
+            "operation": "tools/call/createSupportCase"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "mcp",
+        "operations": [
+          {
+            "operation": "tools/call/issueRefund"
+          }
+        ],
+        "quota": {
+          "limit": "5",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

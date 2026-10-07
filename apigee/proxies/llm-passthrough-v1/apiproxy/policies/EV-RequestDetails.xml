@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ExtractVariables continueOnError="true" enabled="true" name="EV-RequestDetails">
+  <DisplayName>EV-RequestDetails</DisplayName>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+  <!-- flow.model is the model named in the path; there is no routing, so it is also the target. -->
+  <URIPath>
+    <Pattern ignoreCase="true">/models/{model}:generateContent</Pattern>
+  </URIPath>
+  <VariablePrefix>flow</VariablePrefix>
+</ExtractVariables>

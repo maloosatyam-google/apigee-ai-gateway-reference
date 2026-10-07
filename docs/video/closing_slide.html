@@ -1,0 +1,87 @@
+<!doctype html>
+<!--
+  Closing slide for the demo video ("That's Apigee as the AI and tools gateway ...").
+  Edit TITLE, SUBTITLE or CARDS below; the recorder shows this page full screen during the
+  closing line, so no slide export is needed. Open it in a browser at 16:9 to preview.
+  Icons are inline Material icon paths (24x24 viewBox), so the page works offline.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Apigee as Centralized AI &amp; Tools (MCP) gateway</title>
+<style>
+  :root { --ink: #202124; --muted: #5f6368; --bg: #f8f9fb; --card: #fff; --line: #dadce0; }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: 'Google Sans', 'Product Sans', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+  }
+  /* Fixed 1600x900 stage scaled to the window, so layout is identical at any resolution. */
+  .stage { width: 1600px; height: 900px; padding: 34px 64px 0; transform-origin: center; flex: none; }
+  h1 { font-size: 60px; font-weight: 500; letter-spacing: -0.5px; line-height: 1.1; }
+  h2 { font-size: 40px; font-weight: 400; margin-top: 6px; line-height: 1.15; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px 26px; margin-top: 70px; }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    border-top: 7px solid var(--c); padding: 26px 26px 24px; min-height: 284px;
+    box-shadow: 0 1px 2px rgba(60, 64, 67, .08);
+  }
+  .card svg { width: 40px; height: 40px; fill: var(--c); display: block; }
+  .card h3 { font-size: 27px; font-weight: 600; margin: 18px 0 10px; }
+  .card p { font-size: 20.5px; line-height: 1.32; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <h1 id="title"></h1>
+  <h2 id="subtitle"></h2>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+  const TITLE = 'Apigee as Centralized AI & Tools (MCP) gateway';
+  const SUBTITLE = 'Key Capabilities & Insights';
+  const ICON = {
+    person: 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z',
+    split: 'M14 4l2.29 2.29-2.88 2.88 1.42 1.42 2.88-2.88L20 10V4zm-4 0H4v6l2.29-2.29 4.71 4.7V20h2v-8.41l-5.29-5.3z',
+    speed: 'M20.38 8.57l-1.23 1.85a8 8 0 0 1-.22 7.58H5.07A8 8 0 0 1 15.58 6.85l1.85-1.23A10 10 0 0 0 3.35 19a2 2 0 0 0 1.72 1h13.85a2 2 0 0 0 1.74-1 10 10 0 0 0-.27-10.44zm-9.79 6.84a2 2 0 0 0 2.83 0l5.66-8.49-8.49 5.66a2 2 0 0 0 0 2.83z',
+    dashboard: 'M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z',
+    server: 'M20 13H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-6c0-.55-.45-1-1-1zM7 19c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM20 3H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1zM7 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z',
+    shield: 'M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z',
+    chip: 'M15 9H9v6h6V9zm-2 4h-2v-2h2v2zm8-2V9h-2V7c0-1.1-.9-2-2-2h-2V3h-2v2h-2V3H9v2H7c-1.1 0-2 .9-2 2v2H3v2h2v2H3v2h2v2c0 1.1.9 2 2 2h2v2h2v-2h2v2h2v-2h2c1.1 0 2-.9 2-2v-2h2v-2h-2v-2h2zm-4 6H7V7h10v10z',
+    audit: 'M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z',
+  };
+  // Order is left-to-right, top row then bottom row.
+  const CARDS = [
+    { icon: 'person', color: '#4285f4', title: 'Access Control', text: 'Control model access and tools based on specific user/agent permissions.' },
+    { icon: 'split', color: '#a142f4', title: 'Model Routing', text: 'Dynamic request routing across multiple LLM providers and private models.' },
+    { icon: 'speed', color: '#ea4335', title: 'Tokenomics', text: 'Prevent abuse through granular access rate limits on tools and token limits on LLM calls.' },
+    { icon: 'dashboard', color: '#fbbc04', title: 'BI Dashboard', text: 'One-click Data Studio integration for business dashboards to track consumption across tools and models.' },
+    { icon: 'server', color: '#e8710a', title: 'Native MCP Server', text: 'Convert existing APIs into MCP instantly, reducing deployment complexity and infrastructure costs.' },
+    { icon: 'shield', color: '#34a853', title: 'Model Armor', text: 'Integrated prompt sanitization for enhanced security.' },
+    { icon: 'chip', color: '#12b5cb', title: 'Cache', text: 'Faster response times and reduced LLM costs for similar queries. Static cache for tools calls.' },
+    { icon: 'audit', color: '#5f6368', title: 'Full Audit Logs', text: 'Capture all calls (LLM, tools, API), success, blocked, and failed executions for transparency.' },
+  ];
+
+  document.getElementById('title').textContent = TITLE;
+  document.getElementById('subtitle').textContent = SUBTITLE;
+  const grid = document.getElementById('grid');
+  for (const c of CARDS) {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.style.setProperty('--c', c.color);
+    el.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${ICON[c.icon]}"/></svg><h3></h3><p></p>`;
+    el.querySelector('h3').textContent = c.title;
+    el.querySelector('p').textContent = c.text;
+    grid.appendChild(el);
+  }
+  const fit = () => {
+    const s = Math.min(innerWidth / 1600, innerHeight / 900);
+    document.getElementById('stage').style.transform = `scale(${s})`;
+  };
+  addEventListener('resize', fit);
+  fit();
+</script>
+</body>
+</html>

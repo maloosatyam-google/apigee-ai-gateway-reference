@@ -1,0 +1,210 @@
+{
+  "name": "Telecom Tools MCP - Customer Care",
+  "displayName": "Telecom Tools MCP - Customer Care",
+  "description": "Telecom Customer Care: look up subscribers, lines, usage, bills, outages and device financing; change plans, add roaming passes, swap SIMs, book technicians, open trouble tickets and credit bill charges (gateway limit $50). No plan finance or network analytics.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "telecom"
+    },
+    {
+      "name": "persona",
+      "value": "sales_agent"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/searchWirelessAccounts"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getWirelessAccount"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listServiceLines"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLineUsage"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getBillBreakdown"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/issueBillCredit"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/changeRatePlan"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/addRoamingPass"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/checkNetworkOutage"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/openTroubleTicket"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/scheduleTechnicianVisit"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/swapSimCard"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getDeviceInstallment"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

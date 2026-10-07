@@ -1,0 +1,210 @@
+{
+  "name": "Public Sector Tools MCP - Citizen Services",
+  "displayName": "Public Sector Tools MCP - Citizen Services",
+  "description": "Public Sector Citizen Services: look up resident accounts, permit applications, licences, benefit claims, street defect reports and fee payments; submit permits, renew licences, report defects, book appointments, refer to caseworkers and refund permit fees (gateway limit $50). No programme finance or caseload analytics.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "public-sector"
+    },
+    {
+      "name": "persona",
+      "value": "sales_agent"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/searchResidents"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getResidentAccount"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPermitApplicationStatus"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/submitPermitApplication"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLicenceDetails"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/renewBusinessLicence"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getBenefitClaimStatus"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/reportStreetDefect"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getStreetDefectReport"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/bookServiceAppointment"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listFeePayments"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/refundPermitFee"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/openCaseworkerReferral"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

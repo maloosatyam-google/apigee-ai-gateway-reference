@@ -1,0 +1,314 @@
+{
+  "name": "IT Services Tools MCP Admin",
+  "displayName": "IT Services Tools MCP Admin",
+  "description": "IT Services: every tool, no business-rule limits. Used by platform engineers and by the ungoverned agent in the Agent Showcase.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "it"
+    },
+    {
+      "name": "persona",
+      "value": "admin"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/searchClientContacts"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getClientContact"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listServiceIncidents"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/logServiceIncident"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/escalateServiceIncident"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getSlaStatus"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listServiceCharges"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/issueSlaCredit"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listSoftwareLicences"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/adjustLicenceSeats"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/submitChangeRequest"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getChangeRequestStatus"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getProjectMilestones"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getIncidentMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getSlaAttainment"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getEngineerUtilisation"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getChangeSuccessRates"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLicenceComplianceSummary"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getClientHealthScores"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getDeliveryMarginReport"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "it-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/runCapacityForecast"
+          }
+        ],
+        "quota": {
+          "limit": "2",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

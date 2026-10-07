@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  Server-sent-event streaming is not implemented in this bundle. Both target endpoints
+  declare an empty <Properties/> block - there is no response.streaming.enabled, no
+  request.streaming.enabled, and no streaming token capture.
+
+  The OpenAPI spec still declares the :streamGenerateContent path, so OAS-ValidateRequest
+  accepts it. Without this fault the request then fell through to GeminiDirectFlow and
+  AM-RouteGeminiTarget, whose target.url template hardcodes :generateContent - so the
+  gateway answered a streaming request with HTTP 200 and a single complete JSON body.
+  Verified against prod before this policy existed: content-type application/json, whole
+  payload, no chunking, no error. Silently doing something other than what was asked is
+  worse than refusing, particularly when tokens are billed for it.
+
+  501 rather than 400: the request is well-formed and the path is part of the published
+  contract; the capability is simply absent here.
+-->
+<RaiseFault continueOnError="false" enabled="true" name="RF-StreamingNotSupported">
+  <DisplayName>RF-StreamingNotSupported</DisplayName>
+  <Properties/>
+  <FaultResponse>
+    <Set>
+      <Payload contentType="application/json">
+{
+  "error": {
+    "code": 501,
+    "status": "UNIMPLEMENTED",
+    "message": "Streaming is not supported by this gateway. Use :generateContent instead of :streamGenerateContent."
+  }
+}
+      </Payload>
+      <StatusCode>501</StatusCode>
+      <ReasonPhrase>Not Implemented</ReasonPhrase>
+    </Set>
+  </FaultResponse>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+</RaiseFault>

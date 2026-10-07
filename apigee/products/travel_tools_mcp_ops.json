@@ -1,0 +1,210 @@
+{
+  "name": "Travel Tools MCP - Guest Services",
+  "displayName": "Travel Tools MCP - Guest Services",
+  "description": "Travel Guest Services: look up guests, reservations, room availability, folios and loyalty points; extend or cancel stays, change rooms, book amenities, post missing points, log complaints and credit folio charges (gateway limit $50). No property finance or revenue analytics.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "travel"
+    },
+    {
+      "name": "persona",
+      "value": "sales_agent"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/searchHotelGuests"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getGuestProfile"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listGuestReservations"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/checkRoomAvailability"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/extendHotelStay"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/cancelHotelReservation"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/requestRoomChange"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getGuestFolio"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/issueFolioCredit"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLoyaltyBalance"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/creditMissingStayPoints"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/bookHotelAmenity"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "travel-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/logGuestComplaint"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,145 @@
+{
+  "name": "Public Sector Tools MCP - Policy Analysts",
+  "displayName": "Public Sector Tools MCP - Policy Analysts",
+  "description": "Public Sector Policy Analysts: service request volumes, permit processing times, benefit uptake, channel shift, street repair backlog and satisfaction metrics, programme costs and caseload forecasts. Aggregates only, no individual resident records.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "public-sector"
+    },
+    {
+      "name": "persona",
+      "value": "loans_agent"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getServiceRequestVolumes"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPermitProcessingTimes"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getBenefitUptakeRates"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getChannelShiftMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getStreetRepairBacklog"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getResidentSatisfactionScores"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getProgrammeCostBreakdown"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/runCaseloadForecast"
+          }
+        ],
+        "quota": {
+          "limit": "2",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

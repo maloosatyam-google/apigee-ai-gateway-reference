@@ -1,0 +1,145 @@
+{
+  "name": "Insurance Tools MCP - Underwriting",
+  "displayName": "Insurance Tools MCP - Underwriting",
+  "description": "Insurance Underwriting: claims frequency, loss ratio, retention, catastrophe exposure, claims cycle-time and fraud-referral metrics, underwriting profitability and loss reserve forecasts. Aggregates only, no individual policyholder records.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "insurance"
+    },
+    {
+      "name": "persona",
+      "value": "loans_agent"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getClaimsFrequencyTrends"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLossRatioSummary"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPolicyRetentionMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getCatastropheExposure"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getClaimsCycleTimes"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getFraudReferralMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getUnderwritingProfitability"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/runLossReserveForecast"
+          }
+        ],
+        "quota": {
+          "limit": "2",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

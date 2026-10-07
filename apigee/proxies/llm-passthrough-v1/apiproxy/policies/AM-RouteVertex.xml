@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage async="false" continueOnError="false" enabled="true" name="AM-RouteVertex">
+  <DisplayName>AM-RouteVertex</DisplayName>
+  <AssignVariable>
+    <Name>flow.target_model</Name>
+    <Ref>flow.model</Ref>
+  </AssignVariable>
+  <AssignVariable>
+    <Name>flow.target_provider</Name>
+    <Value>google</Value>
+  </AssignVariable>
+  <AssignVariable>
+    <Name>flow.autoRouted</Name>
+    <Value>false</Value>
+  </AssignVariable>
+  <AssignVariable>
+    <Name>target.copy.pathsuffix</Name>
+    <Value>false</Value>
+  </AssignVariable>
+  <AssignVariable>
+    <Name>target.url</Name>
+    <Template>https://aiplatform.googleapis.com/v1/projects/{organization.name}/locations/global/publishers/google/models/{flow.model}:generateContent</Template>
+  </AssignVariable>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+</AssignMessage>

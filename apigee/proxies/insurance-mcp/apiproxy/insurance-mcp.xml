@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<APIProxy revision="1" name="insurance-mcp">
+  <DisplayName>insurance-mcp</DisplayName>
+  <Description>Insurance demo tools over MCP (industry pack). Backend: Cloud Run industry-apis /insurance/mcp.</Description>
+  <BasePaths>/insurance/mcp</BasePaths>
+  <Policies>
+    <Policy>AM-RemoveAuthorization</Policy>
+    <Policy>CORS-Allow</Policy>
+    <Policy>EV-RpcIdNumber</Policy>
+    <Policy>EV-ToolCall</Policy>
+    <Policy>ML-CloudLogging</Policy>
+    <Policy>PP-MCP</Policy>
+    <Policy>Q-Limit</Policy>
+    <Policy>RF-LimitNumericId</Policy>
+    <Policy>RF-LimitStringId</Policy>
+    <Policy>RF-MethodNotAllowed</Policy>
+    <Policy>VA-VerifyAPIKey</Policy>
+  </Policies>
+  <ProxyEndpoints>
+    <ProxyEndpoint>default</ProxyEndpoint>
+  </ProxyEndpoints>
+  <TargetEndpoints>
+    <TargetEndpoint>default</TargetEndpoint>
+  </TargetEndpoints>
+</APIProxy>

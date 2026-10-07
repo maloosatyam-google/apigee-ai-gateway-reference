@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<MessageLogging continueOnError="true" enabled="true" name="ML-CloudLogging">
+  <DisplayName>ML-CloudLogging</DisplayName>
+  <CloudLogging>
+    <LogName>projects/{organization.name}/logs/apigee</LogName>
+    <Message contentType="application/json">
+      {
+        "organizationName": "{organization.name}",
+        "environmentName": "{environment.name}",
+        "apiProxyName": "{apiproxy.name}",
+        "apiProxyRevision": "{apiproxy.revision}",
+        "proxyPathSuffix": "{proxy.pathsuffix}",
+        "trackingId": "{messageid}",
+        "userEmail": "{flow.emailId}",
+        "model": "{flow.target_model}",
+        "requestedModel": "{flow.model}",
+        "targetProvider": "{flow.target_provider}",
+        "autoRouted": "{flow.autoRouted}",
+        "routerCategory": "{flow.routerCategory}",
+        "routerEngine": "{flow.routerEngine}",
+        "routerConfidence": "{flow.routerConfidence}",
+        "cached": "{flow.cached}",
+        "costUsd": "{flow.tx_cost_usd}",
+        "budgetStatus": "{flow.budget_status}",
+        "budgetExceeded": "{flow.budget_exceeded}",
+        "budgetUsedUsd": "{flow.budget_used_usd}",
+        "budgetLimitUsd": "{flow.budget_limit_usd}",
+        "promptTokens": "{flow.promptTokenCount}",
+        "candidatesTokens": "{flow.candidatesTokenCount}",
+        "totalTokens": "{flow.totalTokenCount}",
+        "prompt": "{escapeJSON(flow.userPrompt)}",
+        "response": "{escapeJSON(flow.responseText)}",
+        "responseClaude": "{escapeJSON(flow.claudeResponseText)}",
+        "requestVerb": "{request.verb}",
+        "clientIp": "{client.ip}",
+        "clientReceivedStartTime": "{client.received.start.time}",
+        "clientReceivedStartTimeEpoch": "{client.received.start.timestamp}",
+        "clientReceivedEndTimeEpoch": "{client.received.end.timestamp}",
+        "requestQueryString": "{request.querystring}",
+        "responseStatusCode": "{response.status.code}",
+        "errorStatusCode": "{error.status.code}",
+        "responseReasonPhrase": "{response.reason.phrase}",
+        "targetName": "{target.name}",
+        "targetUrl": "{target.url}",
+        "targetSentStartTimeEpoch": "{target.sent.start.timestamp}",
+        "targetSentEndTimeEpoch": "{target.sent.end.timestamp}",
+        "targetReceivedStartTimeEpoch": "{target.received.start.timestamp}",
+        "targetReceivedEndTimeEpoch": "{target.received.end.timestamp}",
+        "faultName": "{fault.name}",
+        "errorMessage": "{error.message}"
+      }
+    </Message>
+    <ResourceType>api</ResourceType>
+  </CloudLogging>
+</MessageLogging>

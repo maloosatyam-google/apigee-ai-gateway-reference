@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<KeyValueMapOperations continueOnError="true" enabled="true" name="KVM-GetModelRates" mapIdentifier="ai-model-rates">
+  <DisplayName>KVM-GetModelRates</DisplayName>
+  <Get assignTo="flow.model_rates_json">
+    <Key>
+      <Parameter>rate_card</Parameter>
+    </Key>
+  </Get>
+  <Scope>environment</Scope>
+</KeyValueMapOperations>

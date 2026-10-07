@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<MonetizationLimitsCheck continueOnError="false" enabled="true" name="MLC-EnforceMonetizationLimits">
+  <DisplayName>MLC-EnforceMonetizationLimits</DisplayName>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+  <FaultResponse>
+    <Set>
+      <Payload contentType="application/json">{"error": {"code": 403, "status": "PERMISSION_DENIED", "message": "Monetization limit exceeded or prepaid balance exhausted: {mint.limitscheck.status_message}"}}</Payload>
+      <StatusCode>403</StatusCode>
+      <ReasonPhrase>Forbidden</ReasonPhrase>
+    </Set>
+  </FaultResponse>
+</MonetizationLimitsCheck>

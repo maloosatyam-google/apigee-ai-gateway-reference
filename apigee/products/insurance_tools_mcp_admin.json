@@ -1,0 +1,314 @@
+{
+  "name": "Insurance Tools MCP Admin",
+  "displayName": "Insurance Tools MCP Admin",
+  "description": "Insurance: every tool, no business-rule limits. Used by admins and by the ungoverned agent in the Agent Showcase.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "insurance"
+    },
+    {
+      "name": "persona",
+      "value": "admin"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/searchPolicyholders"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPolicyholderProfile"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listPolicies"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPolicyCoverage"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getClaimStatus"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/fileInsuranceClaim"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/scheduleAdjusterInspection"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/addPolicyDriver"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listPremiumBills"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/issuePremiumRefund"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/openServiceCase"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/issueProofOfInsurance"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getRenewalQuote"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getClaimsFrequencyTrends"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLossRatioSummary"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPolicyRetentionMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getCatastropheExposure"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getClaimsCycleTimes"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getFraudReferralMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getUnderwritingProfitability"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/runLossReserveForecast"
+          }
+        ],
+        "quota": {
+          "limit": "2",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

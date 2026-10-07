@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<APIProxy revision="1" name="llm-passthrough-v1">
+  <DisplayName>LLM Passthrough (no governance)</DisplayName>
+  <Description>Bare-minimum pass-through to Vertex AI Gemini for the Agent Showcase baseline. API key check and analytics/logging only: no Model Armor, cache, routing, token quota, budget or monetization.</Description>
+  <BasePaths>/passthrough/v1</BasePaths>
+  <Policies>
+    <Policy>AM-RemoveAuthorization</Policy>
+    <Policy>AM-RouteVertex</Policy>
+    <Policy>AM-SetResponseHeaders</Policy>
+    <Policy>AM-SetUserIdentity</Policy>
+    <Policy>DC-FaultAnalytics</Policy>
+    <Policy>DC-ModelAnalytics</Policy>
+    <Policy>DJWT-ExtractUserIdentity</Policy>
+    <Policy>EV-ExtractBearerToken</Policy>
+    <Policy>EV-ModelResponse</Policy>
+    <Policy>EV-RequestDetails</Policy>
+    <Policy>JS-CalculateCost</Policy>
+    <Policy>KVM-GetModelRates</Policy>
+    <Policy>ML-CloudLogging</Policy>
+    <Policy>RF-UnsupportedPath</Policy>
+    <Policy>VA-VerifyAPIKey</Policy>
+  </Policies>
+  <ProxyEndpoints>
+    <ProxyEndpoint>default</ProxyEndpoint>
+  </ProxyEndpoints>
+  <Resources>
+    <Resource>jsc://CalculateCost.js</Resource>
+  </Resources>
+  <TargetEndpoints>
+    <TargetEndpoint>vertex</TargetEndpoint>
+  </TargetEndpoints>
+</APIProxy>

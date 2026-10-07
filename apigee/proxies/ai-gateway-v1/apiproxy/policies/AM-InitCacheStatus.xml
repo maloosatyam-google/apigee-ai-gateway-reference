@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage async="false" continueOnError="false" enabled="true" name="AM-InitCacheStatus">
+  <DisplayName>AM-InitCacheStatus</DisplayName>
+  <AssignVariable>
+    <Name>flow.cached</Name>
+    <Value>false</Value>
+  </AssignVariable>
+  <AssignVariable>
+    <Name>flow.cacheStatus</Name>
+    <Value>DISABLED</Value>
+  </AssignVariable>
+  <AssignVariable>
+    <Name>flow.autoRouted</Name>
+    <Value>false</Value>
+  </AssignVariable>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+</AssignMessage>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage async="false" continueOnError="false" enabled="true" name="AM-SetCacheHitExpected">
+  <DisplayName>AM-SetCacheHitExpected</DisplayName>
+  <AssignVariable>
+    <Name>flow.cached</Name>
+    <Value>true</Value>
+  </AssignVariable>
+  <AssignVariable>
+    <Name>flow.cacheStatus</Name>
+    <Value>HIT</Value>
+  </AssignVariable>
+  <!--
+    Sets cache STATE only. It deliberately does not set flow.tx_cost_usd: costing
+    is owned solely by JS-CalculateCost, which now runs on cache hits too and
+    zeroes the cost there. Two policies writing the same cost variable is exactly
+    the drift this consolidation removed.
+  -->
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+</AssignMessage>

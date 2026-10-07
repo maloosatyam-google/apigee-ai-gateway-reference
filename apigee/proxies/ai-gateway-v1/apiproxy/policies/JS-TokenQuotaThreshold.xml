@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  Observability only. continueOnError MUST stay "true": a threshold warning must never be the
+  reason a successful model response fails. Writes flow.token_quota_* variables that
+  AM-SetResponseHeaders turns into x-gateway-token-quota-* headers.
+
+  threshold: fraction of the product's llmTokenQuota above which the caller is warned.
+-->
+<Javascript async="false" continueOnError="true" enabled="true" name="JS-TokenQuotaThreshold">
+  <DisplayName>JS-TokenQuotaThreshold</DisplayName>
+  <Properties>
+    <Property name="threshold">0.5</Property>
+  </Properties>
+  <ResourceURL>jsc://TokenQuotaThreshold.js</ResourceURL>
+</Javascript>

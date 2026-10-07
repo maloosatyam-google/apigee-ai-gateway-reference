@@ -1,0 +1,209 @@
+openapi: 3.0.3
+info:
+  title: Business Insights API
+  version: 1.0.0
+  description: >-
+    Aggregated business insights for analysts: revenue trends, support metrics,
+    churn-risk cohorts, product margins and forecasts. Returns aggregates only,
+    never an individual customer's personal data.
+servers:
+  - url: https://__APIGEE_HOST_PROD__/business-insights/v1
+  - url: https://__APIGEE_HOST_DEV__/business-insights/v1
+paths:
+  /insights/revenue:
+    get:
+      operationId: getRevenueTrends
+      summary: Revenue trends
+      description: Total revenue, order count, average order value, monthly trend and revenue by product category, optionally filtered by region and customer segment.
+      parameters:
+        - $ref: '#/components/parameters/period'
+        - name: region
+          in: query
+          required: false
+          schema: { type: string, enum: [APAC, EMEA, AMER] }
+        - $ref: '#/components/parameters/segment'
+      responses:
+        '200':
+          description: Revenue trends
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  period: { type: string }
+                  region: { type: string }
+                  segment: { type: string }
+                  currency: { type: string }
+                  totalRevenue: { type: number }
+                  orders: { type: integer }
+                  averageOrderValue: { type: number }
+                  monthly:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        month: { type: string }
+                        orders: { type: integer }
+                        revenue: { type: number }
+                  byCategory:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        category: { type: string }
+                        revenue: { type: number }
+  /insights/support:
+    get:
+      operationId: getSupportMetrics
+      summary: Customer support metrics
+      description: Case volume, average CSAT (1-5) and resolution time for the period compared with the previous period of equal length, plus top issues and open late orders.
+      parameters:
+        - $ref: '#/components/parameters/period'
+      responses:
+        '200':
+          description: Support metrics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  period: { type: string }
+                  current: { $ref: '#/components/schemas/SupportStats' }
+                  previous: { $ref: '#/components/schemas/SupportStats' }
+                  topIssues:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        subject: { type: string }
+                        count: { type: integer }
+                  openLateOrders: { type: integer }
+  /insights/churn:
+    get:
+      operationId: getChurnRisk
+      summary: Churn-risk cohorts
+      description: Customers grouped by segment and tier with counts at High, Medium and Low churn risk and the lifetime revenue at high risk. Cohort counts only; individual customers are not listed.
+      parameters:
+        - $ref: '#/components/parameters/segment'
+      responses:
+        '200':
+          description: Churn cohorts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  segment: { type: string }
+                  currency: { type: string }
+                  cohorts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        segment: { type: string }
+                        tier: { type: string }
+                        customers: { type: integer }
+                        High: { type: integer }
+                        Medium: { type: integer }
+                        Low: { type: integer }
+                        revenueAtRisk: { type: number }
+                  drivers:
+                    type: array
+                    items: { type: string }
+  /insights/products/{sku}/margin:
+    get:
+      operationId: getProductMargins
+      summary: Product margin (confidential)
+      description: Unit cost, average discount, average net price, gross margin percent and gross profit over 180 days for a product. Confidential cost data.
+      parameters:
+        - name: sku
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [PLN-BASIC, PLN-PRO, PLN-TEAM, DEV-HUB, DEV-CAM, DEV-SENSOR, ACC-MOUNT, ACC-BATT, ACC-CABLE, SVC-SETUP, SVC-CARE, SVC-RUSH]
+      responses:
+        '200':
+          description: Margin
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sku: { type: string }
+                  name: { type: string }
+                  category: { type: string }
+                  currency: { type: string }
+                  listPrice: { type: number }
+                  unitCost: { type: number }
+                  averageDiscountPct: { type: number }
+                  averageNetPrice: { type: number }
+                  grossMarginPct: { type: number }
+                  unitsSold180d: { type: integer }
+                  grossProfit180d: { type: number }
+        '404':
+          description: Unknown product
+  /insights/forecast:
+    post:
+      operationId: runForecast
+      summary: Forecast a business metric
+      description: Weekly forecast (expected, low, high) for revenue, orders or support cases, based on the last 12 weeks. Compute-heavy; tightly rate limited.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [metric]
+              properties:
+                metric: { type: string, enum: [revenue, orders, support_cases] }
+                horizonWeeks: { type: integer, minimum: 1, maximum: 12, default: 8 }
+                segment: { type: string, enum: [Consumer, Small Business, Enterprise] }
+      responses:
+        '200':
+          description: Forecast
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  metric: { type: string }
+                  segment: { type: string }
+                  horizonWeeks: { type: integer }
+                  model: { type: string }
+                  history:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        weekStarting: { type: string, format: date }
+                        actual: { type: number }
+                  forecast:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        weekStarting: { type: string, format: date }
+                        expected: { type: number }
+                        low: { type: number }
+                        high: { type: number }
+components:
+  parameters:
+    period:
+      name: period
+      in: query
+      required: false
+      description: Look-back window
+      schema: { type: string, enum: [last_30d, last_90d, last_180d], default: last_90d }
+    segment:
+      name: segment
+      in: query
+      required: false
+      schema: { type: string, enum: [Consumer, Small Business, Enterprise] }
+  schemas:
+    SupportStats:
+      type: object
+      properties:
+        cases: { type: integer }
+        csat: { type: number, nullable: true }
+        avgResolutionHours: { type: integer, nullable: true }

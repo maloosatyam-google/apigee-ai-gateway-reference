@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage async="false" continueOnError="false" enabled="true" name="AM-RemoveAuthorization">
+  <DisplayName>AM-RemoveAuthorization</DisplayName>
+  <Remove>
+    <Headers>
+      <Header name="x-apikey"/>
+      <Header name="Authorization"/>
+      <Header name="X-Identity-Token"/>
+      <Header name="X-User-Email"/>
+    </Headers>
+  </Remove>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+  <AssignTo createNew="false" transport="http" type="request"/>
+</AssignMessage>

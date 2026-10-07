@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<KeyValueMapOperations continueOnError="false" enabled="true" name="KVM-GetConfig" mapIdentifier="customer-tools-config">
+  <Scope>environment</Scope>
+  <ExpiryTimeInSecs>60</ExpiryTimeInSecs>
+  <Get assignTo="private.internal.allowedIps">
+    <Key>
+      <Parameter>internal.allowedIps</Parameter>
+    </Key>
+  </Get>
+  <Get assignTo="private.internal.enforce">
+    <Key>
+      <Parameter>internal.enforce</Parameter>
+    </Key>
+  </Get>
+</KeyValueMapOperations>

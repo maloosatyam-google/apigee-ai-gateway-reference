@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- Fault-path twin of DC-ModelAnalytics: failed calls still carry the caller and model. -->
+<DataCapture name="DC-FaultAnalytics" continueOnError="true" enabled="true">
+  <DisplayName>DC-FaultAnalytics</DisplayName>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+  <Capture>
+    <Collect ref="flow.emailId" default=""/>
+    <DataCollector>dc_user_email</DataCollector>
+  </Capture>
+  <Capture>
+    <Collect ref="flow.model" default=""/>
+    <DataCollector>dc_model_name</DataCollector>
+  </Capture>
+</DataCapture>

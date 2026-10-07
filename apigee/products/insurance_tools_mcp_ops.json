@@ -1,0 +1,210 @@
+{
+  "name": "Insurance Tools MCP - Claims and Service",
+  "displayName": "Insurance Tools MCP - Claims & Service",
+  "description": "Insurance Claims & Service: look up policyholders, policies, coverage, claims, bills and renewals; file claims, book adjuster inspections, add drivers, issue ID cards, open service cases and refund premium bills (gateway limit $50). No underwriting finance or portfolio analytics.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "insurance"
+    },
+    {
+      "name": "persona",
+      "value": "sales_agent"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/searchPolicyholders"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPolicyholderProfile"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listPolicies"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPolicyCoverage"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getClaimStatus"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/fileInsuranceClaim"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/scheduleAdjusterInspection"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/addPolicyDriver"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listPremiumBills"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/issuePremiumRefund"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/openServiceCase"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/issueProofOfInsurance"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "insurance-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getRenewalQuote"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

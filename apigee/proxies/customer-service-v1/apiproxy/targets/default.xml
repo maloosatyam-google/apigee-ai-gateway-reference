@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<TargetEndpoint name="default">
+  <PreFlow name="PreFlow">
+    <Request>
+      <Step>
+        <Name>AM-RemoveClientAuth</Name>
+      </Step>
+    </Request>
+    <Response/>
+  </PreFlow>
+  <HTTPTargetConnection>
+    <Authentication>
+      <GoogleIDToken>
+        <Audience>__CUSTOMER_SERVICE_API_URL__</Audience>
+      </GoogleIDToken>
+    </Authentication>
+    <URL>__CUSTOMER_SERVICE_API_URL__</URL>
+  </HTTPTargetConnection>
+</TargetEndpoint>

@@ -1,0 +1,210 @@
+{
+  "name": "Energy Tools MCP - Customer Ops",
+  "displayName": "Energy Tools MCP - Customer Ops",
+  "description": "Energy Customer Ops: look up utility accounts, meter readings, bills, outages, payment plans and clean-energy programmes; book re-reads, report outages, arrange payment plans, schedule moves, enrol programmes and credit bills (gateway limit $50). No segment finance or network analytics.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "energy"
+    },
+    {
+      "name": "persona",
+      "value": "sales_agent"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/searchUtilityCustomers"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getUtilityAccount"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listMeterReadings"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/requestMeterReread"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listUtilityBills"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/applyBillCredit"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPowerOutageStatus"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/reportPowerOutage"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/checkPaymentPlanEligibility"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/arrangeBillPaymentPlan"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/scheduleSupplyTransfer"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getCleanEnergyEnrolment"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/enrollCleanEnergyProgramme"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

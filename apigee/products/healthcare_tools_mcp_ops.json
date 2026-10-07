@@ -1,0 +1,210 @@
+{
+  "name": "Healthcare Tools MCP - Patient Support",
+  "displayName": "Healthcare Tools MCP - Patient Support",
+  "description": "Healthcare Patient Support: look up patients, appointments, referrals, refills, statements, claims and telehealth links; book and reschedule visits, request refills, open billing inquiries and refund charges (gateway limit $50). No service-line finance or population analytics.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "healthcare"
+    },
+    {
+      "name": "persona",
+      "value": "sales_agent"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "healthcare-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "healthcare-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/searchPatients"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "healthcare-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPatientProfile"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "healthcare-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listAppointments"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "healthcare-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/bookAppointment"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "healthcare-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/rescheduleAppointment"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "healthcare-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getReferralStatus"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "healthcare-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getRefillStatus"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "healthcare-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/requestPrescriptionRefill"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "healthcare-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listPatientStatements"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "healthcare-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/refundPatientCharge"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "healthcare-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getVisitClaimStatus"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "healthcare-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/openBillingInquiry"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "healthcare-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getTelehealthVisitLink"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,145 @@
+{
+  "name": "Healthcare Tools MCP - Research Analysts",
+  "displayName": "Healthcare Tools MCP - Research Analysts",
+  "description": "Healthcare Research Analysts: visit volume, no-show, referral leakage, claim denial, patient satisfaction and telehealth metrics, service-line margins and patient volume forecasts. Aggregates only, no individual patient records.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "healthcare"
+    },
+    {
+      "name": "persona",
+      "value": "loans_agent"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "healthcare-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "healthcare-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getAppointmentVolumeTrends"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "healthcare-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getNoShowRates"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "healthcare-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getReferralLeakageSummary"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "healthcare-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getClaimDenialMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "healthcare-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPatientSatisfactionScores"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "healthcare-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getTelehealthAdoption"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "healthcare-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getServiceLineMargins"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "healthcare-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/runPatientVolumeForecast"
+          }
+        ],
+        "quota": {
+          "limit": "2",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

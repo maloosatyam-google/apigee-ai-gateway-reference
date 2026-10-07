@@ -1,0 +1,314 @@
+{
+  "name": "Energy Tools MCP Admin",
+  "displayName": "Energy Tools MCP Admin",
+  "description": "Energy: every tool, no business-rule limits. Used by Grid IT & OT admins and by the ungoverned agent in the Agent Showcase.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "energy"
+    },
+    {
+      "name": "persona",
+      "value": "admin"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/searchUtilityCustomers"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getUtilityAccount"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listMeterReadings"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/requestMeterReread"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listUtilityBills"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/applyBillCredit"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPowerOutageStatus"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/reportPowerOutage"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/checkPaymentPlanEligibility"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/arrangeBillPaymentPlan"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/scheduleSupplyTransfer"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getCleanEnergyEnrolment"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/enrollCleanEnergyProgramme"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getOutageReliabilityMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getEnergyConsumptionTrends"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getGridAssetHealth"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getUtilityArrearsSummary"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getCleanEnergyUptake"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getMeterReadAccuracy"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getTariffSegmentMargin"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "energy-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/runGridLoadForecast"
+          }
+        ],
+        "quota": {
+          "limit": "2",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

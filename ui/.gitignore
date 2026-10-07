@@ -1,0 +1,9 @@
+node_modules
+dist
+.env
+# Catch ad-hoc copies too (.env.bak, .env.old, .env.prod, ...). Only the
+# committed template is exempt: a stray backup of a real .env carries the
+# same credentials as the original.
+.env.*
+!.env.example
+*.log

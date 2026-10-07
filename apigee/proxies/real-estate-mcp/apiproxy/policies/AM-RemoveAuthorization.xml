@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage async="false" continueOnError="false" enabled="true" name="AM-RemoveAuthorization">
+  <DisplayName>AM-RemoveAuthorization</DisplayName>
+  <Remove>
+    <Headers>
+      <Header name="Authorization"/>
+      <Header name="X-Serverless-Authorization"/>
+      <Header name="X-Goog-IAP-JWT-Assertion"/>
+      <Header name="x-api-key"/>
+      <Header name="x-apikey"/>
+    </Headers>
+  </Remove>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+  <AssignTo createNew="false" transport="http" type="request"/>
+</AssignMessage>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage async="false" continueOnError="false" enabled="true" name="AM-PrepClaudeDirect">
+  <DisplayName>AM-PrepClaudeDirect</DisplayName>
+  <AssignVariable>
+    <Name>flow.target_model</Name>
+    <Ref>flow.model</Ref>
+    <Value>claude-opus-4-5@20251101</Value>
+  </AssignVariable>
+  <AssignVariable>
+    <Name>flow.target_provider</Name>
+    <Value>anthropic</Value>
+  </AssignVariable>
+  <AssignVariable>
+    <Name>flow.autoRouted</Name>
+    <Value>false</Value>
+  </AssignVariable>
+  <Set>
+    <Headers>
+      <Header name="anthropic_version">vertex-2023-10-16</Header>
+    </Headers>
+  </Set>
+  <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+  <AssignTo createNew="false" transport="http" type="request"/>
+</AssignMessage>

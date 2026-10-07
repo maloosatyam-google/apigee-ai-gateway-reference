@@ -1,0 +1,145 @@
+{
+  "name": "Education Tools MCP - Academic Analysts",
+  "displayName": "Education Tools MCP - Academic Analysts",
+  "description": "Education Academic & Research Analysts: enrolment, completion, retention, admissions, engagement and assessment-integrity metrics, programme profitability and enrolment forecasts. Aggregates only, no individual learner records.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "education"
+    },
+    {
+      "name": "persona",
+      "value": "loans_agent"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getEnrolmentTrends"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getCourseCompletionRates"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getDropoutRiskSummary"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getAdmissionsFunnel"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLearnerEngagement"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getAssessmentIntegrityMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getProgrammeProfitability"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/runEnrolmentForecast"
+          }
+        ],
+        "quota": {
+          "limit": "2",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

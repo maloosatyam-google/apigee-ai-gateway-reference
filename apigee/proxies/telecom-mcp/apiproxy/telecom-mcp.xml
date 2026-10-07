@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<APIProxy revision="1" name="telecom-mcp">
+  <DisplayName>telecom-mcp</DisplayName>
+  <Description>Telecom demo tools over MCP (industry pack). Backend: Cloud Run industry-apis /telecom/mcp.</Description>
+  <BasePaths>/telecom/mcp</BasePaths>
+  <Policies>
+    <Policy>AM-RemoveAuthorization</Policy>
+    <Policy>CORS-Allow</Policy>
+    <Policy>EV-RpcIdNumber</Policy>
+    <Policy>EV-ToolCall</Policy>
+    <Policy>ML-CloudLogging</Policy>
+    <Policy>PP-MCP</Policy>
+    <Policy>Q-Limit</Policy>
+    <Policy>RF-LimitNumericId</Policy>
+    <Policy>RF-LimitStringId</Policy>
+    <Policy>RF-MethodNotAllowed</Policy>
+    <Policy>VA-VerifyAPIKey</Policy>
+  </Policies>
+  <ProxyEndpoints>
+    <ProxyEndpoint>default</ProxyEndpoint>
+  </ProxyEndpoints>
+  <TargetEndpoints>
+    <TargetEndpoint>default</TargetEndpoint>
+  </TargetEndpoints>
+</APIProxy>

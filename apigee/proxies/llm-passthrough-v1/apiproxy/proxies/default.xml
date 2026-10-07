@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  LLM Passthrough: the Agent Showcase's "without AI governance" baseline.
+
+  Deliberately minimal. It exists so the ungoverned agent's model traffic still shows up in
+  Apigee analytics and Cloud Logging, next to the governed agent's ai-gateway-v1 traffic,
+  without any of the controls being compared against:
+    - no Model Armor, no semantic cache, no auto-routing
+    - no token quota, no budget, no monetization collectors (never bills a wallet)
+  The only gate is VA-VerifyAPIKey (product "LLM Passthrough", on the admin app) so the URL
+  cannot be used to run up Vertex charges.
+
+  Only POST /models/gemini*:generateContent is served; anything else is a 404.
+-->
+<ProxyEndpoint name="default">
+  <PreFlow name="PreFlow">
+    <Request>
+      <Step>
+        <Name>VA-VerifyAPIKey</Name>
+      </Step>
+      <Step>
+        <Name>RF-UnsupportedPath</Name>
+        <Condition>request.verb != "POST" or !(proxy.pathsuffix JavaRegex "^/models/gemini[A-Za-z0-9.\-]*:generateContent$")</Condition>
+      </Step>
+      <Step>
+        <Name>EV-RequestDetails</Name>
+      </Step>
+      <!-- Attribution only (dc_user_email, logs): same DecodeJWT trust model as ai-gateway-v1. -->
+      <Step>
+        <Name>EV-ExtractBearerToken</Name>
+      </Step>
+      <Step>
+        <Name>DJWT-ExtractUserIdentity</Name>
+        <Condition>flow.rawToken != null</Condition>
+      </Step>
+      <Step>
+        <Name>AM-SetUserIdentity</Name>
+        <Condition>jwt.DJWT-ExtractUserIdentity.decoded.claim.email != null or jwt.DJWT-ExtractUserIdentity.claim.email != null</Condition>
+      </Step>
+    </Request>
+    <Response/>
+  </PreFlow>
+  <Flows/>
+  <PostFlow name="PostFlow">
+    <Request/>
+    <Response>
+      <Step>
+        <Name>EV-ModelResponse</Name>
+        <Condition>response.status.code = 200</Condition>
+      </Step>
+      <Step>
+        <Name>KVM-GetModelRates</Name>
+        <Condition>response.status.code = 200</Condition>
+      </Step>
+      <Step>
+        <Name>JS-CalculateCost</Name>
+        <Condition>response.status.code = 200</Condition>
+      </Step>
+      <Step>
+        <Name>DC-ModelAnalytics</Name>
+        <Condition>response.status.code = 200</Condition>
+      </Step>
+      <Step>
+        <Name>AM-SetResponseHeaders</Name>
+      </Step>
+    </Response>
+  </PostFlow>
+  <PostClientFlow name="PostClientFlow">
+    <Response>
+      <Step>
+        <Name>ML-CloudLogging</Name>
+      </Step>
+    </Response>
+  </PostClientFlow>
+  <DefaultFaultRule name="attribute-fault-to-user">
+    <AlwaysEnforce>true</AlwaysEnforce>
+    <Step>
+      <Name>DC-FaultAnalytics</Name>
+    </Step>
+  </DefaultFaultRule>
+  <HTTPProxyConnection>
+    <BasePath>/passthrough/v1</BasePath>
+    <Properties/>
+  </HTTPProxyConnection>
+  <RouteRule name="vertex">
+    <TargetEndpoint>vertex</TargetEndpoint>
+  </RouteRule>
+</ProxyEndpoint>

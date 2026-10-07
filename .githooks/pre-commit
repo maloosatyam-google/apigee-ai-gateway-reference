@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+# pre-commit: block credential leaks and obvious breakage in the STAGED changes.
+# Dependency-free (bash, git, python3, node). Uses gitleaks and shellcheck if installed.
+#
+# Enable once per clone:   scripts/install_hooks.sh
+# Emergency bypass:        git commit --no-verify   (the pre-push and CI checks still run)
+set -uo pipefail
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT" || exit 1
+# shellcheck source=../scripts/lib/secret_patterns.sh
+source scripts/lib/secret_patterns.sh
+load_denylist "$ROOT"
+
+MAX_BYTES="${PRECOMMIT_MAX_BYTES:-5242880}"   # 5 MB
+fail=0
+err() { echo "  ✖ $*"; fail=1; }
+section() { echo "▸ $*"; }
+
+# Staged paths: added, copied, modified, renamed (not deleted).
+FILES=()
+while IFS= read -r f; do [ -n "$f" ] && FILES+=("$f"); done < <(git diff --cached --name-only --diff-filter=ACMR)
+[ "${#FILES[@]}" -eq 0 ] && exit 0
+staged() { git show ":$1" 2>/dev/null; }
+
+# Export the staged versions (not the working copy) once, so every check sees exactly
+# what will be committed and each grep runs a single time over the whole set.
+STAGE_DIR="$(mktemp -d)"
+trap 'rm -rf "$STAGE_DIR"' EXIT
+printf '%s\n' "${FILES[@]}" | git checkout-index --prefix="$STAGE_DIR/" --stdin
+SCAN_LIST="$STAGE_DIR.list"
+trap 'rm -rf "$STAGE_DIR" "$SCAN_LIST"' EXIT
+printf '%s\n' "${FILES[@]}" | grep -vE "$SCAN_EXCLUDE" > "$SCAN_LIST"
+scan() { # scan <grep flags...>: grep the staged, non-excluded files; prints path:line:text
+  ( cd "$STAGE_DIR" && tr '\n' '\0' < "$SCAN_LIST" | xargs -0 grep -IHn "$@" 2>/dev/null )
+}
+
+section "Forbidden files"
+for f in "${FILES[@]}"; do
+  is_forbidden_path "$f" && err "$f must not be committed (secrets / local config). Use *.env.example for templates."
+done
+
+section "File size (max $((MAX_BYTES / 1048576)) MB)"
+for f in "${FILES[@]}"; do
+  size="$(git cat-file -s ":$f" 2>/dev/null || echo 0)"
+  [ "$size" -gt "$MAX_BYTES" ] && err "$f is $((size / 1048576)) MB. Keep large media out of git."
+done
+
+section "Secrets and private identifiers"
+if [ -s "$SCAN_LIST" ]; then
+  PAT_ARGS=()
+  for pat in "${SECRET_PATTERNS[@]}"; do PAT_ARGS+=(-e "$pat"); done
+  # Only "path:line" is printed, never the matched value, so secrets don't land in logs.
+  while IFS= read -r hit; do
+    [ -n "$hit" ] && err "${hit%%:*}:$(echo "$hit" | cut -d: -f2) looks like a credential"
+  done < <(scan -E "${PAT_ARGS[@]}" | head -20)
+  if [ "${#DENYLIST[@]}" -gt 0 ]; then
+    while IFS= read -r hit; do
+      [ -n "$hit" ] && err "${hit%%:*}:$(echo "$hit" | cut -d: -f2) contains a denylisted identifier (see .public-denylist)"
+    done < <(scan -F "${DENYLIST[@]/#/-e}" | head -20)
+  fi
+fi
+
+if command -v gitleaks >/dev/null 2>&1; then
+  section "gitleaks"
+  if gitleaks help 2>/dev/null | grep -q '^ *git '; then
+    gitleaks git --staged --redact --no-banner -c .gitleaks.toml . >/dev/null 2>&1 \
+      || { gitleaks git --staged --redact --no-banner -c .gitleaks.toml . 2>&1 | tail -20; err "gitleaks found secrets"; }
+  else
+    gitleaks protect --staged --redact --no-banner -c .gitleaks.toml >/dev/null 2>&1 \
+      || { gitleaks protect --staged --redact --no-banner -c .gitleaks.toml 2>&1 | tail -20; err "gitleaks found secrets"; }
+  fi
+fi
+
+section "Merge conflict markers"
+while IFS= read -r f; do
+  [ -n "$f" ] && err "$f contains merge conflict markers"
+done < <(cd "$STAGE_DIR" && printf '%s\n' "${FILES[@]}" | tr '\n' '\0' \
+  | xargs -0 grep -IlE '^(<<<<<<< |>>>>>>> )' 2>/dev/null)
+
+section "Syntax"
+TS_STAGED=0
+for f in "${FILES[@]}"; do
+  case "$f" in
+    *.sh)
+      bash -n "$STAGE_DIR/$f" 2>/dev/null || err "$f: bash syntax error (bash -n)"
+      if command -v shellcheck >/dev/null 2>&1; then
+        shellcheck -S error -s bash "$STAGE_DIR/$f" >/dev/null 2>&1 || err "$f: shellcheck errors (shellcheck -S error $f)"
+      fi ;;
+    *.json)
+      python3 -c 'import json,sys; json.load(open(sys.argv[1]))' "$STAGE_DIR/$f" 2>/dev/null || err "$f: invalid JSON" ;;
+    *.py)
+      python3 -c 'import ast,sys; ast.parse(open(sys.argv[1]).read())' "$STAGE_DIR/$f" 2>/dev/null || err "$f: Python syntax error" ;;
+    *.xml)
+      python3 -c 'import sys,xml.dom.minidom as m; m.parse(sys.argv[1])' "$STAGE_DIR/$f" 2>/dev/null \
+        || err "$f: malformed XML" ;;
+    *.yaml|*.yml)
+      # Skipped for Helm/Go templates ({{ ... }}), which are not plain YAML.
+      if ! grep -q '{{' "$STAGE_DIR/$f" && python3 -c 'import yaml' 2>/dev/null; then
+        python3 -c 'import sys,yaml; list(yaml.safe_load_all(open(sys.argv[1])))' "$STAGE_DIR/$f" 2>/dev/null || err "$f: invalid YAML"
+      fi ;;
+    *.js|*.mjs|*.cjs)
+      # node --check needs a file; the working copy is used (fine unless partially staged).
+      [ -f "$f" ] && { node --check "$f" 2>/dev/null || err "$f: JavaScript syntax error (node --check $f)"; } ;;
+    ui/*.ts|ui/*.tsx) TS_STAGED=1 ;;
+  esac
+done
+
+if [ "$TS_STAGED" -eq 1 ] && [ -x ui/node_modules/.bin/tsc ] && [ "${SKIP_TSC:-0}" != "1" ]; then
+  section "TypeScript (ui, tsc --noEmit)"
+  out="$(cd ui && ./node_modules/.bin/tsc --noEmit -p . 2>&1)" || { echo "$out" | head -20; err "TypeScript errors (SKIP_TSC=1 to skip)"; }
+fi
+
+if [ "$fail" -ne 0 ]; then
+  echo
+  echo "✖ pre-commit failed. Fix the issues above, or bypass with 'git commit --no-verify' only if it is a false positive."
+  echo "  If a credential was staged, rotate it: removing it from the commit is not enough once it has been pushed."
+  exit 1
+fi
+echo "✔ pre-commit checks passed (${#FILES[@]} files)"

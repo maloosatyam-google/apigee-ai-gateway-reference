@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  Same log name and field names as ai-gateway-v1's ML-CloudLogging, so one Logs Explorer query
+  shows both agents; filter on jsonPayload.apiProxyName to split them. The prompt and response
+  text are not logged: agent turns carry tool schemas and tool results, not a single prompt.
+-->
+<MessageLogging continueOnError="true" enabled="true" name="ML-CloudLogging">
+  <DisplayName>ML-CloudLogging</DisplayName>
+  <CloudLogging>
+    <LogName>projects/{organization.name}/logs/apigee</LogName>
+    <Message contentType="application/json">
+      {
+        "organizationName": "{organization.name}",
+        "environmentName": "{environment.name}",
+        "apiProxyName": "{apiproxy.name}",
+        "apiProxyRevision": "{apiproxy.revision}",
+        "proxyPathSuffix": "{proxy.pathsuffix}",
+        "trackingId": "{messageid}",
+        "userEmail": "{flow.emailId}",
+        "developerApp": "{developer.app.name}",
+        "apiProduct": "{apiproduct.name}",
+        "model": "{flow.target_model}",
+        "requestedModel": "{flow.model}",
+        "targetProvider": "google",
+        "autoRouted": "false",
+        "cached": "false",
+        "costUsd": "{flow.tx_cost_usd}",
+        "promptTokens": "{flow.promptTokenCount}",
+        "candidatesTokens": "{flow.candidatesTokenCount}",
+        "totalTokens": "{flow.totalTokenCount}",
+        "requestVerb": "{request.verb}",
+        "clientIp": "{client.ip}",
+        "clientReceivedStartTimeEpoch": "{client.received.start.timestamp}",
+        "clientReceivedEndTimeEpoch": "{client.received.end.timestamp}",
+        "responseStatusCode": "{response.status.code}",
+        "errorStatusCode": "{error.status.code}",
+        "targetUrl": "{target.url}",
+        "targetSentStartTimeEpoch": "{target.sent.start.timestamp}",
+        "targetReceivedEndTimeEpoch": "{target.received.end.timestamp}",
+        "faultName": "{fault.name}",
+        "errorMessage": "{error.message}"
+      }
+    </Message>
+    <ResourceType>api</ResourceType>
+  </CloudLogging>
+</MessageLogging>

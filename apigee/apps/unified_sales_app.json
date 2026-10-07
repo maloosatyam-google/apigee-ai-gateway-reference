@@ -1,0 +1,23 @@
+{
+  "name": "Unified Sales App",
+  "displayName": "Unified Sales App",
+  "apiProducts": [
+    "Customer Support and Sales",
+    "Customer Service Tools MCP",
+    "ServiceNow Tools MCP - Create Incident"
+  ],
+  "attributes": [
+    {
+      "name": "DisplayName",
+      "value": "Unified Sales App"
+    },
+    {
+      "name": "persona",
+      "value": "sales_agent"
+    },
+    {
+      "name": "description",
+      "value": "Customer Support & Sales persona credential: Flash-Lite, Flash and Claude Haiku, plus Sales MCP tools, and ServiceNow incident creation for approval requests"
+    }
+  ]
+}

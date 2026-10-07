@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Public check (patterns + forbidden files)
+        run: bash scripts/check_public.sh
+      - name: gitleaks (full history)
+        run: |
+          GL_VERSION=8.21.2
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GL_VERSION}/gitleaks_${GL_VERSION}_linux_x64.tar.gz" \
+            | tar -xz gitleaks
+          ./gitleaks git --redact --no-banner -c .gitleaks.toml .
+
+  lint:
+    name: Syntax checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Shell syntax
+        run: git ls-files '*.sh' .githooks | xargs -n1 bash -n
+      - name: shellcheck (errors only)
+        run: git ls-files '*.sh' | xargs shellcheck -S error -s bash
+      - name: JSON / XML / Python syntax
+        run: |
+          python3 - <<'PY'
+          import ast, json, subprocess, sys, xml.dom.minidom
+          files = subprocess.check_output(["git", "ls-files"], text=True).split()
+          bad = []
+          for f in files:
+              try:
+                  if f.endswith(".json"):
+                      json.load(open(f))
+                  elif f.endswith(".xml"):
+                      xml.dom.minidom.parse(f)
+                  elif f.endswith(".py"):
+                      ast.parse(open(f).read(), f)
+              except Exception as e:
+                  bad.append(f"{f}: {e}")
+          print("\n".join(bad) or "ok")
+          sys.exit(1 if bad else 0)
+          PY
+
+  ui:
+    name: UI build and unit tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ui
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+      - run: npm ci
+      - run: npx tsc --noEmit -p .
+      - run: npm test
+      - run: npm run build

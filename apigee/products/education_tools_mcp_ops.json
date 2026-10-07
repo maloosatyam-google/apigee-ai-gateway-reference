@@ -1,0 +1,210 @@
+{
+  "name": "Education Tools MCP - Student Services",
+  "displayName": "Education Tools MCP - Student Services",
+  "description": "Education Student & Admissions Services: look up learners, enrolments, assignments, invoices, certificates and applications; enrol and withdraw, extend deadlines, open tickets and refund invoices (gateway limit $50). No programme finance or cohort analytics.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "education"
+    },
+    {
+      "name": "persona",
+      "value": "sales_agent"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/searchStudents"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getStudentProfile"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listEnrolments"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getCourseDetails"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/enrollInCourse"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/dropCourse"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getAssignmentStatus"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/grantDeadlineExtension"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listInvoices"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/issueTuitionRefund"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/createSupportTicket"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getCertificateStatus"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "education-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getApplicationStatus"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

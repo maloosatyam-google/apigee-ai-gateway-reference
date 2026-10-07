@@ -1,0 +1,305 @@
+[
+  {
+    "id": "ai-auth",
+    "gateway": "ai",
+    "proxy": "ai-gateway-v1",
+    "title": "Identity & Model Entitlement",
+    "category": "Security",
+    "summary": "Resolves the calling user, verifies the API key, and rejects any model that is not explicitly named on the caller’s API Product.",
+    "attachPoint": "Proxy PreFlow",
+    "onViolation": "HTTP 401 / 403 — request never reaches a model",
+    "configSource": "API Product model entitlements",
+    "policies": [
+      {
+        "name": "DJWT-ExtractUserIdentity",
+        "type": "DecodeJWT",
+        "purpose": "Extracts the end-user identity from the Cloud IAP / Bearer token for per-user attribution."
+      },
+      {
+        "name": "VA-VerifyAPIKey",
+        "type": "VerifyAPIKey",
+        "purpose": "Validates the consumer key and loads the persona API Product (Engineering & IT, Analysts, Customer Support & Sales)."
+      },
+      {
+        "name": "OAS-ValidateRequest",
+        "type": "OASValidation",
+        "purpose": "Validates the OpenAPI 3.0 request structure and enforces named model entitlements (no wildcards)."
+      }
+    ]
+  },
+  {
+    "id": "ai-armor",
+    "gateway": "ai",
+    "proxy": "ai-gateway-v1",
+    "title": "Prompt & Response Safety",
+    "category": "Safety",
+    "summary": "Screens every prompt before a token is spent and inspects every completion on the way out, using one enterprise Model Armor template across all providers.",
+    "attachPoint": "Request PreFlow + Response Flow",
+    "onViolation": "HTTP 400 — blocked at the perimeter with a safety reason",
+    "configSource": "Google Cloud Model Armor template",
+    "policies": [
+      {
+        "name": "SUP-UserPrompt",
+        "type": "SanitizeUserPrompt",
+        "purpose": "Scans the incoming prompt for injection, jailbreak, and PII before any LLM invocation."
+      },
+      {
+        "name": "SMR-SanitizeModelResponse",
+        "type": "SanitizeModelResponse",
+        "purpose": "Inspects the model output to redact sensitive PII or unsafe completions."
+      }
+    ]
+  },
+  {
+    "id": "ai-cache",
+    "gateway": "ai",
+    "proxy": "ai-gateway-v1",
+    "title": "Semantic Cache",
+    "category": "Cost Control",
+    "summary": "Matches semantically equivalent prompts against a vector cache and serves them without an upstream call — zero model cost, zero token quota.",
+    "attachPoint": "Request PreFlow + Response Flow",
+    "onViolation": "No rejection — a hit short-circuits the upstream call",
+    "configSource": "Similarity threshold & TTL on the cache policy",
+    "policies": [
+      {
+        "name": "SCL-Semantic-Cache-Lookup",
+        "type": "SemanticCacheLookup",
+        "purpose": "Embeds the incoming prompt and queries the vector store for a high-similarity match."
+      },
+      {
+        "name": "SCP-Semantic-Cache-Populate",
+        "type": "SemanticCachePopulate",
+        "purpose": "Stores the LLM response on a cache miss so later similar prompts are served locally."
+      }
+    ]
+  },
+  {
+    "id": "ai-router",
+    "gateway": "ai",
+    "proxy": "ai-gateway-v1",
+    "title": "Smart Routing Model Mapping",
+    "category": "Traffic Shaping",
+    "summary": "Classifies each prompt with the TypeSafe AI JEV System One router model and maps the result to a concrete model the caller is entitled to — no model names hardcoded in the proxy.",
+    "attachPoint": "AutoRoutingFlow (/auto route, after the semantic cache lookup — cache misses only)",
+    "onViolation": "Fails open — falls back to the product default model",
+    "configSource": "API Product routing.model.* custom attributes + encrypted ai-gateway-creds KVM (router API key)",
+    "policies": [
+      {
+        "name": "KVM-GetRouterCredentials",
+        "type": "KeyValueMapOperations",
+        "purpose": "Reads the router API key from the encrypted ai-gateway-creds KVM into a private.* variable."
+      },
+      {
+        "name": "AM-PrepRouterRequest",
+        "type": "AssignMessage",
+        "purpose": "Builds the classifier request natively and constrains the answer to coding | deep_reasoning | simple | general."
+      },
+      {
+        "name": "SC-ModelRouter",
+        "type": "ServiceCallout",
+        "purpose": "Calls the JEV System One router with a 2.5s timeout and continue-on-error so a blip degrades rather than fails."
+      },
+      {
+        "name": "JS-AutoRouting",
+        "type": "JavaScript",
+        "purpose": "Maps the returned category to a model using the API Product attributes. Holds no model names of its own."
+      },
+      {
+        "name": "AM-RouteGeminiTarget",
+        "type": "AssignMessage",
+        "purpose": "Routes the request to the selected Vertex AI Gemini endpoint."
+      },
+      {
+        "name": "AM-RouteClaudeTarget",
+        "type": "AssignMessage",
+        "purpose": "Routes coding prompts to Anthropic Claude on Vertex when the persona product maps coding to Claude."
+      }
+    ]
+  },
+  {
+    "id": "ai-quota",
+    "gateway": "ai",
+    "proxy": "ai-gateway-v1",
+    "title": "Token Quotas & Spend Limits",
+    "category": "Cost Control",
+    "summary": "Budgets by tokens and dollars rather than requests, and checks the prepaid wallet plus active rate plan before the call is allowed through.",
+    "attachPoint": "PreFlow + LLMTokenLimitFlow & AutoRoutingFlow (enforce) + PostFlow (count)",
+    "onViolation": "HTTP 429 token quota or $ budget exceeded / HTTP 403 wallet exhausted",
+    "configSource": "API Product token quota + developer.budget.* attributes + wallet balance & rate plan",
+    "policies": [
+      {
+        "name": "LTQ-TokenEnforce",
+        "type": "LLMTokenQuota (LLMTokenLimitFlow, AutoRoutingFlow)",
+        "purpose": "Checks accumulated token consumption against the limit resolved from the API Product (token-quota demo model route, and /auto before the router runs)."
+      },
+      {
+        "name": "LTQ-TokenCount",
+        "type": "LLMTokenQuota (PostFlow)",
+        "purpose": "Reads the exact token count from the model response and increments the distributed counter."
+      },
+      {
+        "name": "QC-EnforceBudgetLimit",
+        "type": "Quota (PreFlow, EnforceOnly)",
+        "purpose": "Checks the per-developer USD budget counter; RF-BudgetExceeded raises the client-facing 429."
+      },
+      {
+        "name": "QC-DeductBudget",
+        "type": "Quota (PostFlow)",
+        "purpose": "Spends the real request cost (micro-dollars) against the budget counter; skipped on cache hits."
+      },
+      {
+        "name": "MLC-EnforceMonetizationLimits",
+        "type": "MonetizationLimitsCheck",
+        "purpose": "Verifies the prepaid wallet balance and an active rate plan subscription."
+      }
+    ]
+  },
+  {
+    "id": "ai-upstream",
+    "gateway": "ai",
+    "proxy": "ai-gateway-v1",
+    "title": "Cost Attribution & Telemetry",
+    "category": "Observability",
+    "summary": "Prices every request from the live rate card and emits the analytics dimensions and x-gateway-* trace headers the dashboards run on.",
+    "attachPoint": "Target & Response Flow",
+    "onViolation": "Non-blocking — records cost and telemetry",
+    "configSource": "ai-model-rates KVM",
+    "policies": [
+      {
+        "name": "KVM-GetModelRates",
+        "type": "KeyValueMapOperations",
+        "purpose": "Reads the live input/output per-1k token rates from the ai-model-rates KVM."
+      },
+      {
+        "name": "JS-CalculateCost",
+        "type": "JavaScript",
+        "purpose": "Computes the exact USD cost for the request (zeroed on a cache hit) that QC-DeductBudget then spends."
+      },
+      {
+        "name": "DC-ModelAnalytics",
+        "type": "DataCapture",
+        "purpose": "Streams model, token counts, latency, and cost into custom analytics dimensions."
+      },
+      {
+        "name": "AM-SetResponseHeaders",
+        "type": "AssignMessage",
+        "purpose": "Injects the x-gateway-* trace headers used by the trace viewer."
+      }
+    ]
+  },
+  {
+    "id": "mcp-auth",
+    "gateway": "mcp",
+    "proxy": "mcp",
+    "title": "Agent API Key Check",
+    "category": "Security",
+    "summary": "Parses the JSON-RPC 2.0 envelope, rejects non-MCP methods, and verifies the agent’s API key on tools/list and tools/call before anything else runs.",
+    "attachPoint": "Proxy PreFlow",
+    "onViolation": "HTTP 401 unauthorized (bad key) / HTTP 400 (method not allowed)",
+    "configSource": "Developer App credentials",
+    "policies": [
+      {
+        "name": "CORS-Allow",
+        "type": "CORS",
+        "purpose": "Enables cross-origin browser and web-agent inspection."
+      },
+      {
+        "name": "PP-MCP",
+        "type": "MCP Protocol Policy",
+        "purpose": "Parses the incoming JSON-RPC 2.0 envelope (jsonrpc, id, method, params)."
+      },
+      {
+        "name": "RF-MethodNotAllowed",
+        "type": "RaiseFault",
+        "purpose": "Rejects JSON-RPC methods outside the MCP allowlist with HTTP 400 / -32601."
+      },
+      {
+        "name": "VA-VerifyAPIKey",
+        "type": "VerifyAPIKey",
+        "purpose": "Verifies the agent consumer key on tools/list and tools/call."
+      }
+    ]
+  },
+  {
+    "id": "mcp-tools",
+    "gateway": "mcp",
+    "proxy": "mcp",
+    "title": "Persona Tools Filter",
+    "category": "Security",
+    "summary": "Only tools listed as tools/call/<tool> operations on the persona’s API product are returned by tools/list or callable, so a Support agent never discovers — let alone calls — a confidential insights tool.",
+    "attachPoint": "Proxy PreFlow (VerifyAPIKey operation match)",
+    "onViolation": "HTTP 401 InvalidApiKeyForGivenResource — tool hidden from tools/list, tools/call rejected",
+    "configSource": "API Product MCP operations (tools/call/<tool>)",
+    "policies": [
+      {
+        "name": "VA-VerifyAPIKey",
+        "type": "VerifyAPIKey",
+        "purpose": "Matches the MCP operation against the key’s API product; tools not on the product are filtered or rejected."
+      }
+    ]
+  },
+  {
+    "id": "mcp-rate",
+    "gateway": "mcp",
+    "proxy": "mcp",
+    "title": "Tool Call Rate Limits",
+    "category": "Traffic Shaping",
+    "summary": "Caps tool-call rates per app and per tool, from the quota on the API product, so a runaway agent loop cannot overwhelm core customer or order systems.",
+    "attachPoint": "Proxy PreFlow",
+    "onViolation": "HTTP 429 rate limited",
+    "configSource": "API Product quota (per tool operation)",
+    "policies": [
+      {
+        "name": "Q-Limit",
+        "type": "Quota",
+        "purpose": "Enforces the product quota (per app and per tool) protecting downstream systems of record."
+      }
+    ]
+  },
+  {
+    "id": "mcp-call",
+    "gateway": "mcp",
+    "proxy": "mcp",
+    "title": "MCP Server Call & Audit Log",
+    "category": "Observability",
+    "summary": "Strips client credentials, forwards the call to the MCP server (Apigee-hosted Customer Service, Business Insights and industry packs, Google’s BigQuery, or third-party such as ServiceNow), and streams an audit record of every tool invocation to Cloud Logging.",
+    "attachPoint": "Proxy PreFlow → Target → PostClientFlow",
+    "onViolation": "Non-blocking — always logs",
+    "configSource": "Target endpoint + Cloud Logging sink",
+    "policies": [
+      {
+        "name": "AM-RemoveAuthorization",
+        "type": "AssignMessage",
+        "purpose": "Strips client auth headers before forwarding to the MCP server."
+      },
+      {
+        "name": "ML-CloudLogging",
+        "type": "MessageLogging",
+        "purpose": "Streams structured MCP tool execution audit logs to Google Cloud Logging."
+      }
+    ]
+  },
+  {
+    "id": "mcp-bridge",
+    "gateway": "mcp",
+    "proxy": "mcp",
+    "title": "JSON-RPC → REST Bridge (Optional)",
+    "category": "Traffic Shaping",
+    "summary": "Only for REST APIs converted to MCP and hosted by Apigee: maps the tool call to the REST endpoint and validates arguments against the tool schema. Third-party MCP servers skip it.",
+    "attachPoint": "Apigee-hosted MCP server",
+    "onViolation": "JSON-RPC -32602 invalid tool arguments",
+    "configSource": "Tool-to-endpoint mapping (OpenAPI spec)",
+    "policies": [
+      {
+        "name": "PP-MCP",
+        "type": "Protocol Bridge",
+        "purpose": "Maps the MCP tool name and JSON arguments to the target URL, HTTP verb, and parameters."
+      },
+      {
+        "name": "RF-RefundLimit",
+        "type": "RaiseFault",
+        "purpose": "Business rule on the REST proxy: issueRefund over $50 returns HTTP 403 REFUND_LIMIT for every persona."
+      }
+    ]
+  }
+]

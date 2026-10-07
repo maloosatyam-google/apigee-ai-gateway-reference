@@ -1,0 +1,81 @@
+{
+  "source": "http://localhost/api/themes",
+  "themes": [
+    {
+      "id": "axis-bank",
+      "name": "Axis Bank",
+      "industry": "banking"
+    },
+    {
+      "id": "ayala-land",
+      "name": "Ayala Land",
+      "industry": "real-estate"
+    },
+    {
+      "id": "bajaj-finance",
+      "name": "Bajaj Finance",
+      "industry": "banking"
+    },
+    {
+      "id": "hdfc-bank",
+      "name": "HDFC Bank",
+      "industry": "banking"
+    },
+    {
+      "id": "hpcl",
+      "name": "HPCL",
+      "industry": "oil-gas"
+    },
+    {
+      "id": "icici-bank",
+      "name": "ICICI Bank",
+      "industry": "banking"
+    },
+    {
+      "id": "indusind-bank",
+      "name": "IndusInd Bank",
+      "industry": "banking"
+    },
+    {
+      "id": "jiostar",
+      "name": "JioStar",
+      "industry": "media"
+    },
+    {
+      "id": "mahindra",
+      "name": "Mahindra",
+      "industry": "generic"
+    },
+    {
+      "id": "metis-reasoning",
+      "name": "Metis Reasoning",
+      "industry": "it"
+    },
+    {
+      "id": "pidilite",
+      "name": "Pidilite",
+      "industry": "manufacturing"
+    },
+    {
+      "id": "pocketfm",
+      "name": "PocketFM",
+      "industry": "media"
+    },
+    {
+      "id": "sgx",
+      "name": "SGX",
+      "industry": "banking"
+    },
+    {
+      "id": "tech-mahindra",
+      "name": "Tech Mahindra",
+      "industry": "it"
+    },
+    {
+      "id": "zycus",
+      "name": "Zycus",
+      "industry": "it"
+    }
+  ],
+  "industries": []
+}

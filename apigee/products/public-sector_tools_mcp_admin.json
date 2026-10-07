@@ -1,0 +1,314 @@
+{
+  "name": "Public Sector Tools MCP Admin",
+  "displayName": "Public Sector Tools MCP Admin",
+  "description": "Public Sector: every tool, no business-rule limits. Used by Digital & IT admins and by the ungoverned agent in the Agent Showcase.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "public-sector"
+    },
+    {
+      "name": "persona",
+      "value": "admin"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/searchResidents"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getResidentAccount"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPermitApplicationStatus"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/submitPermitApplication"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLicenceDetails"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/renewBusinessLicence"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getBenefitClaimStatus"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/reportStreetDefect"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getStreetDefectReport"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/bookServiceAppointment"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listFeePayments"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/refundPermitFee"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/openCaseworkerReferral"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getServiceRequestVolumes"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPermitProcessingTimes"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getBenefitUptakeRates"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getChannelShiftMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getStreetRepairBacklog"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getResidentSatisfactionScores"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getProgrammeCostBreakdown"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "public-sector-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/runCaseloadForecast"
+          }
+        ],
+        "quota": {
+          "limit": "2",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

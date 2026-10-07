@@ -1,0 +1,314 @@
+{
+  "name": "Oil and Gas Tools MCP Admin",
+  "displayName": "Oil & Gas Tools MCP Admin",
+  "description": "Oil & Gas: every tool, no business-rule limits. Used by admins and by the ungoverned agent in the Agent Showcase.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "oil-gas"
+    },
+    {
+      "name": "persona",
+      "value": "admin"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/searchFuelCustomers"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getFuelCustomerAccount"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listFleetCardTransactions"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/blockFleetCard"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/creditFleetCardCharge"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/findRetailOutlets"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getRetailOutletDetails"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLpgConnection"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/bookLpgCylinderRefill"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/trackLpgDelivery"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/placeLubricantOrder"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLubricantOrderStatus"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/openFuelServiceCase"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getStationThroughput"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getDepotStockLevels"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLpgDeliveryPerformance"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getFleetCardSpendSummary"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getDealerNetworkScorecard"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getFuelComplaintTrends"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getProductMarginWaterfall"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "oil-gas-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/runFuelDemandForecast"
+          }
+        ],
+        "quota": {
+          "limit": "2",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

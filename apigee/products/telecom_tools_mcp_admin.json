@@ -1,0 +1,314 @@
+{
+  "name": "Telecom Tools MCP Admin",
+  "displayName": "Telecom Tools MCP Admin",
+  "description": "Telecom: every tool, no business-rule limits. Used by Network & IT admins and by the ungoverned agent in the Agent Showcase.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "telecom"
+    },
+    {
+      "name": "persona",
+      "value": "admin"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/searchWirelessAccounts"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getWirelessAccount"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listServiceLines"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getLineUsage"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getBillBreakdown"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/issueBillCredit"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/changeRatePlan"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/addRoamingPass"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/checkNetworkOutage"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/openTroubleTicket"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/scheduleTechnicianVisit"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/swapSimCard"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getDeviceInstallment"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getArpuTrends"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getChurnRiskSummary"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getNetworkQualityMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPortingActivity"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getCareContactMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getRoamingRevenueMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPlanMarginAnalysis"
+          }
+        ],
+        "quota": {
+          "limit": "100",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "telecom-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/runNetAddsForecast"
+          }
+        ],
+        "quota": {
+          "limit": "2",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

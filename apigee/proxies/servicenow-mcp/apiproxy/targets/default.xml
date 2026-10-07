@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<TargetEndpoint name="default">
+  <HTTPTargetConnection>
+    <URL>__SERVICENOW_MCP_URL__/mcp</URL>
+    <Authentication>
+      <GoogleIDToken>
+        <Audience>__SERVICENOW_MCP_URL__</Audience>
+      </GoogleIDToken>
+    </Authentication>
+  </HTTPTargetConnection>
+</TargetEndpoint>

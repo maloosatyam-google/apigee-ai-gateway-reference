@@ -1,0 +1,210 @@
+{
+  "name": "Aviation Tools MCP - Passenger Services",
+  "displayName": "Aviation Tools MCP - Passenger Services",
+  "description": "Aviation Passenger Services: look up passengers, bookings, flights, bags, miles and charges; rebook, change seats, file bag claims, credit goodwill miles, open care cases and refund booking charges (gateway limit $50). No route finance or network analytics.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "aviation"
+    },
+    {
+      "name": "persona",
+      "value": "sales_agent"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "aviation-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "aviation-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/searchPassengers"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "aviation-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPassengerProfile"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "aviation-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getBookingRecord"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "aviation-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getFlightStatus"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "aviation-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/rebookPassenger"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "aviation-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/changeSeatAssignment"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "aviation-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/traceDelayedBaggage"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "aviation-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/fileBaggageClaim"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "aviation-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getMileageBalance"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "aviation-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/creditBonusMiles"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "aviation-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listBookingCharges"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "aviation-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/refundFareCharge"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "aviation-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/openPassengerCase"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

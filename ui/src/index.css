@@ -1,0 +1,462 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  /* --brand-font: set by the active customer theme (src/utils/customerTheme.js). */
+  font-family: var(--brand-font, -apple-system), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* ==========================================================================
+   SURFACE TOKENS
+   --------------------------------------------------------------------------
+   Two panes sit side by side across the app: the *flow* (the conversation or
+   tool console — what a caller actually gets back) and the *telemetry*
+   inspector (what the gateway observed about that call). They must never read
+   as the same material, or a demo audience cannot tell the product from the
+   instrumentation.
+
+   Declared as tokens rather than Tailwind `bg-slate-*` utilities, because the
+   theme block below rewrites those utilities with `!important` and would
+   flatten the two panes back together.
+
+   Constraint when retuning these: the telemetry tray must stay *darker* than
+   the cards inside it (`bg-white`), otherwise the cards lose their edge and
+   the panel goes flat.
+
+   A customer-branded theme overrides these two under its own
+   `html[data-theme="<name>"]` selector — see AVAILABLE_THEMES in
+   src/types/index.ts.
+   ========================================================================== */
+
+html {
+  --surface-flow: #ffffff;
+  --surface-telemetry: #e7ecf6;
+}
+
+.surface-flow {
+  background-color: var(--surface-flow);
+}
+
+.surface-telemetry {
+  background-color: var(--surface-telemetry);
+}
+
+/* Scrollable strips (e.g. the scenario chip bar) still scroll by trackpad,
+   wheel and touch, but draw no scrollbar - on a presentation screen the bar
+   is visual noise. */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ==========================================================================
+   THEME: Cloud Light
+   --------------------------------------------------------------------------
+   The components were originally authored dark-first, and this block is the
+   override layer that turns them light. That is why the rules need
+   `!important` — they are outranking base Tailwind utilities such as
+   `bg-slate-950`, not cascading with them.
+
+   The matching Tailwind `dark:` variants have been removed from the
+   components, so only the dark-toned *base* classes still need patching here.
+   Retiring this layer entirely means restyling those base classes light-first
+   across every component — a separate change.
+
+   To add a customer-branded theme: copy this block under a new
+   `html[data-theme="<name>"]` selector, override the surface tokens above,
+   and register the name in AVAILABLE_THEMES (src/types/index.ts).
+   ========================================================================== */
+
+/* Cloud Light */
+html[data-theme="light"] {
+  color-scheme: light;
+}
+
+html[data-theme="light"] body {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .bg-slate-950 {
+  background-color: #f8fafc !important;
+}
+
+html[data-theme="light"] .bg-slate-950\/80,
+html[data-theme="light"] .bg-slate-950\/70,
+html[data-theme="light"] .bg-slate-950\/60 {
+  background-color: #f8fafc !important;
+}
+
+html[data-theme="light"] .bg-slate-900 {
+  background-color: #ffffff !important;
+}
+
+html[data-theme="light"] .bg-slate-900\/95,
+html[data-theme="light"] .bg-slate-900\/90,
+html[data-theme="light"] .bg-slate-900\/80,
+html[data-theme="light"] .bg-slate-900\/70,
+html[data-theme="light"] .bg-slate-900\/60 {
+  background-color: #ffffff !important;
+}
+
+html[data-theme="light"] .bg-slate-850,
+html[data-theme="light"] .hover\:bg-slate-850:hover,
+html[data-theme="light"] .hover\:bg-slate-850\/40:hover {
+  background-color: #f1f5f9 !important;
+}
+
+html[data-theme="light"] .bg-slate-800 {
+  background-color: #f1f5f9 !important;
+}
+
+html[data-theme="light"] .hover\:bg-slate-800:hover,
+html[data-theme="light"] .hover\:bg-slate-800\/60:hover {
+  background-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] .border-slate-800,
+html[data-theme="light"] .border-slate-800\/80 {
+  border-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] .border-slate-700 {
+  border-color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] .text-slate-100,
+html[data-theme="light"] .text-slate-200 {
+  color: #0f172a !important;
+}
+
+/* Headings and labels that were text-white should become dark, but NOT buttons or badges with colored backgrounds */
+html[data-theme="light"] h1.text-white,
+html[data-theme="light"] h2.text-white,
+html[data-theme="light"] h3.text-white,
+html[data-theme="light"] h4.text-white,
+html[data-theme="light"] span.text-white:not([class*="bg-"]):not([class*="rounded-full"]):not([class*="from-"]),
+html[data-theme="light"] p.text-white {
+  color: #0f172a !important;
+}
+
+/* Ensure colored buttons, gradients, and badges always retain crisp white text */
+html[data-theme="light"] [class*="bg-blue-600"],
+html[data-theme="light"] [class*="bg-purple-600"],
+html[data-theme="light"] [class*="bg-indigo-600"],
+html[data-theme="light"] [class*="bg-emerald-600"],
+html[data-theme="light"] [class*="bg-rose-600"],
+html[data-theme="light"] [class*="bg-cyan-600"],
+html[data-theme="light"] [class*="bg-amber-600"],
+html[data-theme="light"] [class*="from-"],
+html[data-theme="light"] button[type="submit"] {
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] .text-slate-300 {
+  color: #1e293b !important;
+}
+
+html[data-theme="light"] .text-slate-400 {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .text-slate-500 {
+  color: #64748b !important;
+}
+
+/* Dark tint pill backgrounds become accessible pastels. Only the tints the
+   components still use are listed; indigo/purple/amber/orange/blue variants
+   existed solely as `dark:` classes and went with them. */
+html[data-theme="light"] [class*="bg-emerald-950"] {
+  background-color: #ecfdf5 !important;
+  color: #047857 !important;
+  border-color: #a7f3d0 !important;
+}
+
+html[data-theme="light"] [class*="bg-rose-950"] {
+  background-color: #fff1f2 !important;
+  color: #be123c !important;
+  border-color: #fecdd3 !important;
+}
+
+html[data-theme="light"] pre {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* JSON syntax-highlight spans inside <pre> code blocks. The `.code-editor-dark`
+   class these also used to target no longer exists in any component. */
+html[data-theme="light"] pre .text-emerald-400 {
+  color: #047857 !important;
+}
+html[data-theme="light"] pre .text-amber-400 {
+  color: #b45309 !important;
+}
+html[data-theme="light"] pre .text-purple-400 {
+  color: #7e22ce !important;
+}
+html[data-theme="light"] pre .text-rose-400 {
+  color: #be123c !important;
+}
+html[data-theme="light"] pre .text-slate-100,
+html[data-theme="light"] pre .text-slate-200,
+html[data-theme="light"] pre .text-slate-300 {
+  color: #0f172a !important;
+}
+html[data-theme="light"] pre .text-slate-400 {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] input,
+html[data-theme="light"] textarea,
+html[data-theme="light"] select {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* ==========================================================================
+   GUIDED TOUR
+   --------------------------------------------------------------------------
+   The tour step is a `popover="manual"` element (see GuidedTour.tsx) so the
+   viewer can keep clicking the app while a step is on screen.
+
+   Written as plain CSS on bespoke class names rather than as Tailwind
+   utilities, on purpose: the theme block above rewrites `bg-*`/`text-*`
+   utilities with `!important` and would repaint the popover along with the
+   rest of the app.
+
+   Positioning is CSS Anchor Positioning. No browser ships it everywhere yet,
+   so the `@supports not` block at the bottom degrades the step to a bar
+   pinned across the foot of the viewport. That is a real, usable layout - not
+   a broken one - which is why there is no polyfill here.
+   ========================================================================== */
+
+#tour-step {
+  /* A popover defaults to `inset: 0; margin: auto`, i.e. dead centre of the
+     viewport. Clearing inset is what hands control to `position-area`. */
+  position: fixed;
+  inset: auto;
+  margin: 0.6rem;
+  width: min(23rem, calc(100vw - 2rem));
+  padding: 0.75rem 0.9rem 0.85rem;
+  border: 1px solid #c7d2fe;
+  border-radius: 0.875rem;
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 20px 45px -14px rgb(30 41 59 / 0.45);
+  overflow: visible;
+  position-anchor: --tour-anchor;
+  /*
+    Beside the target, not below it. The telemetry inspector is a narrow right-hand
+    column, and a step placed underneath its cards covers the rest of the column - i.e.
+    exactly the numbers the step is telling you to read. `inline-start` puts the popover
+    out over the roomy chat pane instead.
+
+    The fallbacks then handle the targets that are not in that column: the scenario chip
+    strip spans the full width at the foot of the page, where there is no room to either
+    side, so it lands above instead.
+  */
+  position-area: inline-start center;
+  position-try-fallbacks: flip-inline, position-area(block-start span-inline-start),
+    position-area(block-end span-inline-start);
+}
+
+/* Steps with no on-screen target (the intro, the outro, and any admin step
+   being narrated to a non-admin) have no anchor to tether to. Anchoring to a
+   name that resolves to nothing would drop the popover in the top-left
+   corner, so these are parked deliberately instead. */
+#tour-step[data-anchored="false"] {
+  position-anchor: none;
+  bottom: 4.75rem;
+  left: 50%;
+  translate: -50% 0;
+  margin: 0;
+}
+
+.tour-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.tour-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6366f1;
+}
+
+.tour-close {
+  display: inline-flex;
+  padding: 0.2rem;
+  border-radius: 0.375rem;
+  color: #64748b;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.tour-close:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.tour-title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #0f172a;
+}
+
+.tour-body {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.55;
+  color: #475569;
+}
+
+.tour-note,
+.tour-locked {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  margin: 0.5rem 0 0;
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.6875rem;
+  line-height: 1.45;
+}
+
+.tour-note {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+}
+
+.tour-locked {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+}
+
+.tour-locked svg {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+
+.tour-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.tour-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s, opacity 0.15s;
+}
+
+.tour-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tour-btn-ghost {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+}
+
+.tour-btn-ghost:not(:disabled):hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.tour-btn-primary {
+  background: #4f46e5;
+  border: 1px solid #4f46e5;
+  color: #ffffff;
+}
+
+.tour-btn-primary:hover {
+  background: #4338ca;
+}
+
+.tour-btn:focus-visible,
+.tour-close:focus-visible {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+}
+
+/* The element the current step is talking about. `scroll-margin` keeps it
+   clear of the sticky navbar when the step scrolls it into view. */
+.tour-highlight {
+  outline: 2px solid #6366f1;
+  outline-offset: 3px;
+  border-radius: 0.75rem;
+  scroll-margin: 6rem;
+  animation: tour-pulse 2s ease-in-out infinite;
+}
+
+@keyframes tour-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(99 102 241 / 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgb(99 102 241 / 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tour-highlight {
+    animation: none;
+  }
+}
+
+/* No anchor positioning: park the step across the foot of the viewport. */
+@supports not (anchor-name: --probe) {
+  #tour-step,
+  #tour-step[data-anchored="false"] {
+    position: fixed;
+    inset: auto 0 0 0;
+    width: 100%;
+    margin: 0;
+    translate: none;
+    border-width: 1px 0 0;
+    border-radius: 0;
+  }
+
+  #tour-step .tour-body {
+    max-width: 60ch;
+  }
+}

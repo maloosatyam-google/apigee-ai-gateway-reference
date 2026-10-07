@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<KeyValueMapOperations continueOnError="false" enabled="true" name="KVM-GetRefundLimit" mapIdentifier="customer-tools-config">
+  <Scope>environment</Scope>
+  <ExpiryTimeInSecs>60</ExpiryTimeInSecs>
+  <Get assignTo="private.refund.maxAmount">
+    <Key>
+      <Parameter>refund.maxAmount</Parameter>
+    </Key>
+  </Get>
+  <Get assignTo="private.refund.limitedProducts">
+    <Key>
+      <Parameter>refund.limitedProducts</Parameter>
+    </Key>
+  </Get>
+</KeyValueMapOperations>

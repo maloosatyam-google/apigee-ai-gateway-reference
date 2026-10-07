@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<TargetEndpoint name="gemini-vertex-target">
+  <Description>Vertex AI Gemini Target Endpoint (Global Location)</Description>
+  <FaultRules/>
+  <PreFlow name="PreFlow">
+    <Request>
+      <Step>
+        <Name>AM-SetCacheMiss</Name>
+        <Condition>(request.header.use-cache is true) or (request.header.use-cache = "true") or (request.header.x-use-cache is true) or (request.header.x-use-cache = "true")</Condition>
+      </Step>
+      <Step>
+        <Name>AM-RouteGeminiTarget</Name>
+      </Step>
+    </Request>
+    <Response/>
+  </PreFlow>
+  <PostFlow name="PostFlow">
+    <Request/>
+    <Response/>
+  </PostFlow>
+  <Flows/>
+  <HTTPTargetConnection>
+    <Properties/>
+    <URL>https://aiplatform.googleapis.com</URL>
+    <Authentication>
+      <GoogleAccessToken>
+        <Scopes>
+          <Scope>https://www.googleapis.com/auth/cloud-platform</Scope>
+        </Scopes>
+      </GoogleAccessToken>
+    </Authentication>
+  </HTTPTargetConnection>
+</TargetEndpoint>

@@ -1,0 +1,210 @@
+{
+  "name": "Manufacturing Tools MCP - Dealer Support",
+  "displayName": "Manufacturing Tools MCP - Dealer Support",
+  "description": "Manufacturing Dealer Support: look up dealer accounts, parts orders, shipments, machines, service bulletins, warranty claims and charges; place parts orders, file warranty claims, open returns and credit dealer charges (gateway limit $50). No plant finance or supply chain analytics.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "manufacturing"
+    },
+    {
+      "name": "persona",
+      "value": "sales_agent"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "manufacturing-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "manufacturing-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/searchDealerContacts"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "manufacturing-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getDealerAccount"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "manufacturing-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listPartsOrders"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "manufacturing-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPartAvailability"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "manufacturing-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/placePartsOrder"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "manufacturing-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/trackShipment"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "manufacturing-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getEquipmentRegistration"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "manufacturing-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listServiceBulletins"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "manufacturing-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getWarrantyClaim"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "manufacturing-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/submitWarrantyClaim"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "manufacturing-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/openReturnAuthorization"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "manufacturing-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/listDealerCharges"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "manufacturing-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/issueDealerCredit"
+          }
+        ],
+        "quota": {
+          "limit": "10",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}

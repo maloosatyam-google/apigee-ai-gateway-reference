@@ -1,0 +1,20 @@
+RaiseFault:
+  .continueOnError: false
+  .enabled: true
+  .name: RF-MissingUserEmail
+  DisplayName: RF-MissingUserEmail
+  Properties: {}
+  FaultResponse:
+    Set:
+      Payload:
+        .contentType: application/json
+        -Data: |-
+          {
+            "error": {
+              "code": 401,
+              "message": "Missing required X-User-Email header for custom label attribution."
+            }
+          }
+      StatusCode: 401
+      ReasonPhrase: Unauthorized
+  IgnoreUnresolvedVariables: true

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<TargetEndpoint name="claude-vertex-target">
+  <Description>Vertex AI Model Garden Anthropic Claude Target (Global Location)</Description>
+  <FaultRules/>
+  <PreFlow name="PreFlow">
+    <Request>
+      <Step>
+        <Name>AM-SetCacheMiss</Name>
+        <Condition>(request.header.use-cache is true) or (request.header.use-cache = "true") or (request.header.x-use-cache is true) or (request.header.x-use-cache = "true")</Condition>
+      </Step>
+      <Step>
+        <Name>AM-RouteClaudeTarget</Name>
+      </Step>
+      <Step>
+        <Name>JS-ClaudeRequestPrep</Name>
+      </Step>
+    </Request>
+    <Response>
+      <Step>
+        <Name>JS-FormatClaudeResponse</Name>
+        <Condition>flow.convert_claude_to_gemini_resp == "true"</Condition>
+      </Step>
+    </Response>
+  </PreFlow>
+  <PostFlow name="PostFlow">
+    <Request/>
+    <Response/>
+  </PostFlow>
+  <Flows/>
+  <HTTPTargetConnection>
+    <Properties/>
+    <URL>https://aiplatform.googleapis.com</URL>
+    <Authentication>
+      <GoogleAccessToken>
+        <Scopes>
+          <Scope>https://www.googleapis.com/auth/cloud-platform</Scope>
+        </Scopes>
+      </GoogleAccessToken>
+    </Authentication>
+  </HTTPTargetConnection>
+</TargetEndpoint>

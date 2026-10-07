@@ -1,0 +1,145 @@
+{
+  "name": "Media Tools MCP - Audience Analysts",
+  "displayName": "Media Tools MCP - Audience Analysts",
+  "description": "Media Audience Analysts: churn, viewership, title performance, ad revenue, streaming quality and plan-mix metrics, content margins and subscriber forecasts. Aggregates only, no individual subscriber records.",
+  "approvalType": "auto",
+  "attributes": [
+    {
+      "name": "access",
+      "value": "private"
+    },
+    {
+      "name": "industry",
+      "value": "media"
+    },
+    {
+      "name": "persona",
+      "value": "loans_agent"
+    }
+  ],
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "payloadOperationGroup": {
+    "operationConfigs": [
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/list"
+          }
+        ],
+        "quota": {
+          "limit": "30",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getSubscriberChurnMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getViewershipTrends"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getTitlePerformance"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getAdRevenueMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getStreamingQualityMetrics"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getPlanMixSummary"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/getContentMarginReport"
+          }
+        ],
+        "quota": {
+          "limit": "20",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      },
+      {
+        "apiSource": "media-mcp",
+        "operations": [
+          {
+            "operation": "tools/call/runSubscriberGrowthForecast"
+          }
+        ],
+        "quota": {
+          "limit": "2",
+          "interval": "1",
+          "timeUnit": "minute"
+        }
+      }
+    ]
+  }
+}
