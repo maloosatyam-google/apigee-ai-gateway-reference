@@ -23,16 +23,16 @@ default.format={{ if and $.Values.defaults $.Values.defaults.format }}{{ $.Value
 # ==============================================================================
 # SECTION 2: SMART ROUTER TIERS & TASK MAPPINGS
 # ==============================================================================
-tier.low={{ if and $.Values.routing $.Values.routing.tiers }}{{ $.Values.routing.tiers.low | default "gemini-3.1-flash-lite" }}{{ else }}gemini-3.1-flash-lite{{ end }}
-tier.medium={{ if and $.Values.routing $.Values.routing.tiers }}{{ $.Values.routing.tiers.medium | default "gemini-3.5-flash" }}{{ else }}gemini-3.5-flash{{ end }}
+tier.low={{ if and $.Values.routing $.Values.routing.tiers }}{{ $.Values.routing.tiers.low | default "gemini-3.5-flash-lite" }}{{ else }}gemini-3.5-flash-lite{{ end }}
+tier.medium={{ if and $.Values.routing $.Values.routing.tiers }}{{ $.Values.routing.tiers.medium | default "gemini-3.6-flash" }}{{ else }}gemini-3.6-flash{{ end }}
 tier.high={{ if and $.Values.routing $.Values.routing.tiers }}{{ $.Values.routing.tiers.high | default "gemini-2.5-pro" }}{{ else }}gemini-2.5-pro{{ end }}
-tier.max={{ if and $.Values.routing $.Values.routing.tiers }}{{ $.Values.routing.tiers.max | default "claude-haiku-4-5" }}{{ else }}claude-haiku-4-5{{ end }}
+tier.max={{ if and $.Values.routing $.Values.routing.tiers }}{{ $.Values.routing.tiers.max | default "claude-haiku-5-5" }}{{ else }}claude-haiku-5-5{{ end }}
 
 task.coding={{ if and $.Values.routing $.Values.routing.tasks }}{{ $.Values.routing.tasks.coding | default "gemini-2.5-pro" }}{{ else }}gemini-2.5-pro{{ end }}
 task.reasoning={{ if and $.Values.routing $.Values.routing.tasks }}{{ $.Values.routing.tasks.reasoning | default "gemini-2.5-pro" }}{{ else }}gemini-2.5-pro{{ end }}
-task.summarization={{ if and $.Values.routing $.Values.routing.tasks }}{{ $.Values.routing.tasks.summarization | default "gemini-3.1-flash-lite" }}{{ else }}gemini-3.1-flash-lite{{ end }}
-task.simple_chat={{ if and $.Values.routing $.Values.routing.tasks }}{{ $.Values.routing.tasks.simple_chat | default "gemini-3.5-flash" }}{{ else }}gemini-3.5-flash{{ end }}
-task.classifier_model={{ if and $.Values.routing $.Values.routing.tasks }}{{ $.Values.routing.tasks.classifier_model | default "gemini-3.1-flash-lite" }}{{ else }}gemini-3.1-flash-lite{{ end }}
+task.summarization={{ if and $.Values.routing $.Values.routing.tasks }}{{ $.Values.routing.tasks.summarization | default "gemini-3.5-flash-lite" }}{{ else }}gemini-3.5-flash-lite{{ end }}
+task.simple_chat={{ if and $.Values.routing $.Values.routing.tasks }}{{ $.Values.routing.tasks.simple_chat | default "gemini-3.6-flash" }}{{ else }}gemini-3.6-flash{{ end }}
+task.classifier_model={{ if and $.Values.routing $.Values.routing.tasks }}{{ $.Values.routing.tasks.classifier_model | default "gemini-3.5-flash-lite" }}{{ else }}gemini-3.5-flash-lite{{ end }}
 
 # ==============================================================================
 # SECTION 3: BACKWARD COMPATIBILITY ALIASES & REWRITES

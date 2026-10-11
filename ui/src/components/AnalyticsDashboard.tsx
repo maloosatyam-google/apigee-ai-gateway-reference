@@ -437,17 +437,21 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     }>();
 
     const colorPalette: Record<string, { color: string; badge: string }> = {
-      'claude-opus-4-5@20251101': { color: '#9333ea', badge: 'Op' }, // Purple
-      'claude-opus-4-5': { color: '#9333ea', badge: 'Op' },          // Purple
-      'claude-haiku-4-5@20251001': { color: '#0d9488', badge: 'Hk' }, // Teal-600
-      'claude-haiku-4-5': { color: '#0d9488', badge: 'Hk' },         // Teal-600
-      'gemini-3-flash-preview': { color: '#2563eb', badge: 'Gf' },   // Blue
+      'claude-opus-5-5': { color: '#9333ea', badge: 'Op' },          // Purple
+      'claude-haiku-5-5': { color: '#0d9488', badge: 'Hk' },         // Teal-600
       'gemini-2.5-flash': { color: '#0284c7', badge: 'F2' },         // Sky
-      'gemini-3.1-flash-lite': { color: '#059669', badge: 'Fl' },    // Emerald
-      // Warm colours deliberately: these two are priced above the Pro models, so they should
-      // not sit in the cool green/blue range the cheap Flash models use.
-      'gemini-3.7-flash': { color: '#ea580c', badge: 'F7' },         // Orange-600
+      'gemini-3.5-flash-lite': { color: '#059669', badge: 'Fl' },    // Emerald
+      'gemini-3.6-flash': { color: '#d97706', badge: 'F6' },         // Amber-600
       'gemini-3.8-flash': { color: '#c2410c', badge: 'F8' },         // Orange-700
+      // Retired 2026-10: kept so historical traffic still gets its colour.
+      'gemini-3.5-flash': { color: '#b45309', badge: 'F5' },         // Amber-700
+      'claude-opus-4-5@20251101': { color: '#a855f7', badge: 'O4' }, // Purple-500
+      'claude-opus-4-5': { color: '#a855f7', badge: 'O4' },
+      'claude-haiku-4-5@20251001': { color: '#14b8a6', badge: 'H4' }, // Teal-500
+      'claude-haiku-4-5': { color: '#14b8a6', badge: 'H4' },
+      'gemini-3-flash-preview': { color: '#2563eb', badge: 'Gf' },   // Blue
+      'gemini-3.1-flash-lite': { color: '#10b981', badge: 'F1' },    // Emerald-500
+      'gemini-3.7-flash': { color: '#ea580c', badge: 'F7' },         // Orange-600
       'gemini-3.1-pro-preview': { color: '#4f46e5', badge: 'Pr' },   // Indigo
       'gemini-2.5-pro': { color: '#6366f1', badge: 'P2' },          // Indigo-500
       'unknown-model': { color: '#94a3b8', badge: 'BL' },           // Slate-400 (Blocked / Unrouted)
@@ -461,7 +465,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       // These are already accounted for in the Request Success Rate & Errors Logged counters.
       if (r.model === 'unknown-model' || r.model === '{flow.model}' || r.model === 'null') return;
 
-      // Normalize model name (e.g. claude-opus-4-5@20251101 -> claude-opus-4-5)
+      // Normalize model name (e.g. claude-opus-5-5 -> claude-opus-5-5)
       const normalizedModel = r.model.replace(/@\d+$/, '');
       const existing = modelMap.get(normalizedModel);
       const rowTokens = r.inputTokens + r.outputTokens;

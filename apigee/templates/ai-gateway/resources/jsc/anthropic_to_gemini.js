@@ -157,7 +157,7 @@ try {
         // ---------------------------------------------------------------------
         // 6. Dynamic Target URL Generation
         // ---------------------------------------------------------------------
-        var defaultModel = context.getVariable("propertyset.model_locations.default.model") || "gemini-3.5-flash";
+        var defaultModel = context.getVariable("propertyset.model_locations.default.model") || "gemini-3.6-flash";
         var model = context.getVariable("primary_model") || 
                     context.getVariable("model") || 
                     defaultModel;

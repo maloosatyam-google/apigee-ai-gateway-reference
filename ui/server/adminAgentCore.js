@@ -73,9 +73,9 @@ export const SANDBOX_APP_NAME = 'admin-copilot-dev';
  * metered and shows up in the demo's analytics. Claude cannot be substituted:
  * the proxy's Gemini->Claude bridge drops `tools` and discards `tool_use`.
  *
- * Model chosen by benchmark, not by reputation. All four Gemini candidates were
+ * Model chosen by benchmark, not by reputation. The Gemini candidates were
  * driven through the real gateway with this file's own SYSTEM_INSTRUCTION and
- * tool declarations, 3 trials each:
+ * tool declarations, 3 trials each (2026-09, on the models since retired):
  *
  *   model                   plain     tool turn   tools  thinking  cost/call
  *   gemini-3.1-flash-lite   2334ms    2212ms      3/3    0         $0.000101
@@ -83,15 +83,15 @@ export const SANDBOX_APP_NAME = 'admin-copilot-dev';
  *   gemini-3.7-flash        3648ms    3249ms      3/3    48        $0.002414
  *   gemini-3.8-flash        504 Gateway Timeout
  *
- * gemini-3.8-flash -- the previous choice -- now times out at the gateway under
- * a tool-bearing request. flash-lite answers a tool turn in ~2.2s, calls tools
- * just as reliably, emits no thinking tokens, and costs ~24x less than 3.7 and
- * ~240x less than 3.8 did per turn. It is also entitled on BOTH tiers, so the
- * fallback below is now genuinely a last resort rather than a routine path.
+ * Flash-Lite won: fast tool turns, reliable tool calls, no thinking tokens, and
+ * the lowest cost. In 2026-10 those models were retired and the agent moved to
+ * their successors: gemini-3.5-flash-lite (primary) and gemini-3.6-flash
+ * (fallback). Flash-Lite is entitled on BOTH tiers, so the fallback is a last
+ * resort rather than a routine path.
  */
-export const AGENT_MODEL = 'gemini-3.1-flash-lite';
+export const AGENT_MODEL = 'gemini-3.5-flash-lite';
 /** Used only if the primary model turns out not to be entitled (403/404). */
-export const AGENT_FALLBACK_MODEL = 'gemini-3-flash-preview';
+export const AGENT_FALLBACK_MODEL = 'gemini-3.6-flash';
 export { AI_BASE_PROD };
 export { AI_BASE_DEV };
 
@@ -103,7 +103,7 @@ export const MAX_TOOL_ITERATIONS = 8;
 /**
  * Wall-clock ceiling for one chat turn.
  *
- * At ~2.5s per hop on gemini-3.1-flash-lite, the worst case (6 hops) is ~15s.
+ * At ~2.5s per hop on gemini-3.5-flash-lite, the worst case (6 hops) is ~15s.
  * 45s leaves roughly 3x headroom for a slow upstream without making a wedged
  * turn feel hung. This was 90s when the agent ran on gemini-3.8-flash at ~13s
  * per hop; leaving it there would just mean waiting longer to find out a turn
@@ -490,7 +490,7 @@ function operationConfigs(product) {
 
 /**
  * Accept either the literal operation resource (`/models/x:*`), a bare model id
- * (`gemini-3-flash-preview`) or `auto`, and return the canonical resource
+ * (`gemini-3.6-flash`) or `auto`, and return the canonical resource
  * string used by the product. Throws if the product has no such operation --
  * inventing one would silently create an unquota'd path.
  */
@@ -613,7 +613,7 @@ export function applyChangeSet(product, validatedChanges) {
 /**
  * Turns an internal config path into something a platform owner can read at a
  * glance. The admin reading the change card wants "Token limit · Claude Haiku",
- * not "llmTokenQuota./models/claude-haiku-4-5@20251001:*.limit".
+ * not "llmTokenQuota./models/claude-haiku-5-5:*.limit".
  *
  * Unknown shapes fall through to the raw path rather than being mangled into a
  * confident-sounding wrong label.
@@ -894,7 +894,7 @@ export function buildFinanceDeclarations() {
       parameters: {
         type: 'object',
         properties: {
-          model: { type: 'string', description: 'Exact rate-card key, e.g. gemini-3-flash-preview or claude-opus-4-5. Read get_rate_card first.' },
+          model: { type: 'string', description: 'Exact rate-card key, e.g. gemini-3.6-flash or claude-opus-4-5. Read get_rate_card first.' },
           input: { type: 'number', description: 'New input price, USD per 1M tokens.' },
           output: { type: 'number', description: 'New output price, USD per 1M tokens.' },
         },
@@ -926,7 +926,7 @@ export function buildInsightDeclarations(scope = 'admin') {
   const userProp = isAdmin
     ? { user: { type: 'string', description: 'Optional: restrict to one caller, by email.' } }
     : {};
-  const model = { type: 'string', description: 'Optional exact model id, e.g. gemini-3-flash-preview.' };
+  const model = { type: 'string', description: 'Optional exact model id, e.g. gemini-3.5-flash.' };
   const limit = { type: 'integer', description: 'Max rows to return (1-25). Defaults to 10.' };
   return [
     {
@@ -1075,7 +1075,7 @@ export function buildFunctionDeclarations(scope = 'admin') {
                 path: {
                   type: 'string',
                   description:
-                    'One of: attributes.<name> (access, developer.budget.limit, developer.budget.interval, developer.budget.timeunit, routing.model.coding|deep_reasoning|simple|general), llmTokenQuota.<resource>.limit (resource may be a model id such as gemini-3-flash-preview), or environments.',
+                    'One of: attributes.<name> (access, developer.budget.limit, developer.budget.interval, developer.budget.timeunit, routing.model.coding|deep_reasoning|simple|general), llmTokenQuota.<resource>.limit (resource may be a model id such as gemini-3.6-flash), or environments.',
                 },
                 value: {
                   type: 'string',

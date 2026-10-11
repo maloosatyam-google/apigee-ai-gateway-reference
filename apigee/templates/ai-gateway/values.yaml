@@ -23,7 +23,7 @@ features:
     template: "ai-gateway-filter"
   llm_judge:
     enabled: false
-    classifier_model: "gemini-3.1-flash-lite"
+    classifier_model: "gemini-3.5-flash-lite"
   quotas:
     enabled: true
   cors:
@@ -61,8 +61,8 @@ endpoints:
 # Global Defaults
 # ------------------------------------------------------------------------------
 defaults:
-  model: "gemini-3.1-flash-lite"
-  fallback: "gemini-3.1-flash-lite"
+  model: "gemini-3.5-flash-lite"
+  fallback: "gemini-3.5-flash-lite"
   target: "gemini"
   publisher: "google"
   format: "gemini"
@@ -73,37 +73,37 @@ defaults:
 # ------------------------------------------------------------------------------
 routing:
   tiers:
-    low: "gemini-3.1-flash-lite"
-    medium: "gemini-3-flash-preview"
+    low: "gemini-3.5-flash-lite"
+    medium: "gemini-3.6-flash"
     high: "gemini-3.1-pro-preview"
-    max: "claude-opus-4-5@20251101"
+    max: "claude-opus-5-5"
   tasks:
-    coding: "claude-opus-4-5@20251101"
+    coding: "claude-opus-5-5"
     reasoning: "gemini-3.1-pro-preview"
-    summarization: "gemini-3.1-flash-lite"
-    simple_chat: "gemini-3-flash-preview"
-    classifier_model: "gemini-3.1-flash-lite"
+    summarization: "gemini-3.5-flash-lite"
+    simple_chat: "gemini-3.6-flash"
+    classifier_model: "gemini-3.5-flash-lite"
   aliases:
     # Gemini Aliases
-    "gemini-flash": "gemini-3-flash-preview"
-    "gemini-flash-lite": "gemini-3.1-flash-lite"
+    "gemini-flash": "gemini-3.6-flash"
+    "gemini-flash-lite": "gemini-3.5-flash-lite"
     "gemini-pro": "gemini-3.1-pro-preview"
     "gemini-3.1-pro": "gemini-3.1-pro-preview"
     # Claude Aliases on Vertex AI Model Garden.
     # The claude-3-x generation is NOT published to Vertex in this project;
     # only the 4-x models resolve. Legacy names are mapped forward so an old
     # client gets a working model instead of a 404.
-    "claude-haiku": "claude-haiku-4-5@20251001"
-    "claude-opus": "claude-opus-4-5@20251101"
-    "claude-sonnet": "claude-opus-4-5@20251101"
-    "claude-3-5-sonnet": "claude-opus-4-5@20251101"
-    "claude-3-5-haiku": "claude-haiku-4-5@20251001"
-    "claude-3-7-sonnet": "claude-opus-4-5@20251101"
+    "claude-haiku": "claude-haiku-5-5"
+    "claude-opus": "claude-opus-5-5"
+    "claude-sonnet": "claude-opus-5-5"
+    "claude-3-5-sonnet": "claude-opus-5-5"
+    "claude-3-5-haiku": "claude-haiku-5-5"
+    "claude-3-7-sonnet": "claude-opus-5-5"
     # OpenAI & Auto Aliases
     "gpt-4o": "gemini-3.1-pro-preview"
-    "gpt-4o-mini": "gemini-3.1-flash-lite"
-    "auto": "gemini-3-flash-preview"
-    "gateway/auto": "gemini-3-flash-preview"
+    "gpt-4o-mini": "gemini-3.5-flash-lite"
+    "auto": "gemini-3.6-flash"
+    "gateway/auto": "gemini-3.6-flash"
 
 # ------------------------------------------------------------------------------
 # Model Catalog Definitions & Pricing Matrix
@@ -121,35 +121,25 @@ models:
   # still send those names are mapped forward by the `aliases` block above.
 
   # --- Google Gemini Models (Vertex AI - Global) ---
-  - name: "gemini-3.1-flash-lite"
-    displayName: "Gemini 3.1 Flash-Lite"
+  - name: "gemini-3.5-flash-lite"
+    displayName: "Gemini 3.5 Flash-Lite"
     publisher: "google"
     target: "gemini"
     format: "gemini"
     region: "global"
     pricing:
-      input_rate: 0.075
-      output_rate: 0.300
+      input_rate: 0.300
+      output_rate: 2.500
 
-  - name: "gemini-3-flash-preview"
-    displayName: "Gemini 3 Flash Preview"
+  - name: "gemini-3.6-flash"
+    displayName: "Gemini 3.6 Flash"
     publisher: "google"
     target: "gemini"
     format: "gemini"
     region: "global"
     pricing:
-      input_rate: 0.150
-      output_rate: 0.600
-
-  - name: "gemini-3.5-flash"
-    displayName: "Gemini 3.5 Flash"
-    publisher: "google"
-    target: "gemini"
-    format: "gemini"
-    region: "global"
-    pricing:
-      input_rate: 0.150
-      output_rate: 0.600
+      input_rate: 0.750
+      output_rate: 3.750
 
   # Retiring from 2026-10-20; retained as the deliberate token-quota demo model.
   - name: "gemini-2.5-flash"
@@ -169,8 +159,8 @@ models:
     format: "gemini"
     region: "global"
     pricing:
-      input_rate: 1.250
-      output_rate: 5.000
+      input_rate: 2.000
+      output_rate: 12.000
 
   - name: "gemini-2.5-pro"
     displayName: "Gemini 2.5 Pro"
@@ -180,27 +170,27 @@ models:
     region: "global"
     pricing:
       input_rate: 1.250
-      output_rate: 5.000
+      output_rate: 10.000
 
   # --- Anthropic Claude Models (Google Cloud Vertex Model Garden - us-east5) ---
-  - name: "claude-haiku-4-5"
+  - name: "claude-haiku-5-5"
     displayName: "Claude 4.5 Haiku (Vertex)"
     publisher: "anthropic"
     target: "claude"
     format: "anthropic"
     region: "us-east5"
     pricing:
-      input_rate: 1.000
-      output_rate: 5.000
+      input_rate: 0.100
+      output_rate: 0.500
 
-  - name: "claude-opus-4-5"
+  - name: "claude-opus-5-5"
     displayName: "Claude 4.5 Opus (Vertex)"
     publisher: "anthropic"
     target: "claude"
     format: "anthropic"
     region: "us-east5"
     pricing:
-      input_rate: 15.000
-      output_rate: 75.000
+      input_rate: 4.000
+      output_rate: 20.000
 
 

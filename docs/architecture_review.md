@@ -92,7 +92,7 @@ the "Add / remove" line of each gateway. I will apply the changes back to the vi
 
 - Developers call a single logical endpoint (/ai/v1/auto) without hardcoding model versions.
 - Persona-aware routing: each persona product maps the router category to its own model, e.g. coding goes to Claude Opus (Engineering & IT), Gemini Pro (Analysts) or Claude Haiku (Customer Support & Sales).
-- The TypeSafe AI JEV System One router classifies each prompt on intent (only on a cache miss), so coding work lands on Claude Opus 4.5 and trivial lookups on low-cost Flash-Lite.
+- The TypeSafe AI JEV System One router classifies each prompt on intent (only on a cache miss), so coding work lands on Claude Opus 5.5 and trivial lookups on low-cost Flash-Lite.
 - The category-to-model map lives on the API Product, so entitlements and model choices change without redeploying the proxy.
 
 **Feedback:** 

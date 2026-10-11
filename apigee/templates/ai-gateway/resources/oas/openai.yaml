@@ -58,7 +58,7 @@ components:
         model:
           type: string
           description: Target model identifier.
-          example: gemini-3.1-flash-lite
+          example: gemini-3.5-flash-lite
         stream:
           type: boolean
           description: Enable SSE streaming response.

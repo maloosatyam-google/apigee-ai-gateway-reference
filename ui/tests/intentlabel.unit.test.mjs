@@ -105,7 +105,7 @@ describe("apigeeClient.ts - router category labelling", () => {
   describe("2. The model-name heuristic must not come back", () => {
     it("contains no model-name-based intent guessing in the executable source", () => {
       // The removed fallback substring-matched the model name. It could not distinguish
-      // gemini-3.1-flash-lite (`simple`) from gemini-3-flash-preview (`general`) because
+      // gemini-3.5-flash-lite (`simple`) from gemini-3.6-flash (`general`) because
       // both contain "flash", and it had no `simple` branch at all, so every simple
       // request was labelled "General / Fast".
       assert.ok(

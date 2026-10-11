@@ -14,7 +14,7 @@ import { MAX_TOPUP_USD, validateToolArgs, buildFunctionDeclarations } from '../s
 import { createAdminAgentService } from '../server/adminAgentService.js';
 
 const RATE_RAW = JSON.stringify({
-  'gemini-3-flash-preview': { input: 0.5, output: 3, provider: 'google' },
+  'gemini-3.6-flash': { input: 0.5, output: 3, provider: 'google' },
   default: { input: 0.15, output: 0.6 },
 });
 
@@ -90,22 +90,22 @@ test('topup_wallet is capped and needs a real email', () => {
 });
 
 test('update_dev_rate_card needs a price and rejects nonsense', () => {
-  assert.throws(() => validateToolArgs('update_dev_rate_card', { model: 'gemini-3-flash-preview' }));
+  assert.throws(() => validateToolArgs('update_dev_rate_card', { model: 'gemini-3.6-flash' }));
   assert.throws(() => validateToolArgs('update_dev_rate_card', { model: 'x', output: -1 }));
-  assert.deepEqual(validateToolArgs('update_dev_rate_card', { model: 'gemini-3-flash-preview', output: 4 }), { model: 'gemini-3-flash-preview', output: 4 });
+  assert.deepEqual(validateToolArgs('update_dev_rate_card', { model: 'gemini-3.6-flash', output: 4 }), { model: 'gemini-3.6-flash', output: 4 });
 });
 
 test('update_dev_rate_card writes the dev KVM only and reverts byte-exact', async () => {
   const fake = fakeApigee();
   const svc = service(fake);
   const events = [];
-  const out = await svc._internals.executeTool({ name: 'update_dev_rate_card', args: { model: 'gemini-3-flash-preview', output: 4 } }, events, 'finance');
+  const out = await svc._internals.executeTool({ name: 'update_dev_rate_card', args: { model: 'gemini-3.6-flash', output: 4 } }, events, 'finance');
   assert.equal(out.applied, true);
   const writes = fake.calls.filter((c) => c.method === 'PUT');
   assert.equal(writes.length, 1);
   assert.match(writes[0].url, /\/environments\/dev\/keyvaluemaps\/ai-model-rates\//);
-  assert.equal(JSON.parse(fake.getRate())['gemini-3-flash-preview'].output, 4);
-  assert.equal(JSON.parse(fake.getRate())['gemini-3-flash-preview'].provider, 'google', 'other fields survive');
+  assert.equal(JSON.parse(fake.getRate())['gemini-3.6-flash'].output, 4);
+  assert.equal(JSON.parse(fake.getRate())['gemini-3.6-flash'].provider, 'google', 'other fields survive');
   const change = events.find((e) => e.type === 'change').change;
   assert.equal(change.kind, 'rate_card');
   assert.equal(change.env, 'dev');
@@ -118,14 +118,14 @@ test('update_dev_rate_card writes the dev KVM only and reverts byte-exact', asyn
 test('update_dev_rate_card refuses an unknown key and lists the real ones', async () => {
   const svc = service(fakeApigee());
   const out = await svc._internals.executeTool({ name: 'update_dev_rate_card', args: { model: 'gpt-9', input: 1 } }, [], 'platform');
-  assert.match(out.error, /not on the dev rate card.*gemini-3-flash-preview/);
+  assert.match(out.error, /not on the dev rate card.*gemini-3.6-flash/);
 });
 
 test('AI CoE may not top up wallets or change prices', async () => {
   const svc = service(fakeApigee());
   const a = await svc._internals.executeTool({ name: 'topup_wallet', args: { developer: 'a@b.com', amountUsd: 5 } }, [], 'ai_coe');
   assert.match(a.error, /cannot change wallet/);
-  const b = await svc._internals.executeTool({ name: 'update_dev_rate_card', args: { model: 'gemini-3-flash-preview', input: 1 } }, [], 'ai_coe');
+  const b = await svc._internals.executeTool({ name: 'update_dev_rate_card', args: { model: 'gemini-3.6-flash', input: 1 } }, [], 'ai_coe');
   assert.match(b.error, /cannot change pricing/);
 });
 

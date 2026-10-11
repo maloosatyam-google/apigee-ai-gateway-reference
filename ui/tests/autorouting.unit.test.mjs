@@ -36,22 +36,22 @@ const autoRoutingExecutable = autoRoutingCode
  */
 const PRODUCT_ROUTING = {
   "Engineering and IT": {
-    coding: "claude-opus-4-5@20251101",
+    coding: "claude-opus-5-5",
     deep_reasoning: "gemini-3.1-pro-preview",
-    simple: "gemini-3.1-flash-lite",
-    general: "gemini-3-flash-preview",
+    simple: "gemini-3.5-flash-lite",
+    general: "gemini-3.6-flash",
   },
   "Analysts and Knowledge Workers": {
     coding: "gemini-3.1-pro-preview",
     deep_reasoning: "gemini-3.1-pro-preview",
-    simple: "gemini-3.1-flash-lite",
-    general: "gemini-3-flash-preview",
+    simple: "gemini-3.5-flash-lite",
+    general: "gemini-3.6-flash",
   },
   "Customer Support and Sales": {
-    coding: "claude-haiku-4-5@20251001",
+    coding: "claude-haiku-5-5",
     deep_reasoning: "gemini-3.1-pro-preview",
-    simple: "gemini-3.1-flash-lite",
-    general: "gemini-3-flash-preview",
+    simple: "gemini-3.5-flash-lite",
+    general: "gemini-3.6-flash",
   },
 };
 
@@ -170,10 +170,10 @@ function runPrepRouter(userPrompt) {
 describe("AutoRouting.js - LLM Router Model Unit Test Suite", () => {
   describe("1. Router category -> product attribute resolution (Engineering and IT)", () => {
     const cases = [
-      ["coding", "claude-opus-4-5@20251101", "anthropic"],
+      ["coding", "claude-opus-5-5", "anthropic"],
       ["deep_reasoning", "gemini-3.1-pro-preview", "google"],
-      ["simple", "gemini-3.1-flash-lite", "google"],
-      ["general", "gemini-3-flash-preview", "google"],
+      ["simple", "gemini-3.5-flash-lite", "google"],
+      ["general", "gemini-3.6-flash", "google"],
     ];
 
     for (const [category, expectedModel, expectedProvider] of cases) {
@@ -216,11 +216,11 @@ describe("AutoRouting.js - LLM Router Model Unit Test Suite", () => {
       const analysts = run("Analysts and Knowledge Workers");
       const support = run("Customer Support and Sales");
 
-      assert.strictEqual(eng.targetModel, "claude-opus-4-5@20251101");
+      assert.strictEqual(eng.targetModel, "claude-opus-5-5");
       assert.strictEqual(eng.targetProvider, "anthropic");
       assert.strictEqual(analysts.targetModel, "gemini-3.1-pro-preview");
       assert.strictEqual(analysts.targetProvider, "google");
-      assert.strictEqual(support.targetModel, "claude-haiku-4-5@20251001");
+      assert.strictEqual(support.targetModel, "claude-haiku-5-5");
       assert.strictEqual(support.targetProvider, "anthropic");
     });
 
@@ -230,7 +230,7 @@ describe("AutoRouting.js - LLM Router Model Unit Test Suite", () => {
           routerContent: routerResponse(JSON.stringify({ category })),
           product: "Customer Support and Sales",
         });
-        assert.notStrictEqual(support.targetModel, "claude-opus-4-5@20251101");
+        assert.notStrictEqual(support.targetModel, "claude-opus-5-5");
         // Pro only where the question needs it (Agent Showcase scenario 8); fast models otherwise.
         if (category !== "deep_reasoning") assert.notStrictEqual(support.targetModel, "gemini-3.1-pro-preview");
 
@@ -257,7 +257,7 @@ describe("AutoRouting.js - LLM Router Model Unit Test Suite", () => {
         routerContent: routerResponse('```json\n{"category": "coding"}\n```'),
       });
       assert.strictEqual(res.routerCategory, "coding");
-      assert.strictEqual(res.targetModel, "claude-opus-4-5@20251101");
+      assert.strictEqual(res.targetModel, "claude-opus-5-5");
     });
 
     it("recovers the category by regex when the body is not valid JSON", () => {
@@ -267,7 +267,7 @@ describe("AutoRouting.js - LLM Router Model Unit Test Suite", () => {
         routerContent: routerResponse('{"category": "simple", "confidence":'),
       });
       assert.strictEqual(res.routerCategory, "simple");
-      assert.strictEqual(res.targetModel, "gemini-3.1-flash-lite");
+      assert.strictEqual(res.targetModel, "gemini-3.5-flash-lite");
     });
 
     it("normalises case and surrounding whitespace in the category", () => {
@@ -275,7 +275,7 @@ describe("AutoRouting.js - LLM Router Model Unit Test Suite", () => {
         routerContent: routerResponse('{"category": "  CODING  "}'),
       });
       assert.strictEqual(res.routerCategory, "coding");
-      assert.strictEqual(res.targetModel, "claude-opus-4-5@20251101");
+      assert.strictEqual(res.targetModel, "claude-opus-5-5");
     });
   });
 
@@ -296,7 +296,7 @@ describe("AutoRouting.js - LLM Router Model Unit Test Suite", () => {
       it(`falls back to routing.model.general when the ${label}`, () => {
         const res = runAutoRouting({ routerContent: content, product: "Engineering and IT" });
         assert.strictEqual(res.routerCategory, null, "category must stay unresolved");
-        assert.strictEqual(res.targetModel, "gemini-3-flash-preview");
+        assert.strictEqual(res.targetModel, "gemini-3.6-flash");
         assert.strictEqual(res.targetProvider, "google");
         assert.strictEqual(res.autoRouted, "true");
       });
@@ -310,7 +310,7 @@ describe("AutoRouting.js - LLM Router Model Unit Test Suite", () => {
         product: "Engineering and IT",
       });
       assert.strictEqual(res.routerCategory, "translation");
-      assert.strictEqual(res.targetModel, "gemini-3-flash-preview");
+      assert.strictEqual(res.targetModel, "gemini-3.6-flash");
     });
   });
 
@@ -342,10 +342,10 @@ describe("AutoRouting.js - LLM Router Model Unit Test Suite", () => {
       // context (the header names the JEV classifier) -- a guard that fires on its
       // own documentation just gets disabled.
       for (const literal of [
-        "claude-opus-4-5@20251101",
+        "claude-opus-5-5",
         "gemini-3.1-pro-preview",
-        "gemini-3.1-flash-lite",
-        "gemini-3-flash-preview",
+        "gemini-3.5-flash-lite",
+        "gemini-3.6-flash",
       ]) {
         assert.ok(
           !autoRoutingExecutable.includes(literal),
@@ -390,9 +390,9 @@ describe("AutoRouting.js - LLM Router Model Unit Test Suite", () => {
       // model and the Claude RouteRule still has to fire.
       const res = runAutoRouting({
         routerContent: routerResponse('{"category":"simple"}'),
-        attributes: { simple: "claude-haiku-4-5@20251001" },
+        attributes: { simple: "claude-haiku-5-5" },
       });
-      assert.strictEqual(res.targetModel, "claude-haiku-4-5@20251001");
+      assert.strictEqual(res.targetModel, "claude-haiku-5-5");
       assert.strictEqual(res.targetProvider, "anthropic");
     });
 
@@ -486,14 +486,14 @@ describe("AutoRouting.js - JEV response edge cases", () => {
       product: "Engineering and IT",
     });
     assert.strictEqual(res.routerCategory, "coding");
-    assert.strictEqual(res.targetModel, "claude-opus-4-5@20251101");
+    assert.strictEqual(res.targetModel, "claude-opus-5-5");
     assert.strictEqual(res.routerEngine, "jev-x");
   });
 
   it("keeps a zero confidence rather than dropping it as falsy", () => {
     const res = runAutoRouting({ routerContent: jevResponse("simple", 0) });
     assert.strictEqual(res.routerConfidence, "0");
-    assert.strictEqual(res.targetModel, "gemini-3.1-flash-lite");
+    assert.strictEqual(res.targetModel, "gemini-3.5-flash-lite");
   });
 
   it("falls back to routing.model.general when the JEV answer carries no choice", () => {
@@ -501,14 +501,14 @@ describe("AutoRouting.js - JEV response edge cases", () => {
       routerContent: JSON.stringify({ model: "jev-1.13.0", answers: { category: { type: "choice" } } }),
     });
     assert.strictEqual(res.routerCategory, null);
-    assert.strictEqual(res.targetModel, "gemini-3-flash-preview");
+    assert.strictEqual(res.targetModel, "gemini-3.6-flash");
     assert.strictEqual(res.autoRouted, "true");
   });
 
   it("falls back to routing.model.general on a JEV 401 error body (bad/missing KVM key)", () => {
     const res = runAutoRouting({ routerContent: '{"error":"unauthorized"}' });
     assert.strictEqual(res.routerCategory, null);
-    assert.strictEqual(res.targetModel, "gemini-3-flash-preview");
+    assert.strictEqual(res.targetModel, "gemini-3.6-flash");
   });
 });
 

@@ -47,7 +47,7 @@ gcloud run deploy "$SERVICE" \
   --no-allow-unauthenticated \
   --cpu 1 --memory 1Gi --concurrency 20 --timeout 300 \
   --min-instances 1 --max-instances 3 \
-  --set-env-vars "ENVIRONMENT=production,GCP_PROJECT=$PROJECT,GATEWAY_HOST=https://${APIGEE_HOST_PROD},VERTEX_LOCATION=global,BASELINE_MODEL=gemini-3.1-pro-preview" \
+  --set-env-vars "ENVIRONMENT=production,GCP_PROJECT=$PROJECT,GATEWAY_HOST=https://${APIGEE_HOST_PROD},VERTEX_LOCATION=global,BASELINE_MODEL=gemini-3.8-flash" \
   --labels "app=agent-showcase,sha=${SHA//[^a-z0-9-]/-}"
 
 for MEMBER in "serviceAccount:$UI_SA" "user:$(gcloud config get-value account 2>/dev/null)"; do

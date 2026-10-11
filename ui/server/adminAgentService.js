@@ -441,7 +441,7 @@ export function createAdminAgentService({
   /**
    * The agent's own model call -- metered like any other gateway consumer.
    *
-   * AGENT_MODEL (gemini-3.1-flash-lite) is entitled on both tiers, so this
+   * AGENT_MODEL (gemini-3.5-flash-lite) is entitled on both tiers, so this
    * should always hold, but an entitlement failure must
    * degrade to a model that is known to support tools rather than kill the
    * turn. The model that actually served is reported back so `usage.model`

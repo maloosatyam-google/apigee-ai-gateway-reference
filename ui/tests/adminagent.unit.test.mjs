@@ -82,7 +82,7 @@ function standardDevProduct() {
     someUnknownField: { keep: 'me' },
     attributes: [
       { name: 'access', value: 'private' },
-      { name: 'routing.model.coding', value: 'gemini-3-flash-preview' },
+      { name: 'routing.model.coding', value: 'gemini-3.6-flash' },
     ],
     llmOperationGroup: {
       operationConfigs: [
@@ -94,7 +94,7 @@ function standardDevProduct() {
         {
           apiSource: 'ai-gateway-v1',
           llmOperations: [
-            { resource: '/models/gemini-3-flash-preview:*', methods: ['POST'], model: 'gemini-3-flash-preview' },
+            { resource: '/models/gemini-3.6-flash:*', methods: ['POST'], model: 'gemini-3.6-flash' },
           ],
           llmTokenQuota: { limit: '2000', interval: '1', timeUnit: 'minute' },
         },
@@ -167,7 +167,7 @@ function makeHarness({ products = {}, appExists = true, gateway, sleep } = {}) {
       if (/keyvaluemaps\/ai-model-rates\/entries\/rate_card$/.test(suffix)) {
         return fakeResponse(200, {
           name: 'rate_card',
-          value: JSON.stringify({ 'gemini-3-flash-preview': { input: 0.3, output: 2.5 } }),
+          value: JSON.stringify({ 'gemini-3.6-flash': { input: 0.3, output: 2.5 } }),
         });
       }
       return fakeResponse(404, { error: { message: `unhandled ${method} ${suffix}` } });
@@ -175,7 +175,7 @@ function makeHarness({ products = {}, appExists = true, gateway, sleep } = {}) {
 
     if (gateway) return gateway(url, opts, state);
     return fakeResponse(200, { candidates: [{ content: { parts: [{ text: 'ok' }] } }] }, {
-      'x-gateway-model': 'gemini-3-flash-preview',
+      'x-gateway-model': 'gemini-3.6-flash',
       'x-gateway-cost-usd': '0.000012',
       'x-gateway-cache-status': 'DISABLED',
     });
@@ -369,8 +369,8 @@ test('applyChangeSet produces a contract-shaped diff and never mutates its input
   const product = standardDevProduct();
   const frozen = JSON.stringify(product);
   const changes = validateChangeList([
-    { path: 'llmTokenQuota.gemini-3-flash-preview.limit', value: '4000' },
-    { path: 'attributes.routing.model.simple', value: 'gemini-3.1-flash-lite' },
+    { path: 'llmTokenQuota.gemini-3.6-flash.limit', value: '4000' },
+    { path: 'attributes.routing.model.simple', value: 'gemini-3.5-flash-lite' },
     { path: 'environments', value: '["dev"]' },
   ]);
   const { next, diff } = applyChangeSet(product, changes);
@@ -379,13 +379,13 @@ test('applyChangeSet produces a contract-shaped diff and never mutates its input
   // environments was already ["dev"], so it is a no-op and must not appear.
   assert.deepEqual(
     diff.map((d) => d.path),
-    ['llmTokenQuota./models/gemini-3-flash-preview:*.limit', 'attributes.routing.model.simple']
+    ['llmTokenQuota./models/gemini-3.6-flash:*.limit', 'attributes.routing.model.simple']
   );
   assert.deepEqual(diff[0], {
-    path: 'llmTokenQuota./models/gemini-3-flash-preview:*.limit',
+    path: 'llmTokenQuota./models/gemini-3.6-flash:*.limit',
     // The card shows `label`; `path` is retained for anyone who asks where the
     // value actually lives.
-    label: 'Token limit \u00b7 gemini-3-flash-preview',
+    label: 'Token limit \u00b7 gemini-3.6-flash',
     before: '2000',
     after: '4000',
   });
@@ -393,7 +393,7 @@ test('applyChangeSet produces a contract-shaped diff and never mutates its input
     path: 'attributes.routing.model.simple',
     label: 'Auto-routing \u00b7 simple lookups',
     before: null,
-    after: 'gemini-3.1-flash-lite',
+    after: 'gemini-3.5-flash-lite',
   });
   assert.equal(next.llmOperationGroup.operationConfigs[1].llmTokenQuota.limit, '4000');
   assert.equal(next.llmOperationGroup.operationConfigs[0].llmTokenQuota.limit, '2000', 'other ops untouched');
@@ -426,8 +426,8 @@ test('the synthetic tool turn is a machine marker, not imitable prose', () => {
 
 test('config paths are humanized for the change card, unknown shapes pass through', () => {
   assert.equal(
-    humanizeChangePath('llmTokenQuota./models/claude-haiku-4-5@20251001:*.limit'),
-    'Token limit \u00b7 claude-haiku-4-5'
+    humanizeChangePath('llmTokenQuota./models/claude-haiku-5-5:*.limit'),
+    'Token limit \u00b7 claude-haiku-5-5'
   );
   assert.equal(humanizeChangePath('llmTokenQuota./auto.limit'), 'Token limit \u00b7 auto-routed calls');
   assert.equal(humanizeChangePath('attributes.developer.budget.limit'), 'Monthly spending cap');
@@ -440,8 +440,8 @@ test('config paths are humanized for the change card, unknown shapes pass throug
 test('summarizeDiff groups a bulk quota change into one readable line', () => {
   const diff = [
     { path: 'llmTokenQuota./auto.limit', before: '2000', after: '4000' },
-    { path: 'llmTokenQuota./models/gemini-3.1-flash-lite:*.limit', before: '2000', after: '4000' },
-    { path: 'llmTokenQuota./models/claude-haiku-4-5@20251001:*.limit', before: '50', after: '100' },
+    { path: 'llmTokenQuota./models/gemini-3.5-flash-lite:*.limit', before: '2000', after: '4000' },
+    { path: 'llmTokenQuota./models/claude-haiku-5-5:*.limit', before: '50', after: '100' },
   ];
   const summary = summarizeDiff('Customer Support and Sales (Dev)', diff);
   assert.equal(summary, 'Raised 3 per-minute token limits on Customer Support and Sales');
@@ -459,10 +459,10 @@ test('summarizeDiff falls back to labelled detail for a mixed change', () => {
 
 test('quota resources resolve from a bare model id, and unknown ones are rejected', () => {
   const product = standardDevProduct();
-  assert.equal(resolveQuotaResource(product, 'gemini-3-flash-preview'), '/models/gemini-3-flash-preview:*');
-  assert.equal(resolveQuotaResource(product, '/models/gemini-3-flash-preview:*'), '/models/gemini-3-flash-preview:*');
+  assert.equal(resolveQuotaResource(product, 'gemini-3.6-flash'), '/models/gemini-3.6-flash:*');
+  assert.equal(resolveQuotaResource(product, '/models/gemini-3.6-flash:*'), '/models/gemini-3.6-flash:*');
   assert.equal(resolveQuotaResource(product, 'auto'), '/auto');
-  assert.throws(() => resolveQuotaResource(product, 'claude-opus-4-5@20251101'), /is not an operation on/);
+  assert.throws(() => resolveQuotaResource(product, 'claude-opus-5-5'), /is not an operation on/);
 });
 
 test('buildDevClone pins the clone to dev with auto approval', () => {
@@ -510,7 +510,7 @@ test('revert restores the exact pre-change bytes, not the demo defaults', async 
   const change = await service._internals.applyDevChange(
     validateToolArgs('update_dev_product', {
       sourceProduct: 'Customer Support and Sales',
-      changes: [{ path: 'llmTokenQuota.gemini-3-flash-preview.limit', value: '9000' }],
+      changes: [{ path: 'llmTokenQuota.gemini-3.6-flash.limit', value: '9000' }],
     })
   );
   assert.equal(change.productName, 'Customer Support and Sales (Dev)');
@@ -634,7 +634,7 @@ test('there is no promote path: the live tier is never written', async () => {
   const change = await service._internals.applyDevChange(
     validateToolArgs('update_dev_product', {
       sourceProduct: 'Customer Support and Sales',
-      changes: [{ path: 'llmTokenQuota.gemini-3-flash-preview.limit', value: '7777' }],
+      changes: [{ path: 'llmTokenQuota.gemini-3.6-flash.limit', value: '7777' }],
     })
   );
   assert.equal(change.status, 'applied');
@@ -817,14 +817,14 @@ test('the tool loop returns the model text and stops as soon as there are no too
     contents: [{ role: 'user', parts: [{ text: 'hi' }] }],
     tools: [],
     callModel: async () => modelTurn([{ text: 'Standard is capped at 2000 tokens/min.' }], {
-      'x-gateway-model': 'gemini-3-flash-preview',
+      'x-gateway-model': 'gemini-3.6-flash',
     }),
     executeTool: async () => ({}),
   });
   assert.equal(result.stopReason, 'complete');
   assert.equal(result.iterations, 1);
   assert.equal(result.reply, 'Standard is capped at 2000 tokens/min.');
-  assert.equal(result.usage.model, 'gemini-3-flash-preview');
+  assert.equal(result.usage.model, 'gemini-3.6-flash');
   assert.equal(result.usage.costUsd, 0.00001);
 });
 
@@ -995,7 +995,7 @@ test('the tool loop abandons the turn once the wall-clock budget is spent', asyn
 });
 
 test('the production turn budget leaves room for a read-read-write-summarise turn', () => {
-  // Benchmarked: ~2.5s per hop on gemini-3.1-flash-lite. A change request costs
+  // Benchmarked: ~2.5s per hop on gemini-3.5-flash-lite. A change request costs
   // 4 hops, so the floor is ~10s; the ceiling keeps a wedged turn from feeling
   // hung. Both bounds are asserted so a future model swap has to revisit this.
   assert.ok(
@@ -1048,7 +1048,7 @@ test('toTestResult maps the real x-gateway-* headers', () => {
       usageMetadata: { promptTokenCount: 56, candidatesTokenCount: 18, totalTokenCount: 106 },
     },
     headers: {
-      'x-gateway-model': 'gemini-3-flash-preview',
+      'x-gateway-model': 'gemini-3.6-flash',
       'x-gateway-cost-usd': '0.000038',
       'x-gateway-cache-status': 'DISABLED',
       'content-type': 'application/json',
@@ -1056,7 +1056,7 @@ test('toTestResult maps the real x-gateway-* headers', () => {
   });
   assert.equal(result.ok, true);
   assert.equal(result.httpStatus, 200);
-  assert.equal(result.model, 'gemini-3-flash-preview');
+  assert.equal(result.model, 'gemini-3.6-flash');
   assert.equal(result.totalTokens, 106);
   assert.equal(result.costUsd, 0.000038);
   assert.equal(result.cacheStatus, 'DISABLED');
@@ -1227,8 +1227,8 @@ test('list_guardrails answers from the server-side mirror', async () => {
 
 test('allowedTestModels only offers what the dev products entitle', () => {
   const models = allowedTestModels([standardDevProduct()]);
-  assert.deepEqual(models.sort(), ['auto', 'gemini-3-flash-preview']);
-  assert.ok(!models.includes('claude-opus-4-5@20251101'));
+  assert.deepEqual(models.sort(), ['auto', 'gemini-3.6-flash']);
+  assert.ok(!models.includes('claude-opus-5-5'));
 });
 
 test('the synthetic identity token is an RS256 JWT with a non-empty signature', () => {
@@ -1249,11 +1249,11 @@ test('newChangeId always produces the contract id shape', () => {
 // Agent model selection
 // ---------------------------------------------------------------------------
 
-test('the agent runs on gemini-3.1-flash-lite and downgrades only on an entitlement failure', async () => {
+test('the agent runs on gemini-3.5-flash-lite and downgrades only on an entitlement failure', async () => {
   // Chosen by benchmark: ~2.2s tool turns, 3/3 tool calls, no thinking tokens.
   // The previous pick (gemini-3.8-flash) started returning 504s at the gateway.
-  assert.equal(AGENT_MODEL, 'gemini-3.1-flash-lite');
-  assert.equal(AGENT_FALLBACK_MODEL, 'gemini-3-flash-preview');
+  assert.equal(AGENT_MODEL, 'gemini-3.5-flash-lite');
+  assert.equal(AGENT_FALLBACK_MODEL, 'gemini-3.6-flash');
 
   const seen = [];
   const { service } = makeHarness({

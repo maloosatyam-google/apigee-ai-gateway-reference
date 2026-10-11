@@ -84,7 +84,7 @@ try {
             totalTokenCount: promptTokens + compTokens,
             trafficType: "ON_DEMAND"
           },
-          modelVersion: claudeJson.model || context.getVariable("flow.target_model") || "claude-opus-4-5"
+          modelVersion: claudeJson.model || context.getVariable("flow.target_model") || "claude-opus-5-5"
         };
         context.setVariable("response.content", JSON.stringify(geminiCandidate));
       }

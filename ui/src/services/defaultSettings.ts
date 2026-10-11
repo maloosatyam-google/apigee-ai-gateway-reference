@@ -238,20 +238,19 @@ export const AVAILABLE_MODELS = [
   // gemini-2.5-flash was retired ahead of its 2026-10-20 end of life and is entitled by no
   // API Product. Its rate-card entry and analytics colour mapping are deliberately retained
   // so historical traffic still costs and renders correctly.
-  { id: 'gemini-3.1-flash-lite', name: 'gemini-3.1-flash-lite', tag: 'Flash Lite' },
-  { id: 'gemini-3-flash-preview', name: 'gemini-3-flash-preview', tag: 'Flash' },
-  // Premium despite the "flash" name: $1.50/$7.50 per 1M tokens, above gemini-3.1-pro-preview
-  // at $1.25/$5.00. The tag says so because the name does not.
-  { id: 'gemini-3.7-flash', name: 'gemini-3.7-flash', tag: 'Flash Premium' },
-  { id: 'gemini-3.8-flash', name: 'gemini-3.8-flash', tag: 'Flash Premium' },
+  { id: 'gemini-3.5-flash-lite', name: 'gemini-3.5-flash-lite', tag: 'Flash Lite' },
+  { id: 'gemini-3.6-flash', name: 'gemini-3.6-flash', tag: 'Flash' },
+  // Newest Flash: $0.75/$3.75 per 1M tokens until 2026-12-31 ($1.50/$7.50 from 2027),
+  // cheaper than gemini-3.5-flash ($1.50/$9.00). Prices live in the rate card, not here.
+  { id: 'gemini-3.8-flash', name: 'gemini-3.8-flash', tag: 'Flash' },
   { id: 'gemini-3.1-pro-preview', name: 'gemini-3.1-pro-preview', tag: 'Pro Preview' },
   // Deliberately entitled by no API Product: a real, older-generation Vertex model the
   // organisation has not approved. Used by the "Restricted Model" scenario to demonstrate an
   // entitlement block: even an Engineering & IT key is rejected at VA-VerifyAPIKey (401
   // InvalidApiKeyForGivenResource) before any upstream call. Replaced gemini-3.1-ultra.
   { id: 'gemini-2.5-pro', name: 'gemini-2.5-pro', tag: 'Restricted (Not Entitled)' },
-  { id: 'claude-haiku-4-5@20251001', name: 'claude-haiku-4-5@20251001', tag: 'Rate Limited (300 tok/min)' },
-  { id: 'claude-opus-4-5@20251101', name: 'claude-opus-4-5@20251101', tag: 'Claude Opus' },
+  { id: 'claude-haiku-5-5', name: 'claude-haiku-5-5', tag: 'Rate Limited (300 tok/min)' },
+  { id: 'claude-opus-5-5', name: 'claude-opus-5-5', tag: 'Claude Opus' },
 ];
 
 export const AUTO_ROUTING_EXAMPLES = [
@@ -263,10 +262,10 @@ export const AUTO_ROUTING_EXAMPLES = [
     // The router classifies on semantic complexity, not prompt length. This must
     // stay a trivial factual lookup: anything that asks for an explanation or a
     // list of considerations classifies as `general` and routes to
-    // gemini-3-flash-preview instead. Verified `simple` 3/3 against prod.
+    // gemini-3.6-flash instead. Verified `simple` 3/3 against prod.
     prompt: 'What does the acronym API stand for?',
     description: 'Trivial factual lookup routed to Gemini Flash Lite.',
-    expectedModel: 'gemini-3.1-flash-lite',
+    expectedModel: 'gemini-3.5-flash-lite',
   },
   {
     step: 2,
@@ -287,7 +286,7 @@ export const AUTO_ROUTING_EXAMPLES = [
     tag: 'Coding',
     prompt: 'Write a Python function to validate JWT tokens and decode user claims.',
     description: 'Coding: Claude Opus for Engineering & IT, Gemini Pro for Analysts, Claude Haiku for Support & Sales.',
-    expectedModel: 'claude-opus-4-5@20251101',
+    expectedModel: 'claude-opus-5-5',
   },
 ];
 
@@ -295,7 +294,7 @@ export const AUTO_ROUTING_EXAMPLES = [
 // so the MISS is slow and costly and the HIT shows the saving clearly. Verified on prod:
 // seed MISS 14.4 s / 1024 output tokens / $0.0779 -> paraphrase HIT 1.0 s / $0.
 // The paraphrase must stay above the 0.95 similarity threshold of SCL-SemanticCacheLookup.
-export const CACHE_DEMO_MODEL = 'claude-opus-4-5@20251101';
+export const CACHE_DEMO_MODEL = 'claude-opus-5-5';
 
 export const CACHE_EXAMPLES = [
   {
@@ -316,7 +315,7 @@ export const CACHE_EXAMPLES = [
   },
 ];
 
-// Token-quota demo on claude-haiku-4-5 (300 tokens / 1-minute rolling window, on both
+// Token-quota demo on claude-haiku-5-5 (300 tokens / 1-minute rolling window, on both
 // persona products that entitle Haiku).
 //
 // Every step is sent STATELESS (no chat history) with a 90-token output cap, so each call
@@ -354,7 +353,7 @@ export const TOKEN_LIMIT_EXAMPLES = [
         support: 'Your first reply this minute uses about 40% of the team allowance. No warning.',
       },
     } as TokenStepLines,
-    model: 'claude-haiku-4-5@20251001',
+    model: 'claude-haiku-5-5',
   },
   {
     step: 2,
@@ -375,7 +374,7 @@ export const TOKEN_LIMIT_EXAMPLES = [
         support: 'Usage passes half the team allowance. The reply still arrives, with a warning.',
       },
     } as TokenStepLines,
-    model: 'claude-haiku-4-5@20251001',
+    model: 'claude-haiku-5-5',
   },
   {
     step: 3,
@@ -396,7 +395,7 @@ export const TOKEN_LIMIT_EXAMPLES = [
         support: "This reply still arrives, but it uses up this minute's allowance. The next request will be refused.",
       },
     } as TokenStepLines,
-    model: 'claude-haiku-4-5@20251001',
+    model: 'claude-haiku-5-5',
   },
   {
     step: 4,
@@ -417,7 +416,7 @@ export const TOKEN_LIMIT_EXAMPLES = [
         support: 'Allowance reached for this minute. The request is refused before the AI runs, so it costs nothing. Try again in a minute.',
       },
     } as TokenStepLines,
-    model: 'claude-haiku-4-5@20251001',
+    model: 'claude-haiku-5-5',
   },
 ];
 
@@ -588,7 +587,7 @@ export const SCENARIO_PRESETS: (ScenarioPreset & BusinessCopy)[] = [
     badgeText: 'Pass → Alert → 429',
     badgeColor: 'emerald',
     // Persona is resolved in ChatPlayground (personaForModel): kept if it entitles Haiku.
-    settingsOverride: { model: 'claude-haiku-4-5@20251001', useCache: false },
+    settingsOverride: { model: 'claude-haiku-5-5', useCache: false },
   },
   {
     id: 'cache-toggle',

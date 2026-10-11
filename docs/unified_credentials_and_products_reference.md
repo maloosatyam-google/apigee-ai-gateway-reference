@@ -108,9 +108,9 @@ Eight product definitions exist in
 
 | File | `name` | Group type | `apiSource` | Attributes |
 | --- | --- | --- | --- | --- |
-| [engineering_and_it.json](../apigee/products/engineering_and_it.json) | Engineering and IT | `llmOperationGroup` | `ai-gateway-v1` | `access=private`, `persona=Engineering & IT`, `developer.budget.limit=20000000` ($20/mo), `.interval=1`, `.timeunit=month`, `routing.model.coding=claude-opus-4-5@20251101`, `routing.model.deep_reasoning=gemini-3.1-pro-preview`, `routing.model.simple=gemini-3.1-flash-lite`, `routing.model.general=gemini-3-flash-preview` |
-| [analysts_and_knowledge_workers.json](../apigee/products/analysts_and_knowledge_workers.json) | Analysts and Knowledge Workers | `llmOperationGroup` | `ai-gateway-v1` | `access=private`, `persona=Analysts & Knowledge Workers`, `developer.budget.limit=10000000` ($10/mo), `.interval=1`, `.timeunit=month`, `routing.model.{coding,deep_reasoning}=gemini-3.1-pro-preview`, `routing.model.simple=gemini-3.1-flash-lite`, `routing.model.general=gemini-3-flash-preview` |
-| [customer_support_and_sales.json](../apigee/products/customer_support_and_sales.json) | Customer Support and Sales | `llmOperationGroup` | `ai-gateway-v1` | `access=private`, `persona=Customer Support & Sales`, `developer.budget.limit=5000000` ($5/mo), `.interval=1`, `.timeunit=month`, `routing.model.coding=claude-haiku-4-5@20251001`, `routing.model.deep_reasoning=gemini-3.1-pro-preview`, `routing.model.general=gemini-3-flash-preview`, `routing.model.simple=gemini-3.1-flash-lite` |
+| [engineering_and_it.json](../apigee/products/engineering_and_it.json) | Engineering and IT | `llmOperationGroup` | `ai-gateway-v1` | `access=private`, `persona=Engineering & IT`, `developer.budget.limit=20000000` ($20/mo), `.interval=1`, `.timeunit=month`, `routing.model.coding=claude-opus-5-5`, `routing.model.deep_reasoning=gemini-3.1-pro-preview`, `routing.model.simple=gemini-3.5-flash-lite`, `routing.model.general=gemini-3.6-flash` |
+| [analysts_and_knowledge_workers.json](../apigee/products/analysts_and_knowledge_workers.json) | Analysts and Knowledge Workers | `llmOperationGroup` | `ai-gateway-v1` | `access=private`, `persona=Analysts & Knowledge Workers`, `developer.budget.limit=10000000` ($10/mo), `.interval=1`, `.timeunit=month`, `routing.model.{coding,deep_reasoning}=gemini-3.1-pro-preview`, `routing.model.simple=gemini-3.5-flash-lite`, `routing.model.general=gemini-3.6-flash` |
+| [customer_support_and_sales.json](../apigee/products/customer_support_and_sales.json) | Customer Support and Sales | `llmOperationGroup` | `ai-gateway-v1` | `access=private`, `persona=Customer Support & Sales`, `developer.budget.limit=5000000` ($5/mo), `.interval=1`, `.timeunit=month`, `routing.model.coding=claude-haiku-5-5`, `routing.model.deep_reasoning=gemini-3.1-pro-preview`, `routing.model.general=gemini-3.6-flash`, `routing.model.simple=gemini-3.5-flash-lite` |
 | [customer_service_tools_mcp.json](../apigee/products/customer_service_tools_mcp.json) | Customer Service Tools MCP | `payloadOperationGroup` | `mcp` | `access=private` |
 | [business_insights_tools_mcp.json](../apigee/products/business_insights_tools_mcp.json) | Business Insights Tools MCP | `payloadOperationGroup` | `mcp` | `access=private` |
 | [enterprise_tools_mcp.json](../apigee/products/enterprise_tools_mcp.json) | Enterprise Tools MCP | `payloadOperationGroup` | `mcp`, `bigquery-mcp`, `servicenow-mcp` | `access=private` |
@@ -139,7 +139,7 @@ experiment can never change what a prod key is entitled to.
 
 ### 2.1 Engineering & IT — per-model token quotas
 
-**9 `operationConfigs` covering 8 distinct models** (`auto` has two: the exact `/auto`
+**8 `operationConfigs` covering 7 distinct models** (`auto` has two: the exact `/auto`
 and `/auto:*` for `/auto:generateContent`; see [§2.4](#24-resource-patterns-and-glob-semantics)). Every `operationConfig` carries exactly **one** `llmOperation` and its own
 `llmTokenQuota`; the Management API rejects more with
 `Operations must contain exactly one entity`, and rejects a config with none at all with
@@ -150,13 +150,12 @@ and `/auto:*` for `/auto:generateContent`; see [§2.4](#24-resource-patterns-and
 | --- | --- | --- | --- | --- |
 | 1 | `/auto` | `auto` | 50000 | 1 minute |
 | 2 | `/auto:*` | `auto` | 50000 | 1 minute |
-| 3 | `/models/gemini-3.1-flash-lite:*` | `gemini-3.1-flash-lite` | 10000 | 1 minute |
-| 4 | `/models/gemini-3-flash-preview:*` | `gemini-3-flash-preview` | 10000 | 1 minute |
+| 3 | `/models/gemini-3.5-flash-lite:*` | `gemini-3.5-flash-lite` | 10000 | 1 minute |
+| 4 | `/models/gemini-3.6-flash:*` | `gemini-3.6-flash` | 10000 | 1 minute |
 | 5 | `/models/gemini-3.1-pro-preview:*` | `gemini-3.1-pro-preview` | 10000 | 1 minute |
-| 6 | **`/models/claude-haiku-4-5@20251001:*`** | `claude-haiku-4-5@20251001` | **300** | 1 minute |
-| 7 | `/models/claude-opus-4-5@20251101:*` | `claude-opus-4-5@20251101` | 10000 | 1 minute |
-| 8 | `/models/gemini-3.7-flash:*` | `gemini-3.7-flash` | 10000 | 1 minute |
-| 9 | `/models/gemini-3.8-flash:*` | `gemini-3.8-flash` | 10000 | 1 minute |
+| 6 | **`/models/claude-haiku-5-5:*`** | `claude-haiku-5-5` | **300** | 1 minute |
+| 7 | `/models/claude-opus-5-5:*` | `claude-opus-5-5` | 10000 | 1 minute |
+| 8 | `/models/gemini-3.8-flash:*` | `gemini-3.8-flash` | 10000 | 1 minute |
 
 Source: [engineering_and_it.json](../apigee/products/engineering_and_it.json).
 Engineering & IT is entitled to **every** model and is the only persona with Opus. It is the
@@ -164,7 +163,7 @@ AI product on every per-SSO-user `Unified Admin <handle> App`.
 
 ### 2.2 Analysts & Knowledge Workers — per-model token quotas
 
-**7 `operationConfigs` covering 6 distinct models**. Same shape: one `llmOperation` per
+**6 `operationConfigs` covering 5 distinct models**. Same shape: one `llmOperation` per
 `operationConfig`, `apiSource: ai-gateway-v1`, method `POST`.
 
 | # | Resource | `model` | Token limit | Interval |
@@ -172,14 +171,13 @@ AI product on every per-SSO-user `Unified Admin <handle> App`.
 | 1 | `/auto` | `auto` | 30000 | 1 minute |
 | 2 | `/auto:*` | `auto` | 30000 | 1 minute |
 | 3 | `/models/gemini-3.1-pro-preview:*` | `gemini-3.1-pro-preview` | 5000 | 1 minute |
-| 4 | `/models/gemini-3.1-flash-lite:*` | `gemini-3.1-flash-lite` | 5000 | 1 minute |
-| 5 | `/models/gemini-3-flash-preview:*` | `gemini-3-flash-preview` | 5000 | 1 minute |
-| 6 | `/models/gemini-3.7-flash:*` | `gemini-3.7-flash` | 5000 | 1 minute |
-| 7 | `/models/gemini-3.8-flash:*` | `gemini-3.8-flash` | 5000 | 1 minute |
+| 4 | `/models/gemini-3.5-flash-lite:*` | `gemini-3.5-flash-lite` | 5000 | 1 minute |
+| 5 | `/models/gemini-3.6-flash:*` | `gemini-3.6-flash` | 5000 | 1 minute |
+| 6 | `/models/gemini-3.8-flash:*` | `gemini-3.8-flash` | 5000 | 1 minute |
 
 Source: [analysts_and_knowledge_workers.json](../apigee/products/analysts_and_knowledge_workers.json).
-Gemini only: **no Opus and no Haiku**. An Analysts key calling `claude-opus-4-5@20251101`
-or `claude-haiku-4-5@20251001` is rejected by `VA-VerifyAPIKey`. Bound to the
+Gemini only: **no Opus and no Haiku**. An Analysts key calling `claude-opus-5-5`
+or `claude-haiku-5-5` is rejected by `VA-VerifyAPIKey`. Bound to the
 `Unified Loans App`.
 
 ### 2.3 Customer Support & Sales — per-model token quotas
@@ -190,15 +188,15 @@ or `claude-haiku-4-5@20251001` is rejected by `VA-VerifyAPIKey`. Bound to the
 | --- | --- | --- | --- | --- |
 | 1 | `/auto` | `auto` | 20000 | 2 minutes |
 | 2 | `/auto:*` | `auto` | 20000 | 2 minutes |
-| 3 | `/models/gemini-3.1-flash-lite:*` | `gemini-3.1-flash-lite` | 2000 | 1 minute |
-| 4 | `/models/gemini-3-flash-preview:*` | `gemini-3-flash-preview` | 2000 | 1 minute |
-| 5 | **`/models/claude-haiku-4-5@20251001:*`** | `claude-haiku-4-5@20251001` | **300** | 1 minute |
+| 3 | `/models/gemini-3.5-flash-lite:*` | `gemini-3.5-flash-lite` | 2000 | 1 minute |
+| 4 | `/models/gemini-3.6-flash:*` | `gemini-3.6-flash` | 2000 | 1 minute |
+| 5 | **`/models/claude-haiku-5-5:*`** | `claude-haiku-5-5` | **300** | 1 minute |
 
 Source: [customer_support_and_sales.json](../apigee/products/customer_support_and_sales.json).
 Flash-Lite, Flash and Haiku only. Bound to the `Unified Sales App`.
 
 > [!IMPORTANT]
-> `claude-haiku-4-5@20251001` is deliberately capped at **300 tokens / minute** on both
+> `claude-haiku-5-5` is deliberately capped at **300 tokens / minute** on both
 > personas that carry it (Engineering & IT and Customer Support & Sales), so the quota
 > breach is reproducible inside a live demo. With the demo's ~120-token calls, call 2
 > crosses the 50% alert threshold and call 4 gets a 429 (see
@@ -206,10 +204,10 @@ Flash-Lite, Flash and Haiku only. Bound to the `Unified Sales App`.
 > switches persona automatically when needed.
 
 > [!CAUTION]
-> `gemini-3.7-flash` and `gemini-3.8-flash` are **not cheap despite the "flash" name** —
-> both list at $1.50 / $7.50 per 1M tokens, more than `gemini-3.1-pro-preview`. They are
-> the models most likely to trip a persona's budget cap, since the budget counts real
-> cost. See the rate card, not the model name.
+> `gemini-3.5-flash` is **not cheap despite the "flash" name**: $1.50 / $9.00 per 1M tokens,
+> more than the newer `gemini-3.8-flash` ($0.75 / $3.75 until 2027). `gemini-3.1-pro-preview`
+> ($2.00 / $12.00) and `claude-opus-5-5` ($5.00 / $25.00) are the models most likely to trip
+> a persona's budget cap, since the budget counts real cost. See the rate card, not the name.
 
 ### 2.4 Resource patterns and glob semantics
 
@@ -424,15 +422,15 @@ rolling window is exhausted.
 `LTQ-TokenEnforce` only runs inside `LLMTokenLimitFlow`, whose condition is:
 
 ```
-(proxy.pathsuffix MatchesPath "/models/claude-haiku-4-5@20251001:generateContent")
-  or (flow.model == "claude-haiku-4-5@20251001")
+(proxy.pathsuffix MatchesPath "/models/claude-haiku-5-5:generateContent")
+  or (flow.model == "claude-haiku-5-5")
   or (proxy.pathsuffix JavaRegex "^/models/claude-haiku-4-5.*")
 ```
 
 Source: [default.xml#L109-L123](../apigee/proxies/ai-gateway-v1/apiproxy/proxies/default.xml#L109-L123).
 
 > [!WARNING]
-> Enforcement is therefore scoped to `claude-haiku-4-5@20251001` today. Other models have
+> Enforcement is therefore scoped to `claude-haiku-5-5` today. Other models have
 > product-level token quotas declared, and `LTQ-TokenCount` still meters them, but
 > no request-side enforcement step runs for them. Do not claim the gateway hard-fails
 > other models on tokens.
@@ -499,13 +497,13 @@ a recorded live run. It states what the committed configuration authorises.
 
 | Invocation | Engineering & IT (`admin`) | Analysts & Knowledge Workers (`loans_agent`) | Customer Support & Sales (`sales_agent`) | Enforcing policy |
 | --- | --- | --- | --- | --- |
-| `gemini-3.1-flash-lite` | allowed, 10000 tok/min | allowed, 5000 tok/min | allowed, 2000 tok/min | `VA-VerifyAPIKey` |
-| `gemini-3-flash-preview` | allowed, 10000 tok/min | allowed, 5000 tok/min | allowed, 2000 tok/min | `VA-VerifyAPIKey` |
-| `gemini-3.7-flash` / `gemini-3.8-flash` | allowed, 10000 tok/min | allowed, 5000 tok/min | **not in product** → 401 | `VA-VerifyAPIKey` |
+| `gemini-3.5-flash-lite` | allowed, 10000 tok/min | allowed, 5000 tok/min | allowed, 2000 tok/min | `VA-VerifyAPIKey` |
+| `gemini-3.6-flash` | allowed, 10000 tok/min | allowed, 5000 tok/min | allowed, 2000 tok/min | `VA-VerifyAPIKey` |
+| `gemini-3.8-flash` | allowed, 10000 tok/min | allowed, 5000 tok/min | **not in product** → 401 | `VA-VerifyAPIKey` |
 | `gemini-2.5-flash` | **retired — 401** | **retired — 401** | **retired — 401** | `VA-VerifyAPIKey` (entitled by no product) |
-| `claude-haiku-4-5@20251001` | allowed, **300 tok/min** (demo cap) | **not in product** → 401 | allowed, **300 tok/min** (demo cap) | `VA-VerifyAPIKey` + `LTQ-TokenEnforce` (429) |
+| `claude-haiku-5-5` | allowed, **300 tok/min** (demo cap) | **not in product** → 401 | allowed, **300 tok/min** (demo cap) | `VA-VerifyAPIKey` + `LTQ-TokenEnforce` (429) |
 | `gemini-3.1-pro-preview` | allowed, 10000 tok/min | allowed, 5000 tok/min | **not in product** → 401 | `VA-VerifyAPIKey` |
-| `claude-opus-4-5@20251101` | allowed, 10000 tok/min | **not in product** → 401 | **not in product** → 401 | `VA-VerifyAPIKey` |
+| `claude-opus-5-5` | allowed, 10000 tok/min | **not in product** → 401 | **not in product** → 401 | `VA-VerifyAPIKey` |
 | `gemini-2.5-pro` | **not in any product** → 401 | **not in any product** → 401 | **not in any product** → 401 | `VA-VerifyAPIKey` |
 | `auto` (`/auto`, `/auto:generateContent`; equal quota on each) | allowed, 50000 tok/min | allowed, 30000 tok/min | allowed, 20000 tok / 2 min | `VA-VerifyAPIKey` + `SC-ModelRouter` + `JS-AutoRouting` |
 | Monthly budget (`developer.budget.limit`) | $20 (`20000000`) | $10 (`10000000`) | $5 (`5000000`) | `QC-EnforceBudgetLimit` + `RF-BudgetExceeded` (429) |
@@ -571,10 +569,10 @@ and no model name is hardcoded in it.
 
 | Router category | Engineering & IT | Analysts & Knowledge Workers | Customer Support & Sales |
 | --- | --- | --- | --- |
-| `coding` | `claude-opus-4-5@20251101` (provider `anthropic`) | `gemini-3.1-pro-preview` | `claude-haiku-4-5@20251001` (provider `anthropic`) |
+| `coding` | `claude-opus-5-5` (provider `anthropic`) | `gemini-3.1-pro-preview` | `claude-haiku-5-5` (provider `anthropic`) |
 | `deep_reasoning` | `gemini-3.1-pro-preview` | `gemini-3.1-pro-preview` | `gemini-3.1-pro-preview` |
-| `simple` | `gemini-3.1-flash-lite` | `gemini-3.1-flash-lite` | `gemini-3.1-flash-lite` |
-| `general` | `gemini-3-flash-preview` | `gemini-3-flash-preview` | `gemini-3-flash-preview` |
+| `simple` | `gemini-3.5-flash-lite` | `gemini-3.5-flash-lite` | `gemini-3.5-flash-lite` |
+| `general` | `gemini-3.6-flash` | `gemini-3.6-flash` | `gemini-3.6-flash` |
 
 Each persona's cap is expressed purely in its product's attribute values, not in code.
 Every model the router can select is entitled in the persona product that can reach it.
@@ -681,7 +679,7 @@ The actual `FaultResponse` from `MLC-EnforceMonetizationLimits`:
 resolves an input/output rate in this order:
 
 1. Exact match in the KVM rate card (`flow.model_rates_json`).
-2. KVM match after stripping an `@version` suffix (`claude-opus-4-5@20251101` → `claude-opus-4-5`).
+2. KVM match after stripping an `@version` suffix (`claude-opus-5-5` → `claude-opus-5-5`).
 3. KVM match on a known model prefix.
 4. KVM `default` entry.
 5. Otherwise the call is not priced: `x-gateway-cost-source: unavailable: <reason>`,
@@ -712,18 +710,18 @@ USD per 1M tokens (entries for models no product entitles are omitted here):
 | Key | Input | Output |
 | --- | --- | --- |
 | `gemini-2.5-flash` *(retired; rate kept for historical analytics)* | 0.30 | 2.50 |
-| `gemini-3.1-flash-lite` | 0.075 | 0.30 |
-| `gemini-3-flash-preview` | 0.15 | 0.60 |
-| `gemini-3.1-pro-preview` | 1.25 | 5.00 |
-| `claude-haiku-4-5` | 1.00 | 5.00 |
-| `claude-opus-4-5` | 15.00 | 75.00 |
+| `gemini-3.5-flash-lite` | 0.30 | 2.50 |
+| `gemini-3.5-flash` | 1.50 | 9.00 |
+| `gemini-3.1-pro-preview` | 2.00 | 12.00 |
+| `claude-haiku-5-5` | 0.10 | 0.50 |
+| `claude-opus-5-5` | 4.00 | 20.00 |
 | `default` | 0.15 | 0.60 |
 
 > [!NOTE]
 > `gemini-2.5-flash` now has its own entry, so the headline demo model is no longer
 > billed at the `default` rate. The Claude keys are stored without an `@version`
 > suffix; `CalculateCost.js` strips the suffix before lookup, so
-> `claude-opus-4-5@20251101` resolves through `claude-opus-4-5`.
+> `claude-opus-5-5` resolves through `claude-opus-5-5`.
 
 ### 6.5 Response telemetry headers
 
@@ -1001,7 +999,7 @@ python3 apigee/scripts/provision_business_products.py                           
 > [!IMPORTANT]
 > Run `check_product_docs.py` after any change to an API product. The tables in
 > [section 2](#2-api-products-catalog) drifted badly enough to be actively misleading —
-> the legacy Standard tier table invented a `claude-haiku-4-5@20251001` operation at 2000 tokens/minute
+> the legacy Standard tier table invented a `claude-haiku-5-5` operation at 2000 tokens/minute
 > that contradicted the 50-token cap the demo relied on at the time (now 300), and the legacy Enterprise tier table omitted
 > `gemini-3.7-flash` and `gemini-3.8-flash` so two entitled, expensive models read as
 > unentitled. The script compares every `(resource, model, limit)` triple and the declared
@@ -1059,7 +1057,7 @@ bash apigee/scripts/test_autorouting.sh --all
 | [test_autorouting.sh](../apigee/scripts/test_autorouting.sh) | Runs `ui/tests/autorouting.unit.test.mjs` offline; live phase loads `ui/.env` via `node --env-file` | Skips the live phase when `ui/.env` is absent |
 | [gateway-live.test.mjs](../ui/tests/gateway-live.test.mjs#L4-L45) | `VITE_ADMIN_API_KEY` / `VITE_SALES_API_KEY` / `VITE_LOANS_API_KEY` (or the `*_API_KEY` forms), else `/api/me` | Asserts that `ADMIN_KEY` is present; sales/loans keys are never substituted with the admin key |
 
-`test_token_limit.sh` targets `/models/claude-haiku-4-5@20251001:generateContent` — the model the
+`test_token_limit.sh` targets `/models/claude-haiku-5-5:generateContent` — the model the
 300 tokens/minute quota is attached to and the only one `LLMTokenLimitFlow` matches. It runs
 the same 4 stateless steps as the UI demo (`maxOutputTokens: 90`) under a fresh per-run
 email, and asserts 200 `ok` → 200 `near-threshold` → 200 `exhausted` → 429 from the status
@@ -1088,9 +1086,9 @@ All UI labels below are quoted exactly as they render today.
 - Quick-scenario chips in the chat pane are: **Unauthorized**, **Prompt Sanitization**,
   **Auto Routing**, **Token Limits**, **Semantic Cache**, **Direct LLM**
   ([defaultSettings.ts#L390-L451](../ui/src/services/defaultSettings.ts#L390-L451)).
-- Model dropdown values, in order: `auto`, `gemini-3.1-flash-lite`,
-  `gemini-3-flash-preview`, `gemini-3.1-pro-preview`, `gemini-2.5-pro`,
-  `claude-haiku-4-5@20251001`, `claude-opus-4-5@20251101`
+- Model dropdown values, in order: `auto`, `gemini-3.5-flash-lite`,
+  `gemini-3.6-flash`, `gemini-3.1-pro-preview`, `gemini-2.5-pro`,
+  `claude-haiku-5-5`, `claude-opus-5-5`
   ([defaultSettings.ts#L252-L265](../ui/src/services/defaultSettings.ts#L252-L265)).
   Each entry renders with a tag: `Intelligent Routing`, `Rate Limited (300 tok/min)`,
   `Flash Lite`, `Flash`, `Pro Preview`, `Restricted (Not Entitled)`, `Claude Haiku`,
@@ -1098,8 +1096,8 @@ All UI labels below are quoted exactly as they render today.
 
 > [!NOTE]
 > Several dropdown entries are not usable by every persona on purpose.
-> `claude-opus-4-5@20251101` is Engineering & IT only; `gemini-3.1-pro-preview` is not
-> in Customer Support & Sales; `claude-haiku-4-5@20251001` is not in Analysts & Knowledge
+> `claude-opus-5-5` is Engineering & IT only; `gemini-3.1-pro-preview` is not
+> in Customer Support & Sales; `claude-haiku-5-5` is not in Analysts & Knowledge
 > Workers; and `gemini-2.5-pro` is entitled by no product at all. Selecting them on a
 > persona that lacks them (or `gemini-2.5-pro` on any key) is the intended way to
 > demonstrate an entitlement rejection.
@@ -1129,15 +1127,15 @@ All UI labels below are quoted exactly as they render today.
 
 ### Act 3 — Role-based model governance
 
-1. Switch persona to **Customer Support & Sales**, select `gemini-3.1-flash-lite`, send
+1. Switch persona to **Customer Support & Sales**, select `gemini-3.5-flash-lite`, send
    any prompt → **HTTP 200**. The trace viewer shows prompt/candidate tokens and cost headers.
-2. Still as **Customer Support & Sales**, switch to `claude-opus-4-5@20251101` and send.
+2. Still as **Customer Support & Sales**, switch to `claude-opus-5-5` and send.
    `Customer Support and Sales` has no operation matching
-   `/models/claude-opus-4-5@20251101:*`, so `VA-VerifyAPIKey` rejects with **HTTP 401**
+   `/models/claude-opus-5-5:*`, so `VA-VerifyAPIKey` rejects with **HTTP 401**
    (`InvalidApiKeyForGivenResource`). Switching to **Analysts & Knowledge Workers** gives
    the same 401 for Opus (that product tops out at `gemini-3.1-pro-preview`).
 3. Switch persona to **Engineering & IT** and resend. `Engineering and IT` grants
-   `/models/claude-opus-4-5@20251101:*` explicitly → **HTTP 200**.
+   `/models/claude-opus-5-5:*` explicitly → **HTTP 200**.
 4. Run the stronger variant: the **Unauthorized** chip's step-2 preset
    *"Unauthorized Model: Entitlement Block (401)"* (`model-forbidden`, badge
    `Restricted Model`) forces `activeUser: 'admin'` and `model: 'gemini-2.5-pro'`
@@ -1150,16 +1148,16 @@ All UI labels below are quoted exactly as they render today.
 1. Click the **Auto Routing** chip (badge `Intelligent`). It forces `model: 'auto'` but
    **no** persona: routing runs as the persona picked top-right.
 2. As **Engineering & IT**, send the simple-lookup preset prompt *"What does the acronym API
-   stand for?"* → the router classifies it `simple`, routed to `gemini-3.1-flash-lite`.
+   stand for?"* → the router classifies it `simple`, routed to `gemini-3.5-flash-lite`.
    Confirm via the `x-auto-routed: true` and `x-gateway-model` response headers.
 3. Send the deep-reasoning preset *"Evaluate the architectural trade-offs and benchmark
    performance between asynchronous event streaming versus synchronous gRPC
    microservices."* → routed to `gemini-3.1-pro-preview`.
 4. Send the coding preset *"Write a Python function to validate JWT tokens and decode
-   user claims."* → routed to `claude-opus-4-5@20251101` via the Anthropic `RouteRule`.
+   user claims."* → routed to `claude-opus-5-5` via the Anthropic `RouteRule`.
 5. Switch persona and resend the coding prompt: on **Analysts & Knowledge Workers** it routes to
    `gemini-3.1-pro-preview` instead of Opus; on **Customer Support & Sales** it routes to
-   `claude-haiku-4-5@20251001`. The deep-reasoning prompt goes to `gemini-3.1-pro-preview` on
+   `claude-haiku-5-5`. The deep-reasoning prompt goes to `gemini-3.1-pro-preview` on
    all three personas: Customer Support & Sales keeps fast, low-cost models for everything
    else and uses Pro only for questions that need deep reasoning (Agent Showcase scenario 8).
 6. Talking point: entitlement-aware routing with no client code change.
@@ -1167,7 +1165,7 @@ All UI labels below are quoted exactly as they render today.
 ### Act 5 — Semantic caching
 
 1. As **Engineering & IT**, click the **Semantic Cache** chip (badge `Miss → Hit`). It sets
-   `useCache: true`, `model: 'claude-opus-4-5@20251101'` (Engineering & IT only, so the
+   `useCache: true`, `model: 'claude-opus-5-5'` (Engineering & IT only, so the
    UI switches to that persona if the current one lacks Opus), and the client adds the `use-cache: true` header. Both steps are sent
    stateless (no chat history).
 2. Step 1 ("Semantic Cache (Seed Cache)") sends the zero-trust payments-architecture prompt →
@@ -1183,7 +1181,7 @@ All UI labels below are quoted exactly as they render today.
 ### Act 6 — Token quota throttling
 
 1. Click the **Token Limits** chip (badge `Pass → Alert → 429`). It applies
-   `model: 'claude-haiku-4-5@20251001'`, `useCache: false`; the current persona is kept if it
+   `model: 'claude-haiku-5-5'`, `useCache: false`; the current persona is kept if it
    entitles Haiku, otherwise the UI switches to Engineering & IT (`personaForModel`). Each
    click advances one of 4 steps
    ([TOKEN_LIMIT_EXAMPLES](../ui/src/services/defaultSettings.ts)). Every
@@ -1271,7 +1269,7 @@ the act reproduces on either persona. Analysts & Knowledge Workers does not gran
 | `allocatedBudgetUsd` | **Resolved.** The repeated `20` / `20.05` literals are now `PREPAID_STARTING_BALANCE_USD` and `PREPAID_BALANCE_EPSILON_USD` behind an `allocatedBudgetFor()` helper, duplicated in `server.js` and `vite.config.ts` with a comment noting they must agree. This is the **prepaid wallet**, unrelated to the gateway's $100 budget quota |
 | `scenario_presets_review.md` drift | **Resolved.** The file is now generated from `defaultSettings.ts` by `npm run docs:presets`; `--check` fails when stale. It had drifted to claim titles `Unauthorized`, `Auto Routing`, `Token Limits` and `Semantic Cache` long after the code moved to `Access Control`, `Model Routing`, `Tokenomics` and `Cache` |
 | `:streamGenerateContent` | **Resolved.** Now 501 `UNIMPLEMENTED` via `RF-StreamingNotSupported`. Previously returned a non-streaming 200 |
-| `LTQ-TokenEnforce` coverage | Only wired to `claude-haiku-4-5@20251001` via `LLMTokenLimitFlow`; other models are metered but not request-blocked |
+| `LTQ-TokenEnforce` coverage | Only wired to `claude-haiku-5-5` via `LLMTokenLimitFlow`; other models are metered but not request-blocked |
 | `/models/auto` entitlement | **Resolved.** Dropped from the legacy AI tiers and absent from every persona product. No product grants it and no flow routes it; `OAS-ValidateRequest` rejects it with 400. The UI always calls bare `/auto` |
 | Stale product `description` attributes | **Resolved.** The descriptive attributes (`description`, `tier`, `domain`) were removed from every product. Products now carry `access: private`, plus the three `developer.budget.*` attributes, four `routing.model.*` attributes and a `persona` attribute on the three persona AI products |
 | Leaked consumer key in git history | A literal consumer key was committed in `apigee/scripts/test_token_limit.sh` (commit `26e168b`). The working tree no longer contains it, but git history does — treat that key as compromised and rotate it |

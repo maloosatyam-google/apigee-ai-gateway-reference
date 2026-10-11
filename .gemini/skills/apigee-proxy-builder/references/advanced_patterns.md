@@ -468,7 +468,7 @@ Minimal correct shapes (see the references for the full element lists):
 
 <SemanticCacheLookup name="SCL-Lookup">
   <UserPromptSource>{flow.userPrompt}</UserPromptSource>
-  <Embeddings><VertexAI><URL>https://{REGION}-aiplatform.googleapis.com/v1/projects/{PROJECT}/locations/{REGION}/publishers/google/models/text-embedding-004:predict</URL></VertexAI></Embeddings>
+  <Embeddings><VertexAI><URL>https://{REGION}-aiplatform.googleapis.com/v1/projects/{PROJECT}/locations/{REGION}/publishers/google/models/text-embedding-005:predict</URL></VertexAI></Embeddings>
   <SimilaritySearch><VertexAI>
     <URL>https://{PUBLIC_DOMAIN}/v1/projects/{PROJECT}/locations/{REGION}/indexEndpoints/{ENDPOINT_ID}:findNeighbors</URL>
     <DeployedIndexID>{DEPLOYED_INDEX_ID}</DeployedIndexID>

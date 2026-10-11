@@ -50,17 +50,17 @@ the product, so the same classification yields a different model per persona pro
 
 | Router category | Engineering & IT | Analysts & Knowledge Workers | Customer Support & Sales |
 | :--- | :--- | :--- | :--- |
-| `coding` | `claude-opus-4-5@20251101` *(anthropic)* | `gemini-3.1-pro-preview` | `claude-haiku-4-5@20251001` *(anthropic)* |
+| `coding` | `claude-opus-5-5` *(anthropic)* | `gemini-3.1-pro-preview` | `claude-haiku-5-5` *(anthropic)* |
 | `deep_reasoning` | `gemini-3.1-pro-preview` | `gemini-3.1-pro-preview` | `gemini-3.1-pro-preview` |
-| `simple` | `gemini-3.1-flash-lite` | `gemini-3.1-flash-lite` | `gemini-3.1-flash-lite` |
-| `general` | `gemini-3-flash-preview` | `gemini-3-flash-preview` | `gemini-3-flash-preview` |
+| `simple` | `gemini-3.5-flash-lite` | `gemini-3.5-flash-lite` | `gemini-3.5-flash-lite` |
+| `general` | `gemini-3.6-flash` | `gemini-3.6-flash` | `gemini-3.6-flash` |
 
-Only **Engineering & IT** can reach `claude-opus-4-5@20251101`. **Analysts & Knowledge Workers**
+Only **Engineering & IT** can reach `claude-opus-5-5`. **Analysts & Knowledge Workers**
 tops out at `gemini-3.1-pro-preview`. **Customer Support & Sales** calls only
-`gemini-3.1-flash-lite` / `gemini-3-flash-preview` / `claude-haiku-4-5@20251001` directly, and on
+`gemini-3.5-flash-lite` / `gemini-3.6-flash` / `claude-haiku-5-5` directly, and on
 `/auto` uses `gemini-3.1-pro-preview` only for questions the router classifies `deep_reasoning`
 (Agent Showcase scenario 8). The key check on `/auto` runs against the `/auto` operation, so this
-needs no direct Pro operation on the product; it can never reach `claude-opus-4-5@20251101`. Changing the routing map is a **product edit, not a code change**; re-run
+needs no direct Pro operation on the product; it can never reach `claude-opus-5-5`. Changing the routing map is a **product edit, not a code change**; re-run
 `apigee/scripts/provision_unified_credentials.py` and the new mapping takes effect in ~10s with no
 proxy redeploy.
 
@@ -134,7 +134,7 @@ The inline `count="1000"` / `1` / `minute` values are fallback defaults only —
 `LTQ-TokenEnforce` enforces, `LTQ-TokenCount` counts, and both share the `common-counter` shared name.
 
 > [!NOTE]
-> **Token-quota demo model: `claude-haiku-4-5@20251001`, 300 tokens/min on every persona product that grants it** (Engineering & IT and Customer Support & Sales;
+> **Token-quota demo model: `claude-haiku-5-5`, 300 tokens/min on every persona product that grants it** (Engineering & IT and Customer Support & Sales;
 > Analysts & Knowledge Workers has no Haiku)
 > (raised from 50 so the demo can show a pass, two threshold alerts and then a 429).
 > It moved off `gemini-2.5-flash` ahead of that model's 2026-10-20 retirement. Claude hosts the
@@ -149,13 +149,14 @@ The inline `count="1000"` / `1` / `minute` values are fallback defaults only —
 > analytics colour are deliberately kept, because `server.js` re-costs historical analytics from
 > the rate card and deleting them would silently re-price past traffic at the `default` rate.
 >
-> `gemini-3.5-flash` was **removed** from the `ai-gateway-v1` bundle and the rate card: it was in
-> no API product, so it was unreachable and its price key could never be used. It is still a live
-> default inside the separate `apigee-go-gen` template set
-> ([_helpers.tmpl](apigee/templates/ai-gateway/_helpers.tmpl)
-> routing tiers and several JS resources), which was deliberately left alone.
+> **2026-10 model refresh:** retired `gemini-3.7-flash` and `gemini-3.5-flash` (deprecated 2026-10-08),
+> `gemini-3.1-flash-lite`, `gemini-3-flash-preview`, `claude-haiku-4-5` and `claude-opus-4-5`. Current models:
+> `gemini-3.5-flash-lite` (simple), `gemini-3.6-flash` (general), `gemini-3.8-flash`, `gemini-3.1-pro-preview`
+> (deep reasoning; Gemini 4 Argon is its planned successor), `claude-haiku-5-5` and `claude-opus-5-5` (global
+> endpoint). As with `gemini-2.5-flash`, the retired IDs keep pricing-only rate-card, `CalculateCost.js` and
+> analytics-colour entries so historical traffic is not re-priced at the `default` rate.
 
-**`claude-haiku-4-5@20251001` is the deliberate token-limit demo model at 300 tokens / 1 minute.**
+**`claude-haiku-5-5` is the deliberate token-limit demo model at 300 tokens / 1 minute.**
 `/auto` is 20000 tokens / 2 minutes (rolling) and every other operation in
 [customer_support_and_sales.json](apigee/products/customer_support_and_sales.json) is 2000 tokens / 1 minute. `/auto` has a higher cap because one agent turn chains several model calls and thinking tokens count. The 2-minute rolling window is for the Agent Showcase quota burst (scenario 7): spent tokens stay counted long enough to show the 429, and a second burst right after is stopped at once. The product declares **5 `operationConfigs` across 4 models** (`auto`
 has two — `/auto` and `/auto:*`), exactly one `llmOperation` per config (the Management API
@@ -167,9 +168,9 @@ means deleting its whole wrapper, not just its operation):
 | :--- | :--- | :--- |
 | `/auto` | `auto` | 20000 / 2 min |
 | `/auto:*` | `auto` | 20000 / 2 min (must equal `/auto`) |
-| `/models/gemini-3.1-flash-lite:*` | `gemini-3.1-flash-lite` | 2000 / 1 min |
-| `/models/gemini-3-flash-preview:*` | `gemini-3-flash-preview` | 2000 / 1 min |
-| **`/models/claude-haiku-4-5@20251001:*`** | `claude-haiku-4-5@20251001` | **300 / 1 min** |
+| `/models/gemini-3.5-flash-lite:*` | `gemini-3.5-flash-lite` | 2000 / 1 min |
+| `/models/gemini-3.6-flash:*` | `gemini-3.6-flash` | 2000 / 1 min |
+| **`/models/claude-haiku-5-5:*`** | `claude-haiku-5-5` | **300 / 1 min** |
 
 > [!NOTE]
 > **Auto-routing is two resources that must carry one number.** All three persona products declare `/auto`
@@ -190,8 +191,8 @@ means deleting its whole wrapper, not just its operation):
 > supported (refused by `RF-StreamingNotSupported`); streaming for `/auto` is on the roadmap.
 
 Enforcement is wired through the dedicated `LLMTokenLimitFlow` conditional flow, which fires on
-`/models/claude-haiku-4-5@20251001:generateContent`, on
-`flow.model == "claude-haiku-4-5@20251001"`, or on the regex `^/models/claude-haiku-4-5.*` — the
+`/models/claude-haiku-5-5:generateContent`, on
+`flow.model == "claude-haiku-5-5"`, or on the regex `^/models/claude-haiku-4-5.*` — the
 last clause deliberately omits the `@date` suffix so a future revision of the same model still
 matches. Breaching the limit returns **HTTP 429**.
 
@@ -269,7 +270,7 @@ Verified on dev: 117/300 (39%) `ok`, 236/300 (78.7%) `near-threshold`, 361/300 (
 ### 5. ⚡ Cache (Vertex AI Vector Search)
 
 [SCL-Semantic-Cache-Lookup.xml](apigee/proxies/ai-gateway-v1/apiproxy/policies/SCL-Semantic-Cache-Lookup.xml)
-embeds the prompt with Vertex AI `text-embedding-004` and queries a Vertex AI Vector Search index
+embeds the prompt with Vertex AI `text-embedding-005` and queries a Vertex AI Vector Search index
 endpoint (`DeployedIndexID: semantic_cache`) with a similarity **threshold of 0.95**.
 `SCP-Semantic-Cache-Populate` writes successful responses back.
 
@@ -515,9 +516,9 @@ globs** — both were removed. Each model gets a single gateway-shaped resource:
 
 | Product | Models | Resources | Token quota |
 | :--- | :--- | :--- | :--- |
-| **[Engineering & IT](apigee/products/engineering_and_it.json)** | `auto`, `gemini-3.1-flash-lite`, `gemini-3-flash-preview`, `gemini-3.1-pro-preview`, `claude-haiku-4-5@20251001`, `claude-opus-4-5@20251101`, `gemini-3.7-flash`, `gemini-3.8-flash` — **8** | 9 `operationConfigs` (`auto` has two) | 10000 / min · `auto` → 50000 / min · `claude-haiku-4-5@20251001` → **300 / min** |
-| **[Analysts & Knowledge Workers](apigee/products/analysts_and_knowledge_workers.json)** | `auto`, `gemini-3.1-pro-preview`, `gemini-3.1-flash-lite`, `gemini-3-flash-preview`, `gemini-3.7-flash`, `gemini-3.8-flash` — **6** (no Opus, no Haiku) | 7 `operationConfigs` (`auto` has two) | 5000 / min · `auto` → 30000 / min |
-| **[Customer Support & Sales](apigee/products/customer_support_and_sales.json)** | `auto`, `gemini-3.1-flash-lite`, `gemini-3-flash-preview`, `claude-haiku-4-5@20251001` — **4** | 5 `operationConfigs` (`auto` has two) | 2000 / min · `auto` → 20000 / 2 min · `claude-haiku-4-5@20251001` → **300 / min** |
+| **[Engineering & IT](apigee/products/engineering_and_it.json)** | `auto`, `gemini-3.5-flash-lite`, `gemini-3.6-flash`, `gemini-3.1-pro-preview`, `claude-haiku-5-5`, `claude-opus-5-5`, `gemini-3.7-flash`, `gemini-3.8-flash` — **8** | 9 `operationConfigs` (`auto` has two) | 10000 / min · `auto` → 50000 / min · `claude-haiku-5-5` → **300 / min** |
+| **[Analysts & Knowledge Workers](apigee/products/analysts_and_knowledge_workers.json)** | `auto`, `gemini-3.1-pro-preview`, `gemini-3.5-flash-lite`, `gemini-3.6-flash`, `gemini-3.7-flash`, `gemini-3.8-flash` — **6** (no Opus, no Haiku) | 7 `operationConfigs` (`auto` has two) | 5000 / min · `auto` → 30000 / min |
+| **[Customer Support & Sales](apigee/products/customer_support_and_sales.json)** | `auto`, `gemini-3.5-flash-lite`, `gemini-3.6-flash`, `claude-haiku-5-5` — **4** | 5 `operationConfigs` (`auto` has two) | 2000 / min · `auto` → 20000 / 2 min · `claude-haiku-5-5` → **300 / min** |
 
 `auto` is granted as **an exact resource plus a verb-suffix resource** in all three persona products, as two
 separate `operationConfigs` with equal quotas:
@@ -546,12 +547,12 @@ serves both bare `/auto` (what the UI calls) and `/auto:generateContent`.
 `OAS-ValidateRequest`, because the path is absent from the OpenAPI spec.
 
 > [!NOTE]
-> Customer Support & Sales **does** include `claude-haiku-4-5@20251001`. It does **not** enumerate
-> `gemini-3.1-pro-preview` or `claude-opus-4-5@20251101`, so calls to those models with a Customer
+> Customer Support & Sales **does** include `claude-haiku-5-5`. It does **not** enumerate
+> `gemini-3.1-pro-preview` or `claude-opus-5-5`, so calls to those models with a Customer
 > Support & Sales key are rejected by `VA-VerifyAPIKey`. Analysts & Knowledge Workers grants
 > `gemini-3.1-pro-preview` but neither Claude model; only Engineering & IT grants Opus. All three products use
 > `llmOperationGroup.operationConfigs[].llmTokenQuota` with exactly one `llmOperation` per config;
-> neither uses the classic product `quota` field. The 300 tokens/min `claude-haiku-4-5@20251001` demo cap
+> neither uses the classic product `quota` field. The 300 tokens/min `claude-haiku-5-5` demo cap
 > applies in **every** product that grants Haiku (Engineering & IT, Customer Support & Sales).
 
 `gemini-2.5-pro` is deliberately **unentitled in every product**: a real, older-generation model the
@@ -684,10 +685,12 @@ declarations, 3 trials each:
 | `gemini-3.7-flash` | 3648 ms | 3249 ms | 3/3 | 48 | $0.002414 |
 | `gemini-3.8-flash` | **504 Gateway Timeout** | — | — | — | — |
 
-`gemini-3.8-flash` was the original choice and now times out at the gateway under a tool-bearing
-request. `gemini-3.1-flash-lite` is entitled on **both** tiers, so
+Measured 2026-09 on models since retired; in 2026-10 the agent moved to their successors,
+`gemini-3.5-flash-lite` (primary) and `gemini-3.6-flash` (fallback).
+`gemini-3.8-flash` was the original choice and timed out at the gateway under a tool-bearing
+request. `gemini-3.5-flash-lite` is entitled on **both** tiers, so
 [`AGENT_FALLBACK_MODEL`](ui/server/adminAgentCore.js)
-(`gemini-3-flash-preview`, used on a 403/404 entitlement failure) is now a genuine last resort.
+(`gemini-3.6-flash`, used on a 403/404 entitlement failure) is now a genuine last resort.
 
 > [!NOTE]
 > A smaller model needs firmer instructions. flash-lite initially guessed a model id
@@ -722,7 +725,7 @@ The tables below describe the generic story.
 
 | | Regular Gateway (Without AI governance) | With AI & Tools Governance |
 | :--- | :--- | :--- |
-| Model | One model for every step via [`llm-passthrough-v1`](apigee/proxies/llm-passthrough-v1) (key check, analytics and logs only): Gemini 3.1 Pro by default, switchable in the column to Gemini 3 Flash or 3.1 Flash-Lite (`BASELINE_MODELS` on the agent service) | `/ai/v1/auto`: routing, semantic cache, Model Armor, token quota |
+| Model | One model for every step via [`llm-passthrough-v1`](apigee/proxies/llm-passthrough-v1) (key check, analytics and logs only): Gemini 3.8 Flash by default, switchable in the column to Gemini 3.6 Flash or 3.5 Flash-Lite (`BASELINE_MODELS` on the agent service) | `/ai/v1/auto`: routing, semantic cache, Model Armor, token quota |
 | Tools | Connects to `/mcp`, `/bigquery/mcp`, `/servicenow/mcp` with the caller's Unified Admin key: 24 tools | Connects to the same three with the Support and Sales key: Apigee lists 7 tools on `/mcp`, only `createIncident` on ServiceNow (for approval requests) and refuses BigQuery (401 `InvalidApiKeyForGivenResource`); ADK carries on without it |
 | Cost | Tokens × the `ai-model-rates` KVM | Same KVM, same way |
 
@@ -748,7 +751,7 @@ Eight preset scenarios, measured on prod (27–28 Sep 2026):
 | 8 | Cheaper model? | Switched to Flash-Lite for this question: wrong box plan ($36–$38) or gives up, in every run so far | Routed `deep_reasoning` to Gemini 3.1 Pro: $32, one box of each size, each exactly full, in one step (answer reuse off for this scenario) |
 
 Scenario 8 answers "why not just use a cheaper model?": picking it switches the ungoverned agent's
-model picker to Gemini 3.1 Flash-Lite, and picking another scenario puts the previous model back.
+model picker to Gemini 3.5 Flash-Lite, and picking another scenario puts the previous model back.
 The Customer Support & Sales product routes `deep_reasoning` to `gemini-3.1-pro-preview` on `/auto`
 only, so the governed agent pays for Pro just on the question that needs it; easy steps still go to
 Flash-Lite or Flash.
@@ -909,6 +912,10 @@ the ungoverned agent in red and the governed agent in blue.
             └── mcpClient.ts               # JSON-RPC 2.0 tool protocol client
 ```
 
+> [!NOTE]
+> `ui/nginx.conf.template` and `ui/generate-env.sh` still exist in the tree but are **not referenced
+> by [ui/Dockerfile](ui/Dockerfile)** or by any build
+> script. They are leftovers from an earlier NGINX-based container and are dead files today.
 
 ### UI navigation
 
@@ -1048,57 +1055,6 @@ show `$0.00` for real traffic, while 6dp everywhere is unreadable in summary til
 
 ---
 
-## 🌏 Replicate in your own environment
-
-Everything needed to run this demo in your own Google Cloud project is in the repo. Nothing
-in the code is tied to a particular project, domain or person.
-
-**You need:** a GCP project with billing, an **Apigee X** org in it with two environments
-(e.g. `dev`, `prod`) attached to environment groups whose hostnames resolve to your Apigee
-load balancer, and `gcloud` (Owner or equivalent), Node 20+ and Python 3.10+ locally.
-No Apigee yet? Provisioning a Pay-as-you-go, PSC-based org is planned as
-[phase 2](docs/phase2_apigee_provisioning.md); until then follow
-[the Apigee CLI install guide](https://docs.cloud.google.com/apigee/docs/api-platform/get-started/install-cli-non-peered-paygo).
-
-```bash
-git clone <this repo> && cd apigee-ai-gateway-demo
-cp .env.example .env                # fill in GCP_PROJECT_ID, GCP_REGION, APIGEE_HOST_*, DEMO_ADMIN_EMAIL
-gcloud auth login && gcloud auth application-default login
-scripts/bootstrap.sh --check        # read-only: lists what exists and what is missing
-scripts/bootstrap.sh                # creates everything (idempotent; safe to re-run)
-```
-
-[bootstrap.sh](scripts/bootstrap.sh) runs these steps. You can also run them one at a time,
-e.g. `scripts/bootstrap.sh proxies products`:
-
-| Step | Creates |
-| :--- | :--- |
-| `apis` | Enables Apigee, Vertex AI, Model Armor, Cloud Run, Cloud Build, Artifact Registry, Logging, BigQuery, API hub |
-| `iam` | `apigee-ui-mgmt-sa` (Management API) and `ai-client` (proxy runtime) with their roles; lets you impersonate the UI SA locally |
-| `modelarmor` | `apigee-sanitize-user-prompt` and `apigee-sanitize-model-response` templates |
-| `vectorsearch` | Semantic-cache index + public endpoint (first run ~30–60 min); writes the IDs into `.env` |
-| `datacollectors` | The `dc_*` analytics data collectors the proxies write to |
-| `backends` | Cloud Run `customer-service-api`, `business-insights-api`, `industry-apis`, `servicenow-mcp-server`, `agent-showcase-api` |
-| `kvms` | `ai-model-rates` (rate card), `customer-tools-config`, encrypted `ai-gateway-creds` (from `TYPESAFE_API_KEY`, optional) |
-| `proxies` | Every bundle in `apigee/proxies/`, rendered from `.env`, deployed to both environments |
-| `products` | API products, developers, apps, industry packs |
-| `bucket` | The customer-theme library bucket |
-| `ui` | Builds and deploys the UI to Cloud Run (`ui/scripts/deploy_prod.sh`) |
-
-Then:
-
-1. **MCP gateway.** The `/mcp` tools-gateway proxy is created in the Apigee console (MCP
-   proxy) rather than from this repo. Its tools are the Cloud Run MCP servers deployed above; see
-   [§7 Native MCP Server & Tools Governance](#7-️-native-mcp-server--tools-governance).
-2. **IAP.** Put the UI behind an HTTPS load balancer with IAP:
-   [cloud_run_iap_deployment_guide.md](docs/cloud_run_iap_deployment_guide.md).
-3. **Verify.** `cd ui && npm test && npm run test:live`.
-
-Or run the UI locally against your org: `cd ui && npm install && npm run dev`, then open
-`http://localhost:3000`.
-
----
-
 ## 🛠️ Local Development & Setup
 
 ### Prerequisites
@@ -1109,25 +1065,6 @@ Or run the UI locally against your org: `cd ui && npm install && npm run dev`, t
   `gcloud auth print-access-token` and `gcloud auth print-identity-token` for Management API and
   SSO simulation
 
-### Git hooks (credential-leak protection)
-
-Enable once per clone:
-
-```bash
-scripts/install_hooks.sh        # sets core.hooksPath=.githooks
-```
-
-| Hook | Checks |
-| :--- | :--- |
-| `pre-commit` (staged content only) | Forbidden files (`.env`, `*.pem`, `*.key`, SA key JSON, …) · secret patterns (Google API keys, OAuth tokens, private keys, GitHub/OpenAI/Anthropic/AWS/Slack tokens) · identifiers in your gitignored `.public-denylist` · files > 5 MB · merge-conflict markers · syntax of `.sh`, `.json`, `.py`, `.xml`, `.yaml`, `.js` · `tsc --noEmit` when `ui/` TypeScript changes · `gitleaks` and `shellcheck` if installed |
-| `pre-push` | Full-tree `scripts/check_public.sh` + UI unit tests (`SKIP_PREPUSH_TESTS=1` to skip) |
-| CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) | Public check, gitleaks over full history, syntax/shellcheck, UI type-check, unit tests and build |
-
-The hooks need only bash, git, python3 and node. Put your own project id, domain and emails in
-`.public-denylist` (one per line) so they can never be committed. The secret patterns are shared
-in [scripts/lib/secret_patterns.sh](scripts/lib/secret_patterns.sh). If a credential is ever
-committed, **rotate it**: rewriting history does not un-leak a pushed secret.
-
 ### npm scripts
 
 All scripts live in [ui/package.json](ui/package.json#L6-L15):
@@ -1137,12 +1074,12 @@ All scripts live in [ui/package.json](ui/package.json#L6-L15):
 | `npm run dev` | `vite` | Dev server with live `/api/*` middleware |
 | `npm run build` | `tsc && vite build` | Type-check then emit `dist/` |
 | `npm run preview` | `vite preview` | Preview the built bundle |
-| `npm test` | `node --import ./tests/setup-env.mjs --test` over the offline `tests/*.unit.test.mjs` suites | Full offline unit set (incl. guardrail catalog + Ask Apigee) |
+| `npm test` | `node --test` over the offline `tests/*.unit.test.mjs` suites | Full offline unit set (incl. guardrail catalog + Ask Apigee) |
 | `npm run test:unit` | same file list as `npm test` | Alias of `npm test` |
 | `npm run test:autorouting` / `test:cost` / `test:products` / `test:monetization` / `test:bundle` | single suite | Run one offline suite |
 | `npm run test:admin-agent` | `adminagent` + `adminagentroutes` unit suites | Ask Apigee only, offline |
 | `npm run test:admin-agent:live` | `node --test tests/adminagent.live.test.mjs` | Real metered Ask Apigee turn (spends money) |
-| `npm run test:live` | `TEST_ALLOW_PROD=1 node --test tests/gateway-live.test.mjs` | Live gateway suite — **prod only** |
+| `npm run test:live` | `TEST_ALLOW_PROD=1 node --env-file=.env --test tests/gateway-live.test.mjs` | Live gateway suite — **prod only** |
 | `npm run test:live:prod` | identical to `test:live` | Alias |
 | `npm run test:all` | unit set `&&` `test:live` | Everything |
 | `npm run gen:guardrail-catalog` | `node server/generateGuardrailCatalog.js` | Regenerate `server/guardrailCatalog.json` |
@@ -1176,25 +1113,16 @@ npm run build
 
 ### Environment configuration
 
-All environment-specific values (GCP project, Apigee org and hostnames, identities, backend
-URLs, Vector Search IDs) live in **one** gitignored file at the repo root:
+Copy [ui/.env.example](ui/.env.example) to `ui/.env`:
 
 ```bash
-cp .env.example .env     # then fill in the "Required" block
+cp .env.example .env
 ```
 
-[.env.example](.env.example) documents every key. The same file is read by the shell scripts
-([scripts/lib/config.sh](scripts/lib/config.sh)), the Python scripts
-([scripts/lib/deploy_config.py](scripts/lib/deploy_config.py)), the UI server and Vite dev server
-([ui/server/deployConfig.js](ui/server/deployConfig.js)) and the live tests. The browser gets the
-public subset from `/env-config.js` at runtime, so nothing environment-specific is compiled into
-the bundle. Proxy bundles contain `__PLACEHOLDER__` tokens that
-[render_tokens.py](apigee/scripts/render_tokens.py) fills from `.env` when
-`package_bundle.sh` packages them; packaging fails if a placeholder has no value.
-`ui/.env` (template [ui/.env.example](ui/.env.example)) holds optional UI-only overrides.
-
-Unit tests ignore `.env` and run against fixed example values
-([ui/tests/setup-env.mjs](ui/tests/setup-env.mjs)), so `npm test` behaves the same in every clone.
+Recognised keys: `VITE_DEFAULT_ENV`, `VITE_ADMIN_API_KEY`, `VITE_ADMIN_USER_EMAIL`,
+`VITE_SALES_API_KEY`, `VITE_SALES_AGENT_EMAIL`, `VITE_LOANS_API_KEY`, `VITE_LOANS_AGENT_EMAIL`,
+`VITE_SSO_USER_EMAIL` (also the developer whose admin key Ask Apigee uses). A `.env` file is
+**mandatory** for `npm run test:live`, which is invoked with `node --env-file=.env`.
 
 > [!IMPORTANT]
 > `npm run test:live` targets **prod only** (the script sets `TEST_ALLOW_PROD=1`); there is no
@@ -1239,7 +1167,7 @@ The live suite is organised into four describe blocks:
 It first probes `http://localhost:3000/api/me`; if the dev server is up it routes through the local
 proxy and harvests API keys from the `/api/me` response, otherwise it falls back to calling
 `https://api.example.com` directly. It also retries HTTP 429 responses with
-backoff, since the `claude-haiku-4-5@20251001` quota demo is deliberately tight.
+backoff, since the `claude-haiku-5-5` quota demo is deliberately tight.
 
 **The result depends on which target it picked**, so the suite prints a provenance banner naming the
 target, the JWT identity, and the source of each API key before any test runs:
@@ -1258,9 +1186,9 @@ When keys are not supplied via `.env` or `/api/me` the suite discovers them from
 
 | Variable | Default | Selects |
 | :--- | :--- | :--- |
-| `APIGEE_ORG` | `APIGEE_ORG` from `.env` | Org queried for apps and keys |
-| `APIGEE_DEVELOPER` | `SSO_USER_EMAIL` | Developer owning the **admin** app → `ADMIN_KEY` |
-| `APIGEE_PERSONA_DEVELOPER` | `PERSONA_APP_DEVELOPER` from `.env` | Developer owning the **sales/loans** apps (MCP personas only) |
+| `APIGEE_ORG` | `your-gcp-project` | Org queried for apps and keys |
+| `APIGEE_DEVELOPER` | `VITE_SSO_USER_EMAIL` | Developer owning the **admin** app → `ADMIN_KEY` |
+| `APIGEE_PERSONA_DEVELOPER` | `persona.owner@example.com` | Developer owning the **sales/loans** apps (MCP personas only) |
 
 > [!IMPORTANT]
 > The admin key must belong to the same developer as the JWT identity. The AI Gateway attributes LLM
@@ -1274,7 +1202,7 @@ When keys are not supplied via `.env` or `/api/me` the suite discovers them from
 ```bash
 cd ui
 npm run test:unit    # offline, no credentials needed (same as npm test)
-npm run test:live    # PROD only; requires the root .env and gcloud auth — run after a deploy
+npm run test:live    # PROD only; requires ui/.env and gcloud auth — run after a deploy
 npm run test:all
 ```
 
@@ -1350,6 +1278,38 @@ gcloud run deploy apigee-ai-gateway-ui \
 Full load balancer, IAP, DNS and troubleshooting detail lives in
 [cloud_run_iap_deployment_guide.md](docs/cloud_run_iap_deployment_guide.md).
 
+### Daily pricing & model watch
+
+[services/model-watch](services/model-watch) is a Cloud Run job that Cloud Scheduler runs every day
+at 07:00 (Asia/Singapore). It reads the
+[Vertex AI pricing](https://cloud.google.com/gemini-enterprise-agent-platform/generative-ai/pricing) page
+(authoritative, since the gateway calls Vertex), the
+[Gemini API pricing](https://ai.google.dev/gemini-api/docs/pricing) page (cross-check) and the
+[Gemini API changelog](https://ai.google.dev/gemini-api/docs/changelog), and writes
+`gs://<bucket>/model-watch/latest.json`.
+
+The Admin Console shows a **Pricing & model watch** alert built from that report and the live
+`ai-model-rates` card ([server/modelWatch.js](ui/server/modelWatch.js)):
+
+| Finding | Example |
+| :--- | :--- |
+| Rate-card drift | Card says `gemini-3.1-pro-preview` 1.25 / 5.00; Vertex lists 2.00 / 12.00 |
+| Deprecation of a model in use, with its replacement | `gemini-3.5-flash` deprecated → `gemini-3.6-flash` |
+| Scheduled price change | `gemini-3.8-flash` 0.75 / 3.75 → 1.50 / 7.50 from 2027-01-01 |
+| New model not in the card | `gemini-3.6-flash` |
+| Any price change on the Vertex AI page, all models (last 30 days) | Grok, Llama, Mistral, DeepSeek, Imagen, Veo, embeddings, tuning, caching, Priority/Flex tiers: ~1,700 prices across ~170 models |
+| Watcher health | A page failed to load or its layout changed (never reported as "no change") |
+
+Fixes go through a pull request: **Copy & open PR** copies the corrected rate card and opens the
+GitHub editor for `apigee/config/model_rate_card.json` (set `MODEL_WATCH_GITHUB_REPO=owner/repo`).
+After merging, publish with `apigee/scripts/sync_rate_card.sh`. **Check now** runs the job on demand.
+
+```bash
+services/model-watch/deploy.sh                 # SA, job, scheduler, IAM, first run (idempotent)
+python3 services/model-watch/watch.py --dry-run   # local check, writes nothing
+python3 -m unittest discover -s services/model-watch
+```
+
 ### Deploying the Apigee proxies
 
 Bundle packaging, validation and deployment are scripted in
@@ -1383,7 +1343,7 @@ python3 apigee/scripts/apihub_catalog.py --only banking-mcp          # one API (
 populates Apigee Analytics and Monetization with realistic traffic ahead of a demo. It discovers
 every active developer and their approved keys through the Management API via `gcloud`
 (auto-provisioning a `Unified Admin <username> App` for any developer without one), fans live
-requests across `/auto`, `gemini-3.1-flash-lite`, `gemini-3.1-pro-preview` and the other catalog models,
+requests across `/auto`, `gemini-3.5-flash-lite`, `gemini-3.1-pro-preview` and the other catalog models,
 then applies immediate micro-dollar wallet adjustments so prepaid balances reflect the consumption
 straight away. No consumer key is ever hardcoded.
 
@@ -1395,7 +1355,7 @@ python3 apigee/scripts/generate_demo_traffic.py --requests-per-user 3
 runs the offline unit suite and, when `ui/.env` exists, the live suite.
 
 [test_token_limit.sh](apigee/scripts/test_token_limit.sh)
-exercises the 300 tokens/min demo cap against `/models/claude-haiku-4-5@20251001:generateContent` with
+exercises the 300 tokens/min demo cap against `/models/claude-haiku-5-5:generateContent` with
 the same 4 steps as the UI demo (stateless, `maxOutputTokens: 90`), under a fresh per-run email so
 it starts from an empty window. It asserts each status and the `x-gateway-token-quota-status`
 header: 200 `ok` → 200 `near-threshold` → 200 `exhausted` → **HTTP 429**. No consumer key is

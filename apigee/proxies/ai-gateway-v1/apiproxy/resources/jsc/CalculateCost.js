@@ -4,7 +4,7 @@ var candidateTokens = parseInt(context.getVariable("flow.candidatesTokenCount") 
 
 // Thinking ("thoughts") tokens are billed by Vertex at the OUTPUT rate but are reported
 // separately from candidatesTokenCount. Ignoring them badly understates cost on reasoning
-// models: a gemini-3.7-flash call measured 7 prompt / 1 candidate / 84 thoughts, so charging
+// models: a gemini-3.8-flash-class call measured 7 prompt / 1 candidate / 84 thoughts, so charging
 // only prompt+candidates billed 8 tokens out of 92 actually consumed.
 var thoughtTokens = parseInt(context.getVariable("flow.thoughtsTokenCount") || "0", 10);
 if (isNaN(thoughtTokens) || thoughtTokens < 0) { thoughtTokens = 0; }
@@ -20,7 +20,7 @@ if (!isNaN(reportedTotal) && reportedTotal > totalTokens) {
   totalTokens = reportedTotal;
 }
 
-var model = context.getVariable("flow.target_model") || context.getVariable("flow.model") || "gemini-3-flash-preview";
+var model = context.getVariable("flow.target_model") || context.getVariable("flow.model") || "gemini-3.6-flash";
 var modelNormalized = model.toLowerCase().trim();
 
 var inputRate = null;
@@ -46,17 +46,20 @@ if (kvmRatesJson) {
       return false;
     };
 
-    // Exact match, then without the '@version' suffix (claude-opus-4-5@20251101 -> claude-opus-4-5)
+    // Exact match, then without the '@version' suffix (claude-opus-5-5 -> claude-opus-5-5)
     var found = pick(modelNormalized) || (modelNormalized.indexOf("@") !== -1 && pick(modelNormalized.split("@")[0]));
 
     // Known model prefixes present in the card
     if (!found) {
       var prefixes = [
-        "gemini-3.1-flash-lite", "gemini-3-flash-preview",
-        "gemini-3.7-flash", "gemini-3.8-flash",
+        "gemini-3.5-flash-lite", "gemini-3.6-flash",
+        "gemini-3.8-flash",
         "gemini-3.1-pro-preview", "gemini-2.5-pro", "gemini-2.5-flash",
-        "claude-opus-4-5", "claude-opus",
-        "claude-haiku-4-5"
+        "claude-opus-5-5", "claude-haiku-5-5",
+        // Retired 2026-10; priced only so historical traffic keeps its real cost.
+        "gemini-3.1-flash-lite", "gemini-3-flash-preview", "gemini-3.7-flash", "gemini-3.5-flash",
+        "claude-opus-4-5", "claude-haiku-4-5",
+        "claude-opus"
       ];
       for (var i = 0; i < prefixes.length && !found; i++) {
         if (modelNormalized.indexOf(prefixes[i]) !== -1) found = pick(prefixes[i]);
@@ -74,8 +77,8 @@ context.setVariable("flow.cost_source", costSource);
 
 // Cost tier — the ONLY place it is set. Always derived from the resolved OUTPUT
 // RATE, never from the model name and never from an upstream literal:
-// gemini-3.7-flash and gemini-3.8-flash bill at 7.50, above gemini-3.1-pro-preview's
-// 5.00, so any name-based guess would label them cheap. Deriving it here means a
+// gemini-3.5-flash bills 9.00 per 1M output, more than the newer gemini-3.8-flash (3.75),
+// so any name-based guess would mis-tier them. Deriving it here means a
 // reprice in the ai-model-rates KVM moves the tier with no code change.
 var rated = inputRate !== null && outputRate !== null;
 var derivedTier = "unknown";

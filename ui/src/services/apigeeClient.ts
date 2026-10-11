@@ -88,7 +88,7 @@ export async function sendPromptToApigee(
 
   // Model selection. Every model resolves to the same two-path surface, so there
   // is no provider-specific endpoint or wire format to special-case here.
-  const targetModel = settings.model || 'gemini-3.1-flash-lite';
+  const targetModel = settings.model || 'gemini-3.5-flash-lite';
   const isAuto = settings.model === 'auto';
 
   const endpointUrl = isAuto
@@ -314,8 +314,8 @@ export async function sendPromptToApigee(
     // Cost is NOT recomputed client-side. JS-CalculateCost in the gateway is the single
     // costing authority and derives both figures from the ai-model-rates KVM, on cache
     // hits too. The previous fallbacks invented a $0.20/1M blended rate and guessed the
-    // tier by substring-matching the model name, which mis-tiers gemini-3.7-flash and
-    // gemini-3.8-flash: they bill at 7.50, above gemini-3.1-pro-preview's 5.00. When the
+    // tier by substring-matching the model name, which mis-tiers gemini-3.6-flash and
+    // gemini-3.8-flash: 9.00 vs 3.75 per 1M output, the opposite of what the names suggest. When the
     // header is absent the value stays undefined and the trace viewer hides the chip,
     // which is honest; a wrong number is not.
     const effectiveCostUsd = headersReceived['x-gateway-cost-usd'] || undefined;
@@ -324,7 +324,7 @@ export async function sendPromptToApigee(
     // classification authority and reports its verdict in `x-gateway-category`.
     //
     // The previous fallback substring-matched the model name, which cannot work:
-    // gemini-3.1-flash-lite (`simple`) and gemini-3-flash-preview (`general`)
+    // gemini-3.5-flash-lite (`simple`) and gemini-3.6-flash (`general`)
     // both contain "flash", so every simple request was mislabelled
     // "General / Fast", and there was no `simple` case at all. That is the same
     // mistake the cost fallback above made by guessing the tier from the model

@@ -2,7 +2,7 @@
 
 // The model id the LLM token quota is keyed on. Persona products grant /auto as an
 // llmOperation with model "auto", but JS-AutoRouting later overwrites flow.model with
-// the routed model (e.g. gemini-3.1-flash-lite). LTQ-TokenCount / LTQ-TokenEnforce
+// the routed model (e.g. gemini-3.5-flash-lite). LTQ-TokenCount / LTQ-TokenEnforce
 // resolved their limit from {flow.model}, found no matching operation, and failed
 // silently (ratelimit.failed=true) - so /auto was never counted or limited. They now
 // read flow.quota_model first; direct model paths leave it unset and fall back to

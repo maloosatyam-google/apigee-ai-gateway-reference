@@ -9,7 +9,8 @@ import path from 'node:path'
 // @ts-ignore -- plain-JS ESM module shared with server.js (no .d.ts).
 import { createAdminAgentService } from './server/adminAgentService.js'
 import { createAgentShowcaseService } from './server/agentShowcase.js'
-import { createThemeLibraryService } from './server/themeLibrary.js'
+import { createThemeLibraryService, THEME_BUCKET } from './server/themeLibrary.js'
+import { createModelWatchService } from './server/modelWatch.js'
 import { handleReloadHint } from './server/reloadHint.js'
 import { mintSyntheticIdentityToken } from './server/adminAgentCore.js'
 import { applyLedgerToBalance, fetchApigeeWallet, recordDebit } from './server/walletLedger.js'
@@ -225,7 +226,7 @@ async function parseEmailHandleWithGemini(
     // the API Products does not stop it -- it would just have started 404ing on
     // gemini-2.5-flash's 2026-10-20 end of life, silently degrading sign-in names.
     const url =
-      `https://aiplatform.googleapis.com/v1/projects/${GCP_PROJECT_ID}/locations/global/publishers/google/models/gemini-3.1-flash-lite:generateContent`;
+      `https://aiplatform.googleapis.com/v1/projects/${GCP_PROJECT_ID}/locations/global/publishers/google/models/gemini-3.5-flash-lite:generateContent`;
     const prompt = `Extract the likely human First Name and Last Name from this corporate email address: "${email}".
 Rules:
 1. Strip prefixes like "the", "mr", "ms", "iam", "official" if they precede a clear given name (e.g., "thejohnsmith" -> First: "John", Last: "Smith").
@@ -1428,8 +1429,8 @@ export default defineConfig(({ mode }) => {
                 const model = isAbsent(rawModel) ? 'unknown-model' : rawModel;
 
                 // The rate card is the source of truth for BOTH price and cost tier. Longest
-                // key wins. Tier must NOT be inferred from the model name: gemini-3.7-flash
-                // and gemini-3.8-flash cost 1.50/7.50, above gemini-3.1-pro-preview's 1.25/5.00.
+                // key wins. Tier must NOT be inferred from the model name: gemini-3.6-flash
+                // costs 1.50/9.00, more than the newer gemini-3.8-flash at 0.75/3.75.
                 const rateKey = Object.keys(rates)
                   .filter((k) => k !== 'default' && (model === k || model.startsWith(k)))
                   .sort((a, b) => b.length - a.length)[0];
@@ -1819,6 +1820,19 @@ export default defineConfig(({ mode }) => {
               provisionUserDeveloperAndApp(org, token, email, '', '', '', { allowCreate: false }),
             identityToken: (email: string) => mintSyntheticIdentityToken(email, email.split('@')[0]),
             defaultEmail: SSO_USER_EMAIL,
+          });
+          // 17. /api/model-watch[/run] -- same module server.js mounts.
+          const modelWatchService = createModelWatchService({
+            getToken: getGcpAccessToken,
+            org: APIGEE_ORG,
+            project: GCP_PROJECT_ID,
+            bucket: env.MODEL_WATCH_BUCKET || THEME_BUCKET,
+            personaProducts: PERSONA_PRODUCTS,
+          });
+          server.middlewares.use('/api/model-watch', async (req, res) => {
+            const fullUrl = (req as any).originalUrl || req.url || '/';
+            const parsedUrl = new URL(fullUrl, `http://${req.headers.host || 'localhost'}`);
+            await modelWatchService.handleRequest(req, res, parsedUrl);
           });
           // Hard-refresh hint for the SPA (see server/reloadHint.js).
           server.middlewares.use('/reload-hint.js', (req, res) => handleReloadHint(req, res));

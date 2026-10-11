@@ -105,10 +105,10 @@ def test_run_passes_baseline_model_and_rejects_unknown(client, monkeypatch):
 
   monkeypatch.setattr(main, "run_side", fake_run_side)
   res = client.post(
-      "/v1/showcase/run", json={"prompt": "Hi", "sides": ["baseline"], "baseline_model": "gemini-3-flash-preview"}, headers=HEADERS,
+      "/v1/showcase/run", json={"prompt": "Hi", "sides": ["baseline"], "baseline_model": "gemini-3.6-flash"}, headers=HEADERS,
   )
   assert res.status_code == 200
-  assert _events(res.text)[0]["baseline_model"] == "gemini-3-flash-preview"
-  assert seen == [("baseline", "gemini-3-flash-preview")]
+  assert _events(res.text)[0]["baseline_model"] == "gemini-3.6-flash"
+  assert seen == [("baseline", "gemini-3.6-flash")]
   bad = client.post("/v1/showcase/run", json={"prompt": "Hi", "baseline_model": "gpt-4o"}, headers=HEADERS)
   assert bad.status_code == 400

@@ -27,11 +27,11 @@ class Settings(BaseSettings):
   # .gemini/rules/adk_python_standards.md, which otherwise forbids direct calls.
   gcp_project: str = os.getenv("GCP_PROJECT", "your-gcp-project")
   vertex_location: str = os.getenv("VERTEX_LOCATION", "global")
-  baseline_model: str = os.getenv("BASELINE_MODEL", "gemini-3.1-pro-preview")
+  baseline_model: str = os.getenv("BASELINE_MODEL", "gemini-3.8-flash")
   # Models the presenter may pick for the baseline agent (UI switch). All are priced in the
   # ai-model-rates KVM and reachable through llm-passthrough-v1 (any gemini* model).
   # Comma-separated (env BASELINE_MODELS); read through `baseline_model_choices`.
-  baseline_models: str = "gemini-3.1-pro-preview,gemini-3-flash-preview,gemini-3.1-flash-lite"
+  baseline_models: str = os.getenv("BASELINE_MODELS", "gemini-3.8-flash,gemini-3.6-flash,gemini-3.5-flash-lite")
 
   # Upper bound on model calls per agent run. A run that hits it ends with an
   # error event instead of looping.

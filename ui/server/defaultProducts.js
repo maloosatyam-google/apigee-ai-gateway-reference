@@ -35,7 +35,7 @@ export const DEFAULT_PRODUCTS = {
       },
       {
         "name": "routing.model.coding",
-        "value": "claude-opus-4-5@20251101"
+        "value": "claude-opus-5-5"
       },
       {
         "name": "routing.model.deep_reasoning",
@@ -43,11 +43,11 @@ export const DEFAULT_PRODUCTS = {
       },
       {
         "name": "routing.model.simple",
-        "value": "gemini-3.1-flash-lite"
+        "value": "gemini-3.5-flash-lite"
       },
       {
         "name": "routing.model.general",
-        "value": "gemini-3-flash-preview"
+        "value": "gemini-3.6-flash"
       },
       {
         "name": "persona",
@@ -94,11 +94,11 @@ export const DEFAULT_PRODUCTS = {
           "apiSource": "ai-gateway-v1",
           "llmOperations": [
             {
-              "resource": "/models/gemini-3.1-flash-lite:*",
+              "resource": "/models/gemini-3.5-flash-lite:*",
               "methods": [
                 "POST"
               ],
-              "model": "gemini-3.1-flash-lite"
+              "model": "gemini-3.5-flash-lite"
             }
           ],
           "llmTokenQuota": {
@@ -111,11 +111,11 @@ export const DEFAULT_PRODUCTS = {
           "apiSource": "ai-gateway-v1",
           "llmOperations": [
             {
-              "resource": "/models/gemini-3-flash-preview:*",
+              "resource": "/models/gemini-3.6-flash:*",
               "methods": [
                 "POST"
               ],
-              "model": "gemini-3-flash-preview"
+              "model": "gemini-3.6-flash"
             }
           ],
           "llmTokenQuota": {
@@ -145,11 +145,11 @@ export const DEFAULT_PRODUCTS = {
           "apiSource": "ai-gateway-v1",
           "llmOperations": [
             {
-              "resource": "/models/claude-haiku-4-5@20251001:*",
+              "resource": "/models/claude-haiku-5-5:*",
               "methods": [
                 "POST"
               ],
-              "model": "claude-haiku-4-5@20251001"
+              "model": "claude-haiku-5-5"
             }
           ],
           "llmTokenQuota": {
@@ -162,28 +162,11 @@ export const DEFAULT_PRODUCTS = {
           "apiSource": "ai-gateway-v1",
           "llmOperations": [
             {
-              "resource": "/models/claude-opus-4-5@20251101:*",
+              "resource": "/models/claude-opus-5-5:*",
               "methods": [
                 "POST"
               ],
-              "model": "claude-opus-4-5@20251101"
-            }
-          ],
-          "llmTokenQuota": {
-            "limit": "10000",
-            "interval": "1",
-            "timeUnit": "minute"
-          }
-        },
-        {
-          "apiSource": "ai-gateway-v1",
-          "llmOperations": [
-            {
-              "resource": "/models/gemini-3.7-flash:*",
-              "methods": [
-                "POST"
-              ],
-              "model": "gemini-3.7-flash"
+              "model": "claude-opus-5-5"
             }
           ],
           "llmTokenQuota": {
@@ -247,11 +230,11 @@ export const DEFAULT_PRODUCTS = {
       },
       {
         "name": "routing.model.simple",
-        "value": "gemini-3.1-flash-lite"
+        "value": "gemini-3.5-flash-lite"
       },
       {
         "name": "routing.model.general",
-        "value": "gemini-3-flash-preview"
+        "value": "gemini-3.6-flash"
       },
       {
         "name": "persona",
@@ -315,11 +298,11 @@ export const DEFAULT_PRODUCTS = {
           "apiSource": "ai-gateway-v1",
           "llmOperations": [
             {
-              "resource": "/models/gemini-3.1-flash-lite:*",
+              "resource": "/models/gemini-3.5-flash-lite:*",
               "methods": [
                 "POST"
               ],
-              "model": "gemini-3.1-flash-lite"
+              "model": "gemini-3.5-flash-lite"
             }
           ],
           "llmTokenQuota": {
@@ -332,28 +315,11 @@ export const DEFAULT_PRODUCTS = {
           "apiSource": "ai-gateway-v1",
           "llmOperations": [
             {
-              "resource": "/models/gemini-3-flash-preview:*",
+              "resource": "/models/gemini-3.6-flash:*",
               "methods": [
                 "POST"
               ],
-              "model": "gemini-3-flash-preview"
-            }
-          ],
-          "llmTokenQuota": {
-            "limit": "5000",
-            "interval": "1",
-            "timeUnit": "minute"
-          }
-        },
-        {
-          "apiSource": "ai-gateway-v1",
-          "llmOperations": [
-            {
-              "resource": "/models/gemini-3.7-flash:*",
-              "methods": [
-                "POST"
-              ],
-              "model": "gemini-3.7-flash"
+              "model": "gemini-3.6-flash"
             }
           ],
           "llmTokenQuota": {
@@ -409,7 +375,7 @@ export const DEFAULT_PRODUCTS = {
       },
       {
         "name": "routing.model.coding",
-        "value": "claude-haiku-4-5@20251001"
+        "value": "claude-haiku-5-5"
       },
       {
         "name": "routing.model.deep_reasoning",
@@ -417,11 +383,11 @@ export const DEFAULT_PRODUCTS = {
       },
       {
         "name": "routing.model.simple",
-        "value": "gemini-3.1-flash-lite"
+        "value": "gemini-3.5-flash-lite"
       },
       {
         "name": "routing.model.general",
-        "value": "gemini-3-flash-preview"
+        "value": "gemini-3.6-flash"
       },
       {
         "name": "persona",
@@ -468,11 +434,11 @@ export const DEFAULT_PRODUCTS = {
           "apiSource": "ai-gateway-v1",
           "llmOperations": [
             {
-              "resource": "/models/gemini-3.1-flash-lite:*",
+              "resource": "/models/gemini-3.5-flash-lite:*",
               "methods": [
                 "POST"
               ],
-              "model": "gemini-3.1-flash-lite"
+              "model": "gemini-3.5-flash-lite"
             }
           ],
           "llmTokenQuota": {
@@ -485,11 +451,11 @@ export const DEFAULT_PRODUCTS = {
           "apiSource": "ai-gateway-v1",
           "llmOperations": [
             {
-              "resource": "/models/gemini-3-flash-preview:*",
+              "resource": "/models/gemini-3.6-flash:*",
               "methods": [
                 "POST"
               ],
-              "model": "gemini-3-flash-preview"
+              "model": "gemini-3.6-flash"
             }
           ],
           "llmTokenQuota": {
@@ -502,11 +468,11 @@ export const DEFAULT_PRODUCTS = {
           "apiSource": "ai-gateway-v1",
           "llmOperations": [
             {
-              "resource": "/models/claude-haiku-4-5@20251001:*",
+              "resource": "/models/claude-haiku-5-5:*",
               "methods": [
                 "POST"
               ],
-              "model": "claude-haiku-4-5@20251001"
+              "model": "claude-haiku-5-5"
             }
           ],
           "llmTokenQuota": {

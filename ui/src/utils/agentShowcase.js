@@ -12,11 +12,11 @@ export const SHOWCASE_SIDES = ['baseline', 'governed'];
  * service's BASELINE_MODELS allow-list; all are priced in the ai-model-rates KVM.
  */
 export const BASELINE_MODELS = [
-  { id: 'gemini-3.1-pro-preview', label: 'Gemini 3.1 Pro' },
-  { id: 'gemini-3-flash-preview', label: 'Gemini 3 Flash' },
-  { id: 'gemini-3.1-flash-lite', label: 'Gemini 3.1 Flash-Lite' },
+  { id: 'gemini-3.8-flash', label: 'Gemini 3.8 Flash' },
+  { id: 'gemini-3.6-flash', label: 'Gemini 3.6 Flash' },
+  { id: 'gemini-3.5-flash-lite', label: 'Gemini 3.5 Flash-Lite' },
 ];
-export const DEFAULT_BASELINE_MODEL = 'gemini-3.1-pro-preview';
+export const DEFAULT_BASELINE_MODEL = 'gemini-3.8-flash';
 
 /**
  * Preset prompts. The same prompt goes to both agents at once. Plain customer voice,
@@ -80,7 +80,7 @@ export const SHOWCASE_SCENARIOS = [
     prompt: "I'm sending seven items back to you for repair, weighing 7, 6, 5, 4, 3, 3 and 2 kg. Your return boxes: Small holds up to 6 kg for $6, Medium up to 10 kg for $11, Large up to 14 kg for $15. Items can't be split. What's the cheapest set of boxes, what goes in each, and the total cost?",
     expect: 'Answers "why not just use a cheaper model?". Without governance, the agent is switched to the cheapest model (Flash-Lite) for this question and usually gets the box plan wrong ($36 to $38) or gives up. With AI & Tools Governance, a question that needs deep reasoning goes to a stronger model (Pro) and the answer is right: $32, one box of each size, each exactly full (for example Large 7+5+2, Medium 6+4, Small 3+3). Answer reuse is off here, so the stronger model answers every time. Easy questions still go to small, cheap models.',
     // The ungoverned agent's model for this scenario (the picker shows the switch).
-    baselineModel: 'gemini-3.1-flash-lite',
+    baselineModel: 'gemini-3.5-flash-lite',
     // Always a fresh answer, so the routed Pro call shows instead of a reused one.
     useCache: false,
   },
@@ -216,7 +216,7 @@ export function reduceShowcaseEvent(run, e) {
   return { ...run, sides: { ...run.sides, [e.side]: next } };
 }
 
-/** Rate-card lookup tolerant of version suffixes (claude-haiku-4-5@20251001). */
+/** Rate-card lookup tolerant of version suffixes (claude-haiku-5-5). */
 export function rateFor(model, rates) {
   if (!rates || !model) return null;
   const candidates = [model, String(model).split('@')[0]];

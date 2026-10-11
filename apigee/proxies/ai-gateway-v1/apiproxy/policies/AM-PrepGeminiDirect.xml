@@ -4,7 +4,7 @@
   <AssignVariable>
     <Name>flow.target_model</Name>
     <Ref>flow.model</Ref>
-    <Value>gemini-3-flash-preview</Value>
+    <Value>gemini-3.6-flash</Value>
   </AssignVariable>
   <AssignVariable>
     <Name>flow.target_provider</Name>

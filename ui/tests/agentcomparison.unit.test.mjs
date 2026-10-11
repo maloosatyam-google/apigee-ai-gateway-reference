@@ -8,8 +8,8 @@ import assert from 'node:assert/strict';
 import { NO_MODEL, addToLedger, emptyLedger, emptyRun, formatTokens, ledgerView, reduceShowcaseEvent, toolOutcome } from '../src/utils/agentShowcase.js';
 
 const RATES = {
-  'gemini-3.1-flash-lite': { input: 0.075, output: 0.3 },
-  'gemini-3-flash-preview': { input: 0.15, output: 0.6 },
+  'gemini-3.5-flash-lite': { input: 0.075, output: 0.3 },
+  'gemini-3.6-flash': { input: 0.15, output: 0.6 },
   'gemini-3.1-pro-preview': { input: 1.25, output: 5.0 },
 };
 
@@ -35,20 +35,20 @@ const RUN = runWith([
   call('baseline', 'issueRefund', 2, 'Enterprise Tools'),
   result('baseline', 'issueRefund', 2, 200),
   llm('baseline', 'gemini-3.1-pro-preview', 30000, 500),
-  llm('governed', 'gemini-3.1-flash-lite', 1000, 100, { cache: 'MISS' }),
+  llm('governed', 'gemini-3.5-flash-lite', 1000, 100, { cache: 'MISS' }),
   call('governed', 'getOrderStatus', 1, 'Customer Service Tools'),
   result('governed', 'getOrderStatus', 1, 200),
   call('governed', 'issueRefund', 2, 'Customer Service Tools'),
   result('governed', 'issueRefund', 2, 403, true),
-  llm('governed', 'gemini-3-flash-preview', 1500, 200),
-  llm('governed', 'gemini-3-flash-preview', 900, 50, { billable: false, cache: 'HIT' }),
-  llm('governed', 'gemini-3-flash-preview', 0, 0, { status: 429 }),
+  llm('governed', 'gemini-3.6-flash', 1500, 200),
+  llm('governed', 'gemini-3.6-flash', 900, 50, { billable: false, cache: 'HIT' }),
+  llm('governed', 'gemini-3.6-flash', 0, 0, { status: 429 }),
 ]);
 
 test('ledger: per-model tokens exclude cache hits and failed calls, and count them', () => {
   const l = addToLedger(emptyLedger(), RUN);
   assert.equal(l.runs, 1);
-  assert.deepEqual(l.sides.governed.models['gemini-3-flash-preview'], { calls: 3, cached: 1, failed: 1, input: 1500, output: 200 });
+  assert.deepEqual(l.sides.governed.models['gemini-3.6-flash'], { calls: 3, cached: 1, failed: 1, input: 1500, output: 200 });
   assert.deepEqual(l.sides.baseline.models['gemini-3.1-pro-preview'], { calls: 2, cached: 0, failed: 0, input: 130000, output: 2500 });
 });
 
@@ -76,7 +76,7 @@ test('ledger view: prices each model from the KVM rates and totals the side', ()
   assert.ok(Math.abs(b.totals.costUsd - 0.175) < 1e-9);
   assert.equal(b.totals.inputTokens, 130000);
   assert.equal(b.totals.outputTokens, 2500);
-  const lite = g.models.find((m) => m.model === 'gemini-3.1-flash-lite');
+  const lite = g.models.find((m) => m.model === 'gemini-3.5-flash-lite');
   assert.ok(Math.abs(lite.costUsd - (1000 / 1e6 * 0.075 + 100 / 1e6 * 0.3)) < 1e-12);
   assert.deepEqual(lite.rate, { input: 0.075, output: 0.3 });
   assert.equal(g.totals.toolCalls, 2);
@@ -95,7 +95,7 @@ test('ledger view: a model missing from the rate card is reported, never guessed
 
 test('ledger: sides that did not run are not counted', () => {
   let run = reduceShowcaseEvent(emptyRun(), { type: 'run', run_id: 'r2', prompt: 'p', sides: ['governed'] });
-  run = reduceShowcaseEvent(run, llm('governed', 'gemini-3.1-flash-lite', 10, 1));
+  run = reduceShowcaseEvent(run, llm('governed', 'gemini-3.5-flash-lite', 10, 1));
   const l = addToLedger(emptyLedger(), run);
   assert.equal(l.sides.baseline.runs, 0);
   assert.equal(l.sides.governed.runs, 1);
@@ -115,7 +115,7 @@ test('toolOutcome and formatTokens', () => {
 test('ledger: a call stopped at the gateway before any model ran is its own unpriced row, not a model', () => {
   const run = runWith([
     llm('governed', 'auto', 0, 0, { status: 400, model: null }),
-    llm('governed', 'gemini-3-flash-preview', 1000, 100),
+    llm('governed', 'gemini-3.6-flash', 1000, 100),
   ]);
   const l = addToLedger(emptyLedger(), run);
   assert.deepEqual(l.sides.governed.models[NO_MODEL], { calls: 1, cached: 0, failed: 1, input: 0, output: 0 });
@@ -136,13 +136,13 @@ test('burst: rows report answered vs stopped by the token quota, tokens and quot
     return reduceShowcaseEvent(run, { type: 'done' });
   };
   const answered = gov([
-    llm('governed', 'gemini-3-flash-preview', 2000, 300, { token_quota_used_pct: 40 }),
-    llm('governed', 'gemini-3-flash-preview', 2500, 200, { token_quota_used_pct: 72.4 }),
+    llm('governed', 'gemini-3.6-flash', 2000, 300, { token_quota_used_pct: 40 }),
+    llm('governed', 'gemini-3.6-flash', 2500, 200, { token_quota_used_pct: 72.4 }),
     { type: 'final', side: 'governed', text: 'ok', error: null },
     { type: 'run_finished', side: 'governed', t_ms: 9000 },
   ]);
   const stopped = gov([
-    llm('governed', 'gemini-3-flash-preview', 2000, 300, { token_quota_used_pct: 95 }),
+    llm('governed', 'gemini-3.6-flash', 2000, 300, { token_quota_used_pct: 95 }),
     llm('governed', 'auto', 0, 0, { status: 429, model: null }),
     { type: 'governance_event', side: 'governed', kind: 'token_quota', detail: 'Token quota exceeded' },
     { type: 'final', side: 'governed', text: '', error: 'Token quota exceeded' },

@@ -3,7 +3,7 @@
 # Sync apigee/config/model_rate_card.json into the 'ai-model-rates' KVM ('rate_card' key).
 #
 # The KVM used to be hand-edited, and drifted badly: it carried three Claude IDs that do not
-# exist in this project, and was MISSING claude-haiku-4-5 and gemini-2.5-flash, both of which
+# exist in this project, and was MISSING claude-haiku-5-5 and gemini-2.5-flash, both of which
 # are entitled. Missing models fall through to the 'default' rate, so they were silently
 # under-billed. This script makes the repo the source of truth so that cannot recur.
 #
@@ -67,7 +67,8 @@ if [[ "$DRY_RUN" == "1" ]]; then
   exit 0
 fi
 
-TOKEN="$(gcloud auth print-access-token)"
+# APIGEE_TOKEN overrides (e.g. an impersonated SA token where user tokens get 401).
+TOKEN="${APIGEE_TOKEN:-$(gcloud auth print-access-token)}"
 BASE="https://apigee.googleapis.com/v1/organizations/$ORG/environments/$ENVIRONMENT/keyvaluemaps/ai-model-rates/entries"
 
 BODY="$(python3 -c 'import json,sys;print(json.dumps({"name":"rate_card","value":sys.argv[1]}))' "$PAYLOAD")"

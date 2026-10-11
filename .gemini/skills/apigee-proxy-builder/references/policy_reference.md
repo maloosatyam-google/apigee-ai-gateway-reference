@@ -86,7 +86,7 @@ For details see the topic references. The newer AI and MCP policies are covered 
 ```xml
 <SemanticCacheLookup continueOnError="true" enabled="true" name="SCL-Lookup">
     <UserPromptSource>{jsonPath('$.contents[-1].parts[-1].text',request.content,true)}</UserPromptSource>
-    <Embeddings><VertexAI><URL>https://{REGION}-aiplatform.googleapis.com/v1/projects/{PROJECT}/locations/{REGION}/publishers/google/models/text-embedding-004:predict</URL></VertexAI></Embeddings>
+    <Embeddings><VertexAI><URL>https://{REGION}-aiplatform.googleapis.com/v1/projects/{PROJECT}/locations/{REGION}/publishers/google/models/text-embedding-005:predict</URL></VertexAI></Embeddings>
     <SimilaritySearch><VertexAI>
         <URL>https://{PUBLIC_DOMAIN}/v1/projects/{PROJECT}/locations/{REGION}/indexEndpoints/{ENDPOINT_ID}:findNeighbors</URL>
         <DeployedIndexID>{DEPLOYED_INDEX_ID}</DeployedIndexID><Threshold>0.95</Threshold>

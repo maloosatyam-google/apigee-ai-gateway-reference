@@ -128,16 +128,14 @@ Rates are USD per 1M tokens.
 
 | Model | Publisher | Region | Input | Output |
 | :--- | :--- | :--- | ---: | ---: |
-| `gemini-3.1-flash-lite` | google | global | 0.075 | 0.300 |
-| `gemini-3-flash-preview` | google | global | 0.150 | 0.600 |
-| `gemini-3.5-flash` | google | global | 0.150 | 0.600 |
+| `gemini-3.5-flash-lite` | google | global | 0.300 | 2.500 |
+| `gemini-3.6-flash` | google | global | 0.750 | 3.750 |
 | `gemini-2.5-flash` | google | global | 0.300 | 2.500 |
-| `gemini-3.7-flash` | google | global | **1.500** | **7.500** |
-| `gemini-3.8-flash` | google | global | **1.500** | **7.500** |
-| `gemini-3.1-pro-preview` | google | global | 1.250 | 5.000 |
-| `gemini-2.5-pro` | google | global | 1.250 | 5.000 |
-| `claude-haiku-4-5` | anthropic | us-east5 | 1.000 | 5.000 |
-| `claude-opus-4-5` | anthropic | us-east5 | 15.000 | 75.000 |
+| `gemini-3.8-flash` | google | global | 0.750 | 3.750 |
+| `gemini-3.1-pro-preview` | google | global | 2.000 | 12.000 |
+| `gemini-2.5-pro` | google | global | 1.250 | 10.000 |
+| `claude-haiku-5-5` | anthropic | us-east5 | 0.100 | 0.500 |
+| `claude-opus-5-5` | anthropic | us-east5 | 4.000 | 20.000 |
 
 > [!WARNING]
 > **Deliberately absent**: `gemini-3-flash`, `claude-3-5-sonnet`, `claude-3-5-haiku` and
@@ -151,15 +149,15 @@ intentional and must not be removed alongside the catalog entries.
 
 | Alias | Resolves to |
 | :--- | :--- |
-| `claude-3-5-sonnet`, `claude-3-7-sonnet`, `claude-sonnet` | `claude-opus-4-5@20251101` |
-| `claude-3-5-haiku`, `claude-haiku` | `claude-haiku-4-5@20251001` |
+| `claude-3-5-sonnet`, `claude-3-7-sonnet`, `claude-sonnet` | `claude-opus-5-5` |
+| `claude-3-5-haiku`, `claude-haiku` | `claude-haiku-5-5` |
 | `gemini-flash` / `gemini-flash-lite` / `gemini-pro` | the corresponding Gemini 3.x model |
-| `gpt-4o` / `gpt-4o-mini` | `gemini-3.1-pro-preview` / `gemini-3.1-flash-lite` |
-| `auto`, `gateway/auto` | `gemini-3-flash-preview` |
+| `gpt-4o` / `gpt-4o-mini` | `gemini-3.1-pro-preview` / `gemini-3.5-flash-lite` |
+| `auto`, `gateway/auto` | `gemini-3.6-flash` |
 
 `gemini-2.5-flash` is listed here because this template catalog is self-contained and its rate
 table must stay internally consistent. It is **no longer the token-quota demo model** — that
-moved to `claude-haiku-4-5@20251001`, now at 300 tokens/min (originally 50) — and in the hand-maintained
+moved to `claude-haiku-5-5`, now at 300 tokens/min (originally 50) — and in the hand-maintained
 `ai-gateway-v1` bundle it has been **retired outright** ahead of its 2026-10-20 end of life,
 entitled by no API product. Do not infer the live entitlement set from this table.
 
@@ -216,7 +214,7 @@ features:
     template: "ai-gateway-filter"
   llm_judge:
     enabled: false
-    classifier_model: "gemini-3.1-flash-lite"
+    classifier_model: "gemini-3.5-flash-lite"
   quotas:
     enabled: true
   cors:

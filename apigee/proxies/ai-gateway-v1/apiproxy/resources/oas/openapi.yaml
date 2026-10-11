@@ -83,7 +83,7 @@ paths:
           required: true
           schema:
             type: string
-          example: gemini-3-flash-preview
+          example: gemini-3.6-flash
         - $ref: '#/components/parameters/UseCacheHeader'
         - $ref: '#/components/parameters/XUseCacheHeader'
       requestBody:
@@ -118,7 +118,7 @@ paths:
           required: true
           schema:
             type: string
-          example: gemini-3-flash-preview
+          example: gemini-3.6-flash
         - $ref: '#/components/parameters/UseCacheHeader'
         - $ref: '#/components/parameters/XUseCacheHeader'
       requestBody:
@@ -170,7 +170,7 @@ components:
       description: Model name and identifier resolved and executed.
       schema:
         type: string
-        example: 'gemini-3.1-flash-lite'
+        example: 'gemini-3.5-flash-lite'
     XGatewayCostUsd:
       description: Computed monetary spend for this request in USD.
       schema:

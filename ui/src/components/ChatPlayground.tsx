@@ -14,6 +14,7 @@ import { personaById, personaForModel } from '../utils/personas';
 import { usePersonaVoice } from '../utils/voice';
 import type { Lines } from '../utils/voice';
 import { MarkdownMessage } from './MarkdownMessage';
+import ScrollHintRow from './ScrollHintRow';
 import { useCustomerTheme } from './CustomerThemeProvider';
 import { personaDisplay, themedPrompt } from '../utils/customerTheme';
 
@@ -595,9 +596,9 @@ export const ChatPlayground: React.FC<ChatPlaygroundProps> = ({
     if (loading || sequenceBusyRef.current) return;
     // Haiku is on Engineering & IT and Customer Support & Sales; Analysts switch, with a note.
     const tokenOverrides = {
-      ...(personaSwitchFor('claude-haiku-4-5@20251001', sp({ technical: 'The token quota demo', analysts: 'Fair-use limits', support: 'Reply allowance' })) || {}),
+      ...(personaSwitchFor('claude-haiku-5-5', sp({ technical: 'The token quota demo', analysts: 'Fair-use limits', support: 'Reply allowance' })) || {}),
       useCache: false,
-      model: 'claude-haiku-4-5@20251001',
+      model: 'claude-haiku-5-5',
       omitEmailHeader: false,
     };
     const effectiveSettings: GatewaySettings = { ...settings, ...tokenOverrides };
@@ -1422,9 +1423,12 @@ export const ChatPlayground: React.FC<ChatPlaygroundProps> = ({
             because that grid unmounts as soon as the first message lands - and by the
             time the tour is talking about scenarios, it usually has.
           */}
-          <div
+          <ScrollHintRow
             data-tour-id="scenario-presets"
-            className="flex items-center gap-1.5 overflow-x-auto pb-1 mb-2.5 no-scrollbar w-full"
+            wrapperClassName="mb-2.5 w-full"
+            className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar w-full"
+            // The step menu is position:fixed, so close it rather than leave it behind on scroll.
+            onScroll={() => setStepMenu(null)}
           >
             <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider shrink-0 mr-1">{sp({ technical: 'Scenarios:', business: 'Try:' })}</span>
             {sampleChips.map((chip) => {
@@ -1479,7 +1483,7 @@ export const ChatPlayground: React.FC<ChatPlaygroundProps> = ({
                 </div>
               );
             })}
-          </div>
+          </ScrollHintRow>
 
           {stepMenu && (() => {
             const chip = sampleChips.find((c) => c.promptId === stepMenu.id);

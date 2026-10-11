@@ -12,7 +12,7 @@ try {
   // The claude-3-x generation is no longer published to Vertex in this project.
   // Coerce any legacy or unset ID to the current default rather than 404ing.
   if (!targetModel || targetModel.indexOf("claude-3-") !== -1 || targetModel.indexOf("claude-default") !== -1) {
-    targetModel = "claude-opus-4-5@20251101";
+    targetModel = "claude-opus-5-5";
   }
   context.setVariable("flow.target_model", targetModel);
 
@@ -160,6 +160,33 @@ try {
         }
         if (body.generationConfig.stopSequences !== undefined) {
           claudePayload.stop_sequences = body.generationConfig.stopSequences;
+        }
+      }
+
+      // Thinking. Claude 5.x thinks by default, and like Gemini the thinking tokens count against
+      // max_tokens, so a short budget used to come back as a thinking-only reply with empty text.
+      // Map Gemini's generationConfig.thinkingConfig.thinkingBudget onto what each model accepts
+      // (verified on Vertex 2026-10-10):
+      //   claude-opus-5* / claude-sonnet-5*: only {type: "adaptive"} + output_config.effort
+      //   claude-haiku-5*:                   {type: "disabled"} or adaptive + effort
+      // No budget (or 0) asks for as little thinking as the model allows; older models are untouched.
+      var targetModel = String(context.getVariable("flow.target_model") || "");
+      var gc = body.generationConfig || {};
+      var budget = gc.thinkingConfig && gc.thinkingConfig.thinkingBudget !== undefined
+        ? Number(gc.thinkingConfig.thinkingBudget) : null;
+      var wantsThinking = budget !== null && (budget > 0 || budget === -1);
+      var effort = !wantsThinking ? "low" : (budget === -1 || budget >= 8192) ? "high" : budget >= 2048 ? "medium" : "low";
+      if (/claude-(opus|sonnet)-5/.test(targetModel)) {
+        claudePayload.thinking = { type: "adaptive" };
+        claudePayload.output_config = { effort: effort };
+        // Leave room for an answer after thinking when the caller did not size the reply.
+        if (gc.maxOutputTokens === undefined && claudePayload.max_tokens < 4096) claudePayload.max_tokens = 4096;
+      } else if (/claude-haiku-5/.test(targetModel)) {
+        if (wantsThinking) {
+          claudePayload.thinking = { type: "adaptive" };
+          claudePayload.output_config = { effort: effort };
+        } else {
+          claudePayload.thinking = { type: "disabled" };
         }
       }
 

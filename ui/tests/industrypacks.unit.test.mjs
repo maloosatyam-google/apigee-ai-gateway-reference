@@ -142,7 +142,7 @@ describe('showcaseScenariosFor', () => {
     assert.equal(byId.cache.prompt, byId.lookup.prompt);
     assert.equal(byId['cheaper-model'].prompt, SHOWCASE_SCENARIOS.find((s) => s.id === 'cheaper-model').prompt);
     assert.equal(byId.burst.burst, 5);
-    assert.equal(byId['cheaper-model'].baselineModel, 'gemini-3.1-flash-lite');
+    assert.equal(byId['cheaper-model'].baselineModel, 'gemini-3.5-flash-lite');
     // No generic order or product ids leak into the Banking story.
     for (const s of out.filter((x) => x.id !== 'cheaper-model')) assert.doesNotMatch(s.prompt, /ORD-|DEV-HUB/, s.id);
   });

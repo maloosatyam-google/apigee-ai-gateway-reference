@@ -69,18 +69,18 @@ Every persona product has a published rate plan, `<Product> PayAsYouGo`, verifie
 Monetization charges `fee × perUnitPriceMultiplier`, so the proxy sets the multiplier to
 `cost × 1000`, and the wallet is debited exactly the model cost.
 
-**Worked example:** `gemini-3.1-pro-preview` at $1.25 in / $5.00 out per 1M tokens, with
+**Worked example:** `gemini-3.1-pro-preview` at $2.00 in / $12.00 out per 1M tokens, with
 1,000 prompt tokens and 500 output tokens (candidates + thoughts).
 
 | Step | Value |
 | --- | --- |
-| Input cost | 1,000 / 1M × $1.25 = $0.00125 |
-| Output cost | 500 / 1M × $5.00 = $0.00250 |
-| `flow.tx_cost_usd` → `x-gateway-cost-usd` | **$0.003750** |
-| `perUnitPriceMultiplier` | 3.75 |
-| Wallet debit (async) | $0.001 × 3.75 = **$0.00375** |
-| Budget counter weight (sync) | 3,750 micros |
-| UI session debit | $0.00375 against the SSO user's ledger |
+| Input cost | 1,000 / 1M × $2.00 = $0.00200 |
+| Output cost | 500 / 1M × $12.00 = $0.00600 |
+| `flow.tx_cost_usd` → `x-gateway-cost-usd` | **$0.008000** |
+| `perUnitPriceMultiplier` | 8.00 |
+| Wallet debit (async) | $0.001 × 8.00 = **$0.00800** |
+| Budget counter weight (sync) | 8,000 micros |
+| UI session debit | $0.00800 against the SSO user's ledger |
 
 Thinking tokens are billed at the **output** rate, so reasoning models cost what Vertex
 actually charges.

@@ -16,6 +16,7 @@ import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { DEV_PRODUCTS } from '../server/adminAgentCore.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.ADMIN_AGENT_LIVE_PORT || 5475);
@@ -84,7 +85,7 @@ test('LIVE: a chat turn drives a real tool call through the gateway', async (t) 
           // Deliberately phrased to avoid the word "guardrail": this template's
           // Model Armor prompt-injection filter matches on it (verified), and
           // the request would be blocked at the perimeter.
-          content: 'What is the token quota on the Customer Support and Sales for gemini-3-flash-preview? One line.',
+          content: 'What is the token quota on the Customer Support and Sales for gemini-3.6-flash? One line.',
         },
       ],
     },
@@ -118,14 +119,14 @@ test('LIVE: the dev sandbox reports its state without ever exposing the key', as
   const res = await call('/api/admin-agent/sandbox', { timeoutMs: 60_000 });
   assert.equal(res.status, 200, res.text.slice(0, 300));
   assert.equal(res.json.status, 'ok');
-  assert.equal(res.json.products.length, 2);
+  assert.equal(res.json.products.length, DEV_PRODUCTS.length);
   assert.doesNotMatch(res.text, /consumerKey/i);
 
   if (!res.json.provisioned) return t.skip('dev sandbox not provisioned in this org');
 
   const dev = await call('/api/admin-agent/test', {
     method: 'POST',
-    body: { prompt: 'Reply with exactly: pong', model: 'gemini-3.1-flash-lite' },
+    body: { prompt: 'Reply with exactly: pong', model: 'gemini-3.5-flash-lite' },
   });
   assert.equal(dev.status, 200, dev.text.slice(0, 300));
   const result = dev.json.result;
@@ -136,7 +137,7 @@ test('LIVE: the dev sandbox reports its state without ever exposing the key', as
     assert.match(key, /^x-gateway-/, 'only x-gateway-* headers may be surfaced');
   }
   if (result.ok) {
-    assert.equal(result.model, 'gemini-3.1-flash-lite');
+    assert.equal(result.model, 'gemini-3.5-flash-lite');
     assert.ok(result.totalTokens > 0, 'a successful dev test must be metered');
   }
 });

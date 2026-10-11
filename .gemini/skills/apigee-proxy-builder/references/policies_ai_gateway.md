@@ -153,7 +153,7 @@ values are only a fallback.
 "llmOperationGroup": {
   "operationConfigs": [
     { "apiSource": "ai-gateway-v1",
-      "llmOperations": [ { "resource": "/models/gemini-3-flash-preview:*", "methods": ["POST"], "model": "gemini-3-flash-preview" } ],
+      "llmOperations": [ { "resource": "/models/gemini-3.6-flash:*", "methods": ["POST"], "model": "gemini-3.6-flash" } ],
       "llmTokenQuota": { "limit": "10000", "interval": "1", "timeUnit": "minute" } },
     { "apiSource": "ai-gateway-v1",
       "llmOperations": [ { "resource": "/auto", "methods": ["POST"], "model": "auto" } ],
@@ -194,7 +194,7 @@ Variables: `ratelimit.{policy}.used.count`, `.allowed.count`, `.exceed.count`, `
   <UserPromptSource>{flow.userPrompt}</UserPromptSource>
   <Embeddings>
     <VertexAI>
-      <URL>https://{REGION}-aiplatform.googleapis.com/v1/projects/{PROJECT}/locations/{REGION}/publishers/google/models/text-embedding-004:predict</URL>
+      <URL>https://{REGION}-aiplatform.googleapis.com/v1/projects/{PROJECT}/locations/{REGION}/publishers/google/models/text-embedding-005:predict</URL>
     </VertexAI>
   </Embeddings>
   <SimilaritySearch>

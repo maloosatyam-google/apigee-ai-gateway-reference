@@ -29,7 +29,7 @@ const kvmRateCardJson = JSON.stringify(rateCard);
  * contributes a cost.
  */
 function runCalculateCost({
-  model = "gemini-3-flash-preview",
+  model = "gemini-3.6-flash",
   promptTokens = 100,
   candidatesTokens = 50,
   thoughtsTokens = 0,
@@ -101,16 +101,18 @@ describe("CalculateCost.js - the single costing authority", () => {
   });
 
   describe("2. Tier is never inferred from the model name", () => {
-    it('prices the "flash" models above the Pro model', () => {
-      // gemini-3.7/3.8-flash bill at 7.50, above gemini-3.1-pro-preview's 5.00.
-      // A substring match on "flash" would label them cheap.
-      assert.strictEqual(runCalculateCost({ model: "gemini-3.7-flash" }).costTier, "high");
-      assert.strictEqual(runCalculateCost({ model: "gemini-3.8-flash" }).costTier, "high");
-      assert.strictEqual(runCalculateCost({ model: "gemini-3.1-flash-lite" }).costTier, "low");
+    it('takes the tier from the output rate, not from "flash" or "pro" in the name', () => {
+      // gemini-3.5-flash bills 9.00 (high) while the newer gemini-3.8-flash bills 3.75 (medium)
+      // until 2027. A substring match on "flash" would label both cheap.
+      assert.strictEqual(runCalculateCost({ model: "gemini-3.5-flash" }).costTier, "high"); // retired, still priced
+      assert.strictEqual(runCalculateCost({ model: "gemini-3.6-flash" }).costTier, "medium");
+      assert.strictEqual(runCalculateCost({ model: "gemini-3.8-flash" }).costTier, "medium");
+      assert.strictEqual(runCalculateCost({ model: "gemini-3.1-pro-preview" }).costTier, "high");
+      assert.strictEqual(runCalculateCost({ model: "gemini-3.5-flash-lite" }).costTier, "medium");
     });
 
     it("resolves a versioned Anthropic id by stripping the @version suffix", () => {
-      const res = runCalculateCost({ model: "claude-opus-4-5@20251101" });
+      const res = runCalculateCost({ model: "claude-opus-5-5" });
       assert.strictEqual(res.costTier, "high");
       assert.ok(parseFloat(res.costUsd) > 0);
     });
@@ -120,10 +122,10 @@ describe("CalculateCost.js - the single costing authority", () => {
     // These are the only four models AutoRouting.js can select. A target missing
     // from the card silently falls through to the "default" rate and under-bills.
     const autoTargets = [
-      "gemini-3.1-flash-lite",
-      "gemini-3-flash-preview",
+      "gemini-3.5-flash-lite",
+      "gemini-3.6-flash",
       "gemini-3.1-pro-preview",
-      "claude-opus-4-5@20251101",
+      "claude-opus-5-5",
     ];
 
     for (const model of autoTargets) {
@@ -140,13 +142,13 @@ describe("CalculateCost.js - the single costing authority", () => {
     it("folds thoughtsTokenCount into the completion count", () => {
       // Measured shape of a reasoning call: 7 prompt / 1 candidate / 84 thoughts.
       const res = runCalculateCost({
-        model: "gemini-3.7-flash",
+        model: "gemini-3.8-flash",
         promptTokens: 7,
         candidatesTokens: 1,
         thoughtsTokens: 84,
       });
       assert.strictEqual(res.candidatesTokens, "85");
-      const expected = (7 / 1e6) * 1.5 + (85 / 1e6) * 7.5;
+      const expected = (7 / 1e6) * 0.75 + (85 / 1e6) * 3.75;
       assert.strictEqual(res.costUsd, expected.toFixed(6));
     });
 
@@ -165,12 +167,12 @@ describe("CalculateCost.js - the single costing authority", () => {
     it("still carry a cost tier", () => {
       // Regression guard. Costing used to be skipped entirely on a hit, so
       // x-gateway-cost-tier came back empty while every other response had one.
-      const res = runCalculateCost({ model: "gemini-3.1-flash-lite", cached: true });
-      assert.strictEqual(res.costTier, "low");
+      const res = runCalculateCost({ model: "gemini-3.5-flash-lite", cached: true });
+      assert.strictEqual(res.costTier, "medium");
     });
 
     it("cost exactly zero, with no micro-dollar floor", () => {
-      const res = runCalculateCost({ model: "claude-opus-4-5@20251101", cached: true });
+      const res = runCalculateCost({ model: "claude-opus-5-5", cached: true });
       assert.strictEqual(res.costUsd, "0.000000");
       // Real calls floor at 1 micro-dollar via Math.max(1, ...); a hit must not.
       assert.strictEqual(res.costMicros, "0");
@@ -197,11 +199,11 @@ describe("CalculateCost.js - the single costing authority", () => {
   describe("6. Non-cached calls are unchanged", () => {
     it("emits cost, micro-dollars and the monetization multiplier", () => {
       const res = runCalculateCost({
-        model: "gemini-3-flash-preview",
+        model: "gemini-3.6-flash",
         promptTokens: 1000,
         candidatesTokens: 1000,
       });
-      const expected = (1000 / 1e6) * 0.15 + (1000 / 1e6) * 0.6;
+      const expected = (1000 / 1e6) * 0.75 + (1000 / 1e6) * 3.75;
       assert.strictEqual(res.costUsd, expected.toFixed(6));
       assert.strictEqual(res.costMicros, String(Math.round(expected * 1e6)));
       // Base fee is $0.001, so the multiplier must be USD * 1000.
@@ -211,7 +213,7 @@ describe("CalculateCost.js - the single costing authority", () => {
 
     it("floors a near-zero cost at one micro-dollar", () => {
       const res = runCalculateCost({
-        model: "gemini-3.1-flash-lite",
+        model: "gemini-3.5-flash-lite",
         promptTokens: 1,
         candidatesTokens: 0,
       });
@@ -220,12 +222,12 @@ describe("CalculateCost.js - the single costing authority", () => {
 
     it("deducts the cost from the prepaid wallet estimate", () => {
       const res = runCalculateCost({
-        model: "gemini-3-flash-preview",
+        model: "gemini-3.6-flash",
         promptTokens: 1000,
         candidatesTokens: 1000,
         extraVars: { "mint.limitscheck.prepaid_developer_balance": "20.0" },
       });
-      const expected = (1000 / 1e6) * 0.15 + (1000 / 1e6) * 0.6;
+      const expected = (1000 / 1e6) * 0.75 + (1000 / 1e6) * 3.75;
       assert.strictEqual(res.allVars["flow.prepaid_balance_remaining"], (20.0 - expected).toFixed(6));
     });
   });

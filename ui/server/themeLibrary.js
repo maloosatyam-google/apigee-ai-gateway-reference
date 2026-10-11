@@ -34,10 +34,10 @@ import { APIGEE_ORG, AI_BASE_PROD, DEMO_ADMIN_EMAIL, THEME_BUCKET } from './depl
 
 export { THEME_BUCKET };
 const ORG = APIGEE_ORG;
-// Grounded brand research: gemini-3-flash-preview gets real brand colours (~7 s, <$0.002);
+// Grounded brand research: gemini-3.6-flash gets real brand colours (~7 s, <$0.002);
 // flash-lite is the fallback (faster, cheaper, noticeably less accurate).
-const THEME_AGENT_MODEL = process.env.THEME_AGENT_MODEL || 'gemini-3-flash-preview';
-const THEME_AGENT_FALLBACK_MODEL = 'gemini-3.1-flash-lite';
+const THEME_AGENT_MODEL = process.env.THEME_AGENT_MODEL || 'gemini-3.6-flash';
+const THEME_AGENT_FALLBACK_MODEL = 'gemini-3.5-flash-lite';
 const LIST_CACHE_MS = 60 * 1000;
 // Auto-added industries stop here, so a run of odd requests cannot flood the picker.
 const MAX_LIBRARY_INDUSTRIES = 60;

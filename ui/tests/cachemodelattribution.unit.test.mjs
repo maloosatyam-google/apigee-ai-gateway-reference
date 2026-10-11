@@ -95,12 +95,12 @@ describe("apigeeClient.ts - model attribution on a semantic cache hit", () => {
       // The cache key excludes the model, so a hit on /models/gemini-... can be served
       // bytes that some other model produced. Naming the requested model would be an
       // assertion the gateway cannot back.
-      const out = resolve({ cacheStatus: "HIT", targetModel: "gemini-3.1-flash-lite" });
+      const out = resolve({ cacheStatus: "HIT", targetModel: "gemini-3.5-flash-lite" });
       assert.strictEqual(out.effectiveModel, undefined);
     });
 
     it("reports no provider either, rather than guessing from the model name", () => {
-      const out = resolve({ cacheStatus: "HIT", targetModel: "claude-opus-4-5@20251101" });
+      const out = resolve({ cacheStatus: "HIT", targetModel: "claude-opus-5-5" });
       assert.strictEqual(out.effectiveProvider, undefined);
     });
   });
@@ -118,10 +118,10 @@ describe("apigeeClient.ts - model attribution on a semantic cache hit", () => {
     it("reports the routed model as soon as the gateway names one", () => {
       const out = resolve({
         cacheStatus: "DISABLED",
-        headersReceived: { "x-gateway-model": "claude-opus-4-5@20251101" },
+        headersReceived: { "x-gateway-model": "claude-opus-5-5" },
         targetModel: "auto",
       });
-      assert.strictEqual(out.effectiveModel, "claude-opus-4-5@20251101");
+      assert.strictEqual(out.effectiveModel, "claude-opus-5-5");
     });
   });
 
@@ -141,22 +141,22 @@ describe("apigeeClient.ts - model attribution on a semantic cache hit", () => {
     it("uses the gateway header on a miss", () => {
       const out = resolve({
         cacheStatus: "MISS",
-        headersReceived: { "x-gateway-model": "claude-opus-4-5@20251101" },
+        headersReceived: { "x-gateway-model": "claude-opus-5-5" },
         targetModel: "auto",
       });
-      assert.strictEqual(out.effectiveModel, "claude-opus-4-5@20251101");
+      assert.strictEqual(out.effectiveModel, "claude-opus-5-5");
     });
 
     it("keeps the targetModel fallback when caching is not involved", () => {
       // Only the cache-hit case loses attribution. A direct uncached call still knows
       // exactly which model it invoked.
-      const out = resolve({ cacheStatus: "DISABLED", targetModel: "gemini-3.1-flash-lite" });
-      assert.strictEqual(out.effectiveModel, "gemini-3.1-flash-lite");
+      const out = resolve({ cacheStatus: "DISABLED", targetModel: "gemini-3.5-flash-lite" });
+      assert.strictEqual(out.effectiveModel, "gemini-3.5-flash-lite");
       assert.strictEqual(out.effectiveProvider, "google");
     });
 
     it("still derives the anthropic provider for an uncached claude call", () => {
-      const out = resolve({ cacheStatus: "DISABLED", targetModel: "claude-opus-4-5@20251101" });
+      const out = resolve({ cacheStatus: "DISABLED", targetModel: "claude-opus-5-5" });
       assert.strictEqual(out.effectiveProvider, "anthropic");
     });
   });

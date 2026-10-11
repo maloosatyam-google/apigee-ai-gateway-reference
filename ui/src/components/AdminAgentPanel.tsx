@@ -87,7 +87,7 @@ const SUGGESTIONS: Record<AdminRole, string[]> = {
     'Which models cost us the most this month?',
   ],
   ai_coe: [
-    'Change the model for general questions from Gemini 3 Flash to Gemini 3.8 Flash for Analysts & Knowledge Workers',
+    'Change the model for general questions from Gemini 3.6 Flash to Gemini 3.8 Flash for Analysts & Knowledge Workers',
     'Double the Customer Support & Sales usage limit',
     'Who hit their token quota this week?',
     'Which MCP tools were denied this week?',

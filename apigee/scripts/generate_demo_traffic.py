@@ -39,9 +39,9 @@ PROMPTS_AND_ROUTES = [
     {
         # Was gemini-2.5-flash, retired ahead of its 2026-10-20 end of life and now
         # entitled by no API Product -- this route would 401 at VA-VerifyAPIKey.
-        "path": "/models/gemini-3.1-flash-lite:generateContent",
+        "path": "/models/gemini-3.5-flash-lite:generateContent",
         "prompt": "Explain semantic caching for LLM APIs and how it reduces token costs in 3 bullet points.",
-        "label": "Gemini 3.1 Flash Lite",
+        "label": "Gemini 3.5 Flash Lite",
     },
     {
         "path": "/models/gemini-3.1-pro-preview:generateContent",
@@ -170,7 +170,7 @@ def send_gateway_request(gateway_base: str, email: str, api_key: str, item: dict
         with urllib.request.urlopen(req, timeout=45) as resp:
             status = resp.status
             resp_headers = {k.lower(): v for k, v in resp.headers.items()}
-            model = resp_headers.get("x-gateway-model", "gemini-3.1-flash-lite")
+            model = resp_headers.get("x-gateway-model", "gemini-3.5-flash-lite")
             tokens = int(resp_headers.get("x-gateway-total-tokens", "0") or 0)
             cost_usd = float(resp_headers.get("x-gateway-cost-usd", "0.0") or 0.0)
             latency_ms = int((time.time() - start) * 1000)

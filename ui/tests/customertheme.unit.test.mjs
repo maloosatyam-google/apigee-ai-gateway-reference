@@ -450,7 +450,7 @@ describe('brand header (wordmark and top-row colour)', () => {
 
 it('canonicalPersonaNames maps industry team labels back to the product persona names', async () => {
   const { canonicalPersonaNames, rewordPersonaNames } = await import('../src/utils/customerTheme.js');
-  const chip = 'Change the model for general questions from Gemini 3 Flash to Gemini 3.8 Flash for Analysts & Knowledge Workers';
+  const chip = 'Change the model for general questions from Gemini 3.6 Flash to Gemini 3.8 Flash for Analysts & Knowledge Workers';
   const banking = rewordPersonaNames(chip, 'banking');
   assert.match(banking, /Credit & Risk Analysts/);
   assert.equal(canonicalPersonaNames(banking, 'banking'), chip);

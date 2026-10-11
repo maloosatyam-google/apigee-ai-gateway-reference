@@ -33,7 +33,7 @@ if [ -z "$API_KEY" ]; then
 fi
 
 echo "=============================================================================="
-echo "⚡ AI GATEWAY: LLM TOKEN RATE LIMIT TEST SUITE (claude-haiku-4-5, 300 tokens/min)"
+echo "⚡ AI GATEWAY: LLM TOKEN RATE LIMIT TEST SUITE (claude-haiku-5-5, 300 tokens/min)"
 echo "Target Endpoint: ${BASE_URL}"
 echo "User Email: ${USER_EMAIL}"
 echo "=============================================================================="
@@ -61,7 +61,7 @@ for i in 0 1 2 3; do
   echo "------------------------------------------------------------------------------"
   echo "STEP $((i + 1))/4: expect HTTP ${EXPECT_HTTP[$i]}${EXPECT_QUOTA[$i]:+, quota status ${EXPECT_QUOTA[$i]}}"
   echo "------------------------------------------------------------------------------"
-  RESPONSE=$(curl -s -i -X POST "${BASE_URL}/models/claude-haiku-4-5@20251001:generateContent" \
+  RESPONSE=$(curl -s -i -X POST "${BASE_URL}/models/claude-haiku-5-5:generateContent" \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${USER_JWT}" \
     -H "x-apikey: ${API_KEY}" \

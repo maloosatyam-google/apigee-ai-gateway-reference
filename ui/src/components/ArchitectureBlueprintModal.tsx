@@ -716,7 +716,7 @@ export const ArchitectureBlueprintModal: React.FC<ArchitectureBlueprintModalProp
       talkingPoints: [
         'Developers call a single logical endpoint (/ai/v1/auto) without hardcoding model versions.',
         'Persona-aware routing: each persona product maps the router category to its own model, e.g. coding goes to Claude Opus (Engineering & IT), Gemini Pro (Analysts) or Claude Haiku (Customer Support & Sales).',
-        'The TypeSafe AI JEV System One router classifies each prompt on intent (only on a cache miss), so coding work lands on Claude Opus 4.5 and trivial lookups on low-cost Flash-Lite.',
+        'The TypeSafe AI JEV System One router classifies each prompt on intent (only on a cache miss), so coding work lands on Claude Opus 5.5 and trivial lookups on low-cost Flash-Lite.',
         'The category-to-model map lives on the API Product, so entitlements and model choices change without redeploying the proxy.',
       ],
       businessTitle: 'Picks the right model',
@@ -766,7 +766,7 @@ export const ArchitectureBlueprintModal: React.FC<ArchitectureBlueprintModalProp
           badge: 'x-gateway-model',
           points: [
             'Call /ai/v1/auto without a model. The response headers x-gateway-model and x-gateway-provider tell you what answered.',
-            'Coding prompts go to Claude Opus 4.5 for Engineering & IT; trivial lookups go to low-cost Flash-Lite.',
+            'Coding prompts go to Claude Opus 5.5 for Engineering & IT; trivial lookups go to low-cost Flash-Lite.',
             'Router down or slow? You get the product default model after 2.5s, not an error.',
             'Model changes happen on the gateway, so your code does not change when models do.',
           ],

@@ -33,11 +33,11 @@ async def test_adk_loop_with_gateway_llm(monkeypatch):
       return httpx.Response(200, json={
           "candidates": [{"content": {"role": "model", "parts": [{"functionCall": {"name": "get_order_status", "args": {"order_id": "ORD-1042"}}, "thoughtSignature": "c2lnbmF0dXJl"}]}, "finishReason": "STOP"}],
           "usageMetadata": {"promptTokenCount": 50, "candidatesTokenCount": 10, "totalTokenCount": 60},
-      }, headers={"x-gateway-model": "gemini-3.1-flash-lite", "x-gateway-cache-status": "MISS"})
+      }, headers={"x-gateway-model": "gemini-3.5-flash-lite", "x-gateway-cache-status": "MISS"})
     return httpx.Response(200, json={
         "candidates": [{"content": {"role": "model", "parts": [{"text": "Your order is delayed."}]}, "finishReason": "STOP"}],
         "usageMetadata": {"promptTokenCount": 80, "candidatesTokenCount": 8, "totalTokenCount": 88},
-    }, headers={"x-gateway-model": "gemini-3-flash-preview"})
+    }, headers={"x-gateway-model": "gemini-3.6-flash"})
 
   monkeypatch.setattr(gateway_llm, "_http_client", httpx.AsyncClient(transport=httpx.MockTransport(handler)))
   rec = RunRecorder("governed")
@@ -63,4 +63,4 @@ async def test_adk_loop_with_gateway_llm(monkeypatch):
   m = rec.metrics_payload()
   assert m["llm_steps"] == 2
   assert m["tokens"]["prompt"] == 130
-  assert set(m["by_model"]) == {"gemini-3.1-flash-lite", "gemini-3-flash-preview"}
+  assert set(m["by_model"]) == {"gemini-3.5-flash-lite", "gemini-3.6-flash"}

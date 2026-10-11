@@ -255,9 +255,9 @@ export function runDevTest(
 /**
  * The model the agent is configured to run on.
  *
- * Only a pre-flight default: the backend falls back to `gemini-3-flash-preview`
+ * Only a pre-flight default: the backend falls back to `gemini-3.6-flash`
  * if the Engineering & IT entitlement fails, and reports whatever actually served the
  * turn in `usage.model`. Prefer that over this constant once a turn has landed.
  */
-export const AGENT_MODEL = 'gemini-3.1-flash-lite';
+export const AGENT_MODEL = 'gemini-3.5-flash-lite';
 

@@ -30,6 +30,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { MCP_BASE_PROD } from '../config/deployment.js';
+import ScrollHintRow from './ScrollHintRow';
 
 interface McpPlaygroundProps {
   settings: GatewaySettings;
@@ -452,7 +453,7 @@ export const McpPlayground: React.FC<McpPlaygroundProps> = ({
                 <Sparkles className="w-3.5 h-3.5 text-cyan-600" />
                 <span>{sp({ technical: 'Preset Calls', business: 'Try a task' })}</span>
               </div>
-              <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+              <ScrollHintRow className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
                 {orderedPresets.map(({ preset, step, outcome }) => (
                   <button
                     key={preset.id}
@@ -506,7 +507,7 @@ export const McpPlayground: React.FC<McpPlaygroundProps> = ({
                     </div>
                   </button>
                 ))}
-              </div>
+              </ScrollHintRow>
             </div>
 
             {/* Registered Tools List */}

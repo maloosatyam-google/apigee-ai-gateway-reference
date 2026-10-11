@@ -6,7 +6,8 @@ import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { createAdminAgentService } from './server/adminAgentService.js';
 import { createAgentShowcaseService } from './server/agentShowcase.js';
-import { createThemeLibraryService } from './server/themeLibrary.js';
+import { createThemeLibraryService, THEME_BUCKET } from './server/themeLibrary.js';
+import { createModelWatchService } from './server/modelWatch.js';
 import { handleReloadHint } from './server/reloadHint.js';
 import { mintSyntheticIdentityToken } from './server/adminAgentCore.js';
 import { applyLedgerToBalance, fetchApigeeWallet, recordDebit } from './server/walletLedger.js';
@@ -234,7 +235,7 @@ async function parseEmailHandleWithGemini(email, token) {
     // the API Products does not stop it -- it would just have started 404ing on
     // gemini-2.5-flash's 2026-10-20 end of life, silently degrading sign-in names.
     const url =
-      `https://aiplatform.googleapis.com/v1/projects/${GCP_PROJECT_ID}/locations/global/publishers/google/models/gemini-3.1-flash-lite:generateContent`;
+      `https://aiplatform.googleapis.com/v1/projects/${GCP_PROJECT_ID}/locations/global/publishers/google/models/gemini-3.5-flash-lite:generateContent`;
     const prompt = `Extract the likely human First Name and Last Name from this corporate email address: "${email}".
 Rules:
 1. Strip prefixes like "the", "mr", "ms", "iam", "official" if they precede a clear given name (e.g., "thejohnsmith" -> First: "John", Last: "Smith").
@@ -684,6 +685,16 @@ const themeLibraryService = createThemeLibraryService({
     provisionUserDeveloperAndApp(org, token, email, '', '', '', { allowCreate: false }),
   identityToken: (email) => mintSyntheticIdentityToken(email, email.split('@')[0]),
   defaultEmail: SSO_USER_EMAIL,
+});
+
+// Daily pricing/model watch (/api/model-watch): report written by the model-watch Cloud Run
+// job, compared here with the live rate card and product entitlements (server/modelWatch.js).
+const modelWatchService = createModelWatchService({
+  getToken: getGcpAccessToken,
+  org: APIGEE_ORG,
+  project: GCP_PROJECT_ID,
+  bucket: process.env.MODEL_WATCH_BUCKET || THEME_BUCKET,
+  personaProducts: PERSONA_PRODUCTS,
 });
 
 // MIME Types helper
@@ -1525,7 +1536,7 @@ const server = http.createServer(async (req, res) => {
         const model = isAbsent(rawModel) ? 'unknown-model' : rawModel;
 
         // Resolve the rate card entry first — it is the source of truth for BOTH price and
-        // cost tier. Longest key wins so 'claude-opus-4-5' beats a shorter prefix.
+        // cost tier. Longest key wins so 'claude-opus-5-5' beats a shorter prefix.
         const rateKey = Object.keys(rates)
           .filter((k) => k !== 'default' && (model === k || model.startsWith(k)))
           .sort((a, b) => b.length - a.length)[0];
@@ -1533,8 +1544,8 @@ const server = http.createServer(async (req, res) => {
 
         // Tier comes from the rate card, NOT from the model name. Name-matching on
         // 'pro'/'opus'/'flash-lite' silently mis-tiers models whose price does not match their
-        // name: gemini-3.7-flash and gemini-3.8-flash cost 1.50/7.50, more than
-        // gemini-3.1-pro-preview at 1.25/5.00, yet the old heuristic called them 'medium' and
+        // name: gemini-3.5-flash (1.50/9.00) costs more than the newer gemini-3.8-flash
+        // (0.75/3.75), yet a name heuristic would call both 'medium' and
         // counted them as low-cost routing wins. Fall back to the band only for an unpriced model.
         const tierFromRate = (out) => (out >= 5.0 ? 'high' : out <= 0.3 ? 'low' : 'medium');
         const tier = isAbsent(rawModel)
@@ -2058,6 +2069,12 @@ const server = http.createServer(async (req, res) => {
   // 15. /api/agent-showcase/* -- baseline vs governed agents, streamed (server/agentShowcase.js).
   if (pathname === '/api/agent-showcase' || pathname.startsWith('/api/agent-showcase/')) {
     await agentShowcaseService.handleRequest(req, res, parsedUrl);
+    return;
+  }
+
+  // 17. /api/model-watch[/run] -- daily pricing & model changes (server/modelWatch.js).
+  if (pathname === '/api/model-watch' || pathname.startsWith('/api/model-watch/')) {
+    await modelWatchService.handleRequest(req, res, parsedUrl);
     return;
   }
 

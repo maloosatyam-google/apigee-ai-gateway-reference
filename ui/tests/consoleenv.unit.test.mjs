@@ -26,7 +26,7 @@ const product = (name, configs, attrs = [], extra = {}) => ({
 // ---- configDiff ------------------------------------------------------------
 
 test('identical products produce no rows, even with different identity fields', () => {
-  const prod = product('Engineering and IT', [cfg('gemini-3-flash-preview', 2000)], [{ name: 'routing.model.simple', value: 'x' }]);
+  const prod = product('Engineering and IT', [cfg('gemini-3.6-flash', 2000)], [{ name: 'routing.model.simple', value: 'x' }]);
   const dev = { ...prod, name: 'Engineering and IT Dev', displayName: 'Engineering and IT (Dev)', environments: ['dev'], description: 'clone' };
   assert.deepEqual(diffProducts(dev, prod), []);
 });

@@ -18,7 +18,7 @@ const attr = (p, name) => p.attributes.find((a) => a.name === name)?.value;
 
 test('Customer Support & Sales keeps the 300-token Haiku quota for the token demo', () => {
   const haikuConfig = SUPPORT.llmOperationGroup.operationConfigs.find((c) =>
-    c.llmOperations?.some((op) => op.model === 'claude-haiku-4-5@20251001')
+    c.llmOperations?.some((op) => op.model === 'claude-haiku-5-5')
   );
   assert.ok(haikuConfig, 'Claude Haiku must be present in Customer Support & Sales');
   assert.equal(haikuConfig.llmTokenQuota.limit, '300');
@@ -28,7 +28,7 @@ test('Customer Support & Sales keeps the 300-token Haiku quota for the token dem
 
 test('persona entitlements: Engineering has everything, Analysts no Claude, Support only fast models', () => {
   const eng = modelsOf(ENGINEERING);
-  for (const m of ['gemini-3.1-pro-preview', 'claude-opus-4-5@20251101', 'claude-haiku-4-5@20251001', 'gemini-3.7-flash', 'gemini-3.8-flash']) {
+  for (const m of ['gemini-3.1-pro-preview', 'claude-opus-5-5', 'claude-haiku-5-5', 'gemini-3.8-flash']) {
     assert.ok(eng.includes(m), `Engineering & IT must include ${m}`);
   }
   const analysts = modelsOf(ANALYSTS);
@@ -36,7 +36,7 @@ test('persona entitlements: Engineering has everything, Analysts no Claude, Supp
   assert.ok(!analysts.some((m) => m.startsWith('claude')), 'Analysts must not include Claude');
   assert.deepEqual(
     modelsOf(SUPPORT).filter((m) => m !== 'auto').sort(),
-    ['claude-haiku-4-5@20251001', 'gemini-3-flash-preview', 'gemini-3.1-flash-lite']
+    ['claude-haiku-5-5', 'gemini-3.5-flash-lite', 'gemini-3.6-flash']
   );
 });
 
@@ -53,9 +53,9 @@ test('Router target model attribute mappings exist for all 4 intents on every pe
       assert.ok(attr(p, `routing.model.${k}`), `${p.name}: routing.model.${k}`);
     }
   }
-  assert.equal(attr(ENGINEERING, 'routing.model.coding'), 'claude-opus-4-5@20251101');
+  assert.equal(attr(ENGINEERING, 'routing.model.coding'), 'claude-opus-5-5');
   assert.equal(attr(ANALYSTS, 'routing.model.coding'), 'gemini-3.1-pro-preview');
-  assert.equal(attr(SUPPORT, 'routing.model.coding'), 'claude-haiku-4-5@20251001');
+  assert.equal(attr(SUPPORT, 'routing.model.coding'), 'claude-haiku-5-5');
 });
 
 test('Simulated product modifications: add model, update quota, remove model', () => {
@@ -70,15 +70,15 @@ test('Simulated product modifications: add model, update quota, remove model', (
   assert.equal(clone.llmOperationGroup.operationConfigs.length, before + 1);
 
   const haiku = clone.llmOperationGroup.operationConfigs.find((c) =>
-    c.llmOperations.some((op) => op.model === 'claude-haiku-4-5@20251001')
+    c.llmOperations.some((op) => op.model === 'claude-haiku-5-5')
   );
   haiku.llmTokenQuota.limit = '5000';
   assert.equal(haiku.llmTokenQuota.limit, '5000');
 
   clone.llmOperationGroup.operationConfigs = clone.llmOperationGroup.operationConfigs.filter(
-    (c) => !c.llmOperations.some((op) => op.model === 'gemini-3.1-flash-lite')
+    (c) => !c.llmOperations.some((op) => op.model === 'gemini-3.5-flash-lite')
   );
-  assert.equal(modelsOf(clone).includes('gemini-3.1-flash-lite'), false);
+  assert.equal(modelsOf(clone).includes('gemini-3.5-flash-lite'), false);
 });
 
 // ---------------------------------------------------------------------------

@@ -8,7 +8,7 @@ Options:
   --basepath /ai/v1
   --project PROJECT             GCP project hosting Vertex AI / Model Armor
   --model-location global       Vertex location for model calls
-  --default-model gemini-3-flash-preview
+  --default-model gemini-3.6-flash
   --armor-region REGION         enable Model Armor (SUP + SMR); needs templates below
   --prompt-template NAME        Model Armor template for prompts   (default apigee-sanitize-user-prompt)
   --response-template NAME      Model Armor template for responses (default apigee-sanitize-model-response)
@@ -38,7 +38,7 @@ def main():
     a.add_argument("--basepath", default="/ai/v1")
     a.add_argument("--project", required=True)
     a.add_argument("--model-location", default="global")
-    a.add_argument("--default-model", default="gemini-3-flash-preview")
+    a.add_argument("--default-model", default="gemini-3.6-flash")
     a.add_argument("--armor-region")
     a.add_argument("--prompt-template", default="apigee-sanitize-user-prompt")
     a.add_argument("--response-template", default="apigee-sanitize-model-response")
@@ -142,7 +142,7 @@ def main():
   <UserPromptSource>{{flow.userPrompt}}</UserPromptSource>
   <Embeddings>
     <VertexAI>
-      <URL>https://{r}-aiplatform.googleapis.com/v1/projects/{o.project}/locations/{r}/publishers/google/models/text-embedding-004:predict</URL>
+      <URL>https://{r}-aiplatform.googleapis.com/v1/projects/{o.project}/locations/{r}/publishers/google/models/text-embedding-005:predict</URL>
     </VertexAI>
   </Embeddings>
   <SimilaritySearch>
@@ -373,7 +373,7 @@ def main():
 </APIProxy>
 """)
 
-    models = [o.default_model] + (["claude-haiku-4-5@20251001"] if o.claude else [])
+    models = [o.default_model] + (["claude-haiku-5-5"] if o.claude else [])
     product = {
         "name": f"{o.name} - Standard",
         "displayName": f"{o.name} - Standard",

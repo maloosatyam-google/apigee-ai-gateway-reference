@@ -148,7 +148,7 @@ describe('Token-quota demo stays in sync across UI, live test and script', () =>
   it('Haiku carries the 300-token demo quota on every persona product that entitles it', () => {
     for (const f of ['engineering_and_it.json', 'customer_support_and_sales.json']) {
       const p = JSON.parse(fs.readFileSync(path.join(here, '../../apigee/products', f), 'utf8'));
-      const cfg = p.llmOperationGroup.operationConfigs.find((c) => c.llmOperations[0].model === 'claude-haiku-4-5@20251001');
+      const cfg = p.llmOperationGroup.operationConfigs.find((c) => c.llmOperations[0].model === 'claude-haiku-5-5');
       assert.equal(cfg.llmTokenQuota.limit, '300', f);
     }
   });
@@ -166,7 +166,7 @@ describe('/auto is counted and limited against the product /auto operation', () 
 
   it('ExtractPromptAndModel sets flow.quota_model=auto only on /auto', () => {
     assert.equal(runExtract('/auto')['flow.quota_model'], 'auto');
-    assert.equal(runExtract('/models/gemini-3-flash-preview:generateContent')['flow.quota_model'], undefined);
+    assert.equal(runExtract('/models/gemini-3.6-flash:generateContent')['flow.quota_model'], undefined);
   });
 
   it('both LTQ policies read flow.quota_model first (routing rewrites flow.model), identically', () => {

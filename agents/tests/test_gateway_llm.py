@@ -103,7 +103,7 @@ APIGEE_BODY = {
         }
     ],
     "usageMetadata": {"promptTokenCount": 40, "candidatesTokenCount": 21, "totalTokenCount": 61, "thoughtsTokenCount": 9, "someFutureField": 1},
-    "modelVersion": "gemini-3.1-flash-lite",
+    "modelVersion": "gemini-3.5-flash-lite",
     "createTime": "2026-09-27T10:25:54.144540Z",
     "responseId": "abc",
     "unknownTopLevel": {"x": 1},
@@ -126,11 +126,11 @@ def test_token_counts_bill_thinking_as_output():
 
 def test_gateway_telemetry():
   t = gateway_telemetry({
-      "X-Gateway-Model": "gemini-3.1-flash-lite", "x-auto-routed": "true",
+      "X-Gateway-Model": "gemini-3.5-flash-lite", "x-auto-routed": "true",
       "x-gateway-router-category": "simple", "x-gateway-router-confidence": "0.99",
       "x-gateway-cache-status": "MISS", "x-gateway-cost-usd": "0.000009", "x-request-id": "r1",
   })
-  assert t["model"] == "gemini-3.1-flash-lite"
+  assert t["model"] == "gemini-3.5-flash-lite"
   assert t["auto_routed"] is True
   assert t["route_category"] == "simple"
   assert t["cache"] == "MISS"
@@ -183,7 +183,7 @@ async def _drain(rec):
 async def test_apigee_adapter_records_step_and_sends_cache_on_first_turn(captured):
   seen = captured(lambda r: httpx.Response(
       200, json=APIGEE_BODY,
-      headers={"x-gateway-model": "gemini-3.1-flash-lite", "x-auto-routed": "true", "x-gateway-router-category": "simple", "x-gateway-cache-status": "MISS"},
+      headers={"x-gateway-model": "gemini-3.5-flash-lite", "x-auto-routed": "true", "x-gateway-router-category": "simple", "x-gateway-cache-status": "MISS"},
   ))
   rec = RunRecorder("governed")
   llm = GatewayLlm.for_apigee(recorder=rec, api_key="k", identity_token="jwt", run_id="run-1", agent_id="cs-governed")
@@ -200,7 +200,7 @@ async def test_apigee_adapter_records_step_and_sends_cache_on_first_turn(capture
   types_ = [e["type"] for e in events]
   assert types_ == ["tools_offered", "llm_step", "governance_event"]
   step = events[1]
-  assert step["model"] == "gemini-3.1-flash-lite"
+  assert step["model"] == "gemini-3.5-flash-lite"
   assert step["function_calls"] == ["getOrderStatus"]
   assert step["billable"] is True
   assert events[2]["kind"] == "routed"

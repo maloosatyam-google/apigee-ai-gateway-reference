@@ -92,7 +92,7 @@ try {
                 var project = context.getVariable("propertyset.config.project_id");
                 var endpointHost = context.getVariable("endpoint_host") || "aiplatform.googleapis.com";
                 var modelLocation = context.getVariable("model_location") || "us-east5";
-                var model = context.getVariable("model") || "claude-haiku-4-5";
+                var model = context.getVariable("model") || "claude-haiku-5-5";
                 var targetUrl = "https://" + endpointHost + "/v1/projects/" + project + "/locations/" + modelLocation + "/publishers/anthropic/models/" + model + ":rawPredict";
                 context.setVariable("target.url", targetUrl);
             }

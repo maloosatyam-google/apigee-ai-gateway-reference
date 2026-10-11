@@ -42,7 +42,7 @@ TOKEN=$(gcloud auth print-access-token); API=https://apigee.googleapis.com/v1/or
 sed "s/<ENV>/$ENV/" ./ai-gateway-v1/api_product.json | curl -s -X POST -H "Authorization: Bearer $TOKEN" \
   -H 'Content-Type: application/json' -d @- $API/apiproducts
 # create a developer + app with that product (UI or apigeecli), then:
-curl -si https://$HOST/ai/v1/models/gemini-3-flash-preview:generateContent -H "x-apikey: $KEY" \
+curl -si https://$HOST/ai/v1/models/gemini-3.6-flash:generateContent -H "x-apikey: $KEY" \
   -H 'Content-Type: application/json' -d '{"contents":[{"role":"user","parts":[{"text":"Hello"}]}]}' | grep -i x-gateway
 ```
 
@@ -109,13 +109,13 @@ Rules learned the hard way:
    (or use `$.usage.output_tokens`) or it is never counted.
 
 ## 4. Semantic cache
-Vector Search index (streaming updates) on a public endpoint, plus `text-embedding-004`. Lookup goes at the end of the PreFlow,
+Vector Search index (streaming updates) on a public endpoint, plus `text-embedding-005`. Lookup goes at the end of the PreFlow,
 populate in the PostFlow. Make it opt-in (`x-use-cache: true`) and use `continueOnError="true"`. Track HIT/MISS by setting HIT
 before the lookup and MISS in the **TargetEndpoint** PreFlow, which only runs on a miss. The cache key is the prompt only,
 so do not classify or route before the lookup.
 
 ## 5. Cost, budget, monetization
-- Keep the rate card in an environment **KVM** as JSON (`{"gemini-3-flash-preview":{"input":0.5,"output":3.0},...}`, USD per 1M tokens).
+- Keep the rate card in an environment **KVM** as JSON (`{"gemini-3.6-flash":{"input":0.5,"output":3.0},...}`, USD per 1M tokens).
   `JS-CalculateCost` computes `flow.tx_cost_usd` and `flow.tx_cost_micros`. Count thinking tokens at the output rate.
 - **Budget:** a Quota pair on `SharedName developer-budget-counter`, with limits from product attributes `developer.budget.*`.
   The read side is `EnforceOnly` with `continueOnError="true"`, followed by an explicit RaiseFault 429 on `ratelimit.X.failed`.

@@ -44,7 +44,7 @@ try {
                 "type": "message",
                 "role": "assistant",
                 "content": contentBlocks,
-                "model": context.getVariable("model") || "gemini-3.5-flash",
+                "model": context.getVariable("model") || "gemini-3.6-flash",
                 "stop_reason": stopReason,
                 "stop_sequence": null,
                 "usage": {

@@ -127,7 +127,7 @@
            usageMetadata.totalTokenCount in the TARGET response flow, which completes before
            LTQ-TokenCount reads it in PostFlow. The third clause deliberately omits the
            @date suffix so a future revision of the same model still matches. -->
-      <Condition>(proxy.pathsuffix MatchesPath "/models/claude-haiku-4-5@20251001:generateContent") or (flow.model == "claude-haiku-4-5@20251001") or (proxy.pathsuffix JavaRegex "^/models/claude-haiku-4-5.*")</Condition>
+      <Condition>(proxy.pathsuffix MatchesPath "/models/claude-haiku-5-5:generateContent") or (flow.model == "claude-haiku-5-5") or (proxy.pathsuffix JavaRegex "^/models/claude-haiku-4-5.*")</Condition>
     </Flow>
     <!--
       The /auto router chain.

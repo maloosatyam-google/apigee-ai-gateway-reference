@@ -24,7 +24,7 @@ Each scene lists **Screen** (what is on screen and what gets clicked) and **Voic
 ## Before recording
 
 - Default Apigee theme, persona **Engineering & IT**, admin role **Platform Admin**.
-- Agent Showcase: set the ungoverned agent's model picker to **Gemini 3 Flash**.
+- Agent Showcase: set the ungoverned agent's model picker to **Gemini 3.6 Flash**.
 - **Reset demo data** on the Agent Showcase, then **Clear**, so ORD-1042 is refundable again.
 - Send one throwaway prompt to warm up the gateway.
 - Scenario 2 (cache) must run within 3 minutes of scenario 1.

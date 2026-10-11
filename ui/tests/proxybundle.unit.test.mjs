@@ -307,8 +307,41 @@ function runJs(code, vars) {
   return variables;
 }
 
-const prep = (body, model = "claude-haiku-4-5@20251001") =>
+const prep = (body, model = "claude-haiku-5-5") =>
   runJs(claudePrepCode, { "request.content": JSON.stringify(body), "flow.target_model": model });
+
+describe("ClaudeRequestPrep.js - thinking for Claude 5.x", () => {
+  const body = (gc) => ({ contents: [{ role: "user", parts: [{ text: "hi" }] }], ...(gc ? { generationConfig: gc } : {}) });
+  const out = (vars) => JSON.parse(vars["request.content"]);
+
+  it("Haiku 5.5: no thinking requested -> thinking disabled, so a short budget still returns text", () => {
+    const p = out(prep(body({ maxOutputTokens: 90 }), "claude-haiku-5-5"));
+    assert.deepEqual(p.thinking, { type: "disabled" });
+    assert.equal(p.output_config, undefined);
+    assert.equal(p.max_tokens, 90);
+  });
+
+  it("Haiku 5.5: a thinking budget maps to adaptive + effort", () => {
+    const p = out(prep(body({ thinkingConfig: { thinkingBudget: 4096 } }), "claude-haiku-5-5"));
+    assert.deepEqual(p.thinking, { type: "adaptive" });
+    assert.deepEqual(p.output_config, { effort: "medium" });
+  });
+
+  it("Opus 5.5 cannot disable thinking: adaptive + low effort, with room for an answer", () => {
+    const p = out(prep(body(), "claude-opus-5-5"));
+    assert.deepEqual(p.thinking, { type: "adaptive" });
+    assert.deepEqual(p.output_config, { effort: "low" });
+    assert.equal(p.max_tokens, 4096);
+    const sized = out(prep(body({ maxOutputTokens: 300, thinkingConfig: { thinkingBudget: -1 } }), "claude-opus-5-5"));
+    assert.equal(sized.max_tokens, 300, "an explicit maxOutputTokens is respected");
+    assert.deepEqual(sized.output_config, { effort: "high" });
+  });
+
+  it("older Claude models are left untouched", () => {
+    const p = out(prep(body({ maxOutputTokens: 90 }), "claude-haiku-4-5@20251001"));
+    assert.equal(p.thinking, undefined);
+  });
+});
 
 describe("ClaudeRequestPrep.js - Gemini request -> Anthropic Messages", () => {
   it("translates text turns and carries systemInstruction and generationConfig", () => {
@@ -410,13 +443,13 @@ describe("FormatClaudeResponse.js - Anthropic response -> Gemini candidates", ()
       runJs(formatClaudeCode, {
         "flow.convert_claude_to_gemini_resp": "true",
         "response.content": JSON.stringify(claude),
-        "flow.target_model": "claude-haiku-4-5@20251001",
+        "flow.target_model": "claude-haiku-5-5",
       })["response.content"]
     );
 
   it("maps text and tool_use blocks to ordered text/functionCall parts", () => {
     const out = format({
-      model: "claude-haiku-4-5",
+      model: "claude-haiku-5-5",
       stop_reason: "tool_use",
       content: [
         { type: "text", text: "Let me " },

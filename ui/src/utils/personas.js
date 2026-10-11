@@ -15,12 +15,11 @@ export const PERSONAS = [
     mcpProduct: 'Enterprise Tools MCP',
     summary: 'Every model, incl. Claude Opus & Gemini Pro',
     models: [
-      'gemini-3.1-flash-lite',
-      'gemini-3-flash-preview',
+      'gemini-3.5-flash-lite',
+      'gemini-3.6-flash',
       'gemini-3.1-pro-preview',
-      'claude-haiku-4-5@20251001',
-      'claude-opus-4-5@20251101',
-      'gemini-3.7-flash',
+      'claude-haiku-5-5',
+      'claude-opus-5-5',
       'gemini-3.8-flash',
     ],
   },
@@ -33,9 +32,8 @@ export const PERSONAS = [
     summary: 'Gemini Pro & Flash family, no Claude',
     models: [
       'gemini-3.1-pro-preview',
-      'gemini-3.1-flash-lite',
-      'gemini-3-flash-preview',
-      'gemini-3.7-flash',
+      'gemini-3.5-flash-lite',
+      'gemini-3.6-flash',
       'gemini-3.8-flash',
     ],
   },
@@ -46,7 +44,7 @@ export const PERSONAS = [
     product: 'Customer Support and Sales',
     mcpProduct: 'Customer Service Tools MCP',
     summary: 'Fast, low-cost models; Pro only for hard questions',
-    models: ['gemini-3.1-flash-lite', 'gemini-3-flash-preview', 'claude-haiku-4-5@20251001'],
+    models: ['gemini-3.5-flash-lite', 'gemini-3.6-flash', 'claude-haiku-5-5'],
   },
 ];
 

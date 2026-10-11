@@ -17,7 +17,7 @@ import {
 
 const RATES = {
   'gemini-3.1-pro-preview': { input: 1.25, output: 5 },
-  'gemini-3-flash-preview': { input: 0.15, output: 0.6 },
+  'gemini-3.6-flash': { input: 0.15, output: 0.6 },
 };
 
 // One stats dimension in the timeUnit shape the Apigee stats API returns.
@@ -62,11 +62,11 @@ test('buildAgentAnalytics splits, prices and ignores non-agent traffic', () => {
   const llm = stats([
     dim(['llm-passthrough-v1', 'python-httpx/0.28.1', 'gemini-3.1-pro-preview', '200', 'DISABLED'], m(2, 264000, 400, 10000)),
     dim(['llm-passthrough-v1', 'python-httpx/0.28.1', 'gemini-3.1-pro-preview', '429', '(not set)'], m(1, 0, 0, 1000)),
-    dim(['ai-gateway-v1', 'python-httpx/0.28.1', 'gemini-3-flash-preview', '200', 'MISS'], m(3, 6000, 900, 3000)),
+    dim(['ai-gateway-v1', 'python-httpx/0.28.1', 'gemini-3.6-flash', '200', 'MISS'], m(3, 6000, 900, 3000)),
     dim(['ai-gateway-v1', 'python-httpx/0.28.1', 'null', '200', 'HIT'], m(1, 2000, 100, 800)),
     dim(['ai-gateway-v1', 'python-httpx/0.28.1', 'null', '429', '(not set)'], m(2, 0, 0, 200)),
     // UI chat traffic on the same proxy: not an agent.
-    dim(['ai-gateway-v1', 'node', 'gemini-3-flash-preview', '200', 'MISS'], m(50, 99999, 9999, 1000)),
+    dim(['ai-gateway-v1', 'node', 'gemini-3.6-flash', '200', 'MISS'], m(50, 99999, 9999, 1000)),
   ]);
   const mm = (count, rt) => ({ 'sum(message_count)': count, 'avg(total_response_time)': rt });
   const mcp = stats([
@@ -118,7 +118,7 @@ test('buildAgentAnalytics splits, prices and ignores non-agent traffic', () => {
   assert.deepEqual(b.tools.map((t) => [t.tool, t.calls, t.available]), [['getOrderStatus', 0, true], ['issueRefund', 0, true], ['run_query', 1, true]]);
   // Same models, outcomes and servers on both sides, same order.
   assert.deepEqual(g.llm.models.map((m) => m.model), b.llm.models.map((m) => m.model));
-  assert.deepEqual(b.llm.models.map((m) => m.model), ['gemini-3-flash-preview', 'gemini-3.1-pro-preview', 'Reused answer (cache)', 'Blocked before a model']); // 3 calls each: name order
+  assert.deepEqual(b.llm.models.map((m) => m.model), ['gemini-3.1-pro-preview', 'gemini-3.6-flash', 'Reused answer (cache)', 'Blocked before a model']); // 3 calls each: name order
   assert.deepEqual(b.llm.statuses.map((x) => [x.status, x.calls]), [['429', 1]]);
   assert.deepEqual(g.mcp.servers.map((x) => [x.proxy, x.available, x.calls]), [['mcp', true, 6], ['bigquery-mcp', false, 0]]);
 

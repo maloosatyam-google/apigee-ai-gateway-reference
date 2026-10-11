@@ -52,7 +52,7 @@ try {
         // Retrieve Single Model Details
         var requestedId = pathSuffix.substring(1).replace(/^\/+|\/+$/g, "").trim();
         
-        // Check for alias (e.g. gemini-1.5-flash -> gemini-3.5-flash)
+        // Check for alias (e.g. gemini-1.5-flash -> gemini-3.6-flash)
         var aliasTarget = context.getVariable("propertyset.model_locations.alias." + requestedId);
         var effectiveId = aliasTarget || requestedId;
 

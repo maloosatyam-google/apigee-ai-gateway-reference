@@ -216,9 +216,9 @@ if (settings.useCache) headersSent['use-cache'] = 'true';
 > but the UI never sends it. Do not document `x-use-cache` as a UI behaviour.
 
 The former `exhaustLlmQuota()` helper in `apigeeClient.ts` has been **removed**. It was exported
-but never called, and targeted `gemini-3.1-flash-lite`, which does not match
+but never called, and targeted `gemini-3.5-flash-lite`, which does not match
 `LLMTokenLimitFlow` (that flow only enforces `LTQ-TokenEnforce` for
-`claude-haiku-4-5@20251001`).
+`claude-haiku-5-5`).
 
 ### 4.2 MCP Gateway — [`mcpClient.ts`](../ui/src/services/mcpClient.ts#L27-L48)
 
@@ -324,7 +324,7 @@ title-cased rather than dropped, so a category added server-side still surfaces.
 > [!IMPORTANT]
 > The client no longer guesses the intent. A previous fallback substring-matched the model
 > name to produce `General / Fast` / `Deep Reasoning` / `Coding`, which could not work:
-> `gemini-3.1-flash-lite` (`simple`) and `gemini-3-flash-preview` (`general`) both contain
+> `gemini-3.5-flash-lite` (`simple`) and `gemini-3.6-flash` (`general`) both contain
 > `flash`, and there was no `simple` branch at all, so every simple request was mislabelled
 > `General / Fast`. It has been removed — the same reasoning that already applies to cost,
 > which is never recomputed client-side. If the header is absent the label stays `undefined`
@@ -360,8 +360,8 @@ when judging whether a number in the trace pane is authoritative.
 > [!IMPORTANT]
 > **The client never computes cost.** Both cost fields used to fall back to a client-side
 > guess — a flat `$0.20 / 1M` blended rate, and a cost tier inferred by substring-matching the
-> model name. The name heuristic was actively wrong: it labelled `gemini-3.7-flash` and
-> `gemini-3.8-flash` *medium* when they bill at `7.50`, above `gemini-3.1-pro-preview`'s `5.00`.
+> model name. The name heuristic was actively wrong: it would label `gemini-3.6-flash` cheap
+> although it bills `9.00` per 1M output tokens, more than the newer `gemini-3.8-flash` (`3.75`).
 > Both fallbacks are gone. `JS-CalculateCost` in the gateway is the single costing authority and
 > now populates the headers on cache hits too, so the fallbacks had no legitimate caller left.
 > When a header is genuinely absent the field stays `undefined` and `GatewayTraceViewer` hides
@@ -428,7 +428,7 @@ detail: [proxy_architecture_design_plan.md §5.4](proxy_architecture_design_plan
 
 **Demo.** The **Tokenomics** chip cycles 4 steps
 ([TOKEN_LIMIT_EXAMPLES](../ui/src/services/defaultSettings.ts)) on
-`claude-haiku-4-5@20251001` (300 tokens / 1 min in both AI tiers). Each step is sent with
+`claude-haiku-5-5` (300 tokens / 1 min in both AI tiers). Each step is sent with
 `PromptRequestOptions { stateless: true, maxOutputTokens: TOKEN_DEMO_MAX_OUTPUT_TOKENS (90) }`, so it
 carries no chat history and costs ~120 tokens: ~40% → 200 `ok`; ~80% → 200 + amber banner;
 over 100% → 200 + rose banner (still admitted — the counter was under the limit when it arrived); then
@@ -629,7 +629,7 @@ tiles restart from the freshly credited balance.
 
 | Policy | Detail |
 | --- | --- |
-| [`SCL-Semantic-Cache-Lookup`](../apigee/proxies/ai-gateway-v1/apiproxy/policies/SCL-Semantic-Cache-Lookup.xml) | Embeddings via `text-embedding-004`; `findNeighbors` on index endpoint `INDEX_ENDPOINT_ID`; deployed index `semantic_cache`; `Threshold` `0.95` |
+| [`SCL-Semantic-Cache-Lookup`](../apigee/proxies/ai-gateway-v1/apiproxy/policies/SCL-Semantic-Cache-Lookup.xml) | Embeddings via `text-embedding-005`; `findNeighbors` on index endpoint `INDEX_ENDPOINT_ID`; deployed index `semantic_cache`; `Threshold` `0.95` |
 | [`SCP-Semantic-Cache-Populate`](../apigee/proxies/ai-gateway-v1/apiproxy/policies/SCP-Semantic-Cache-Populate.xml) | `upsertDatapoints` on index `INDEX_ID`; `TTLInSeconds` `180` |
 
 Both run only when `use-cache` (or `x-use-cache`) is `true`.
@@ -645,7 +645,7 @@ renders a single **Semantic Cache** chip whose label flips with `cacheStep`:
 | 1 | `⚡ Semantic Cache: Instant Hit ($0)` | `CACHE_EXAMPLES[1]` | Semantically equivalent paraphrase, expected to hit (~1 s, $0) |
 
 [`handleCacheStep()`](../ui/src/components/ChatPlayground.tsx#L359-L376)
-forces the admin persona, `useCache: true`, `model: CACHE_DEMO_MODEL` (`claude-opus-4-5@20251101`),
+forces the admin persona, `useCache: true`, `model: CACHE_DEMO_MODEL` (`claude-opus-5-5`),
 `omitEmailHeader: false` and a stateless request before executing,
 and clicking the chip body auto-advances 0 → 1 → 0. Two sub-buttons labelled `Seed (Miss)` and
 `Instant Hit ($0)` let a presenter jump directly to either step. Jumping to `Instant Hit` when this

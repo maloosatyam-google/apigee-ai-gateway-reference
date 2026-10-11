@@ -71,13 +71,13 @@ test('agent change paths map to the owning capability', () => {
   const caps = (paths) =>
     capabilitiesForChanges(validateChangeList(paths.map(([p, v]) => ({ path: p, value: v }))));
   assert.deepEqual(caps([['attributes.developer.budget.limit', '15000000']]), ['budget']);
-  assert.deepEqual(caps([['attributes.routing.model.simple', 'gemini-3-flash-preview']]), ['routing']);
+  assert.deepEqual(caps([['attributes.routing.model.simple', 'gemini-3.6-flash']]), ['routing']);
   assert.deepEqual(caps([['llmTokenQuota.auto.limit', '4000']]), ['quota']);
   assert.deepEqual(caps([['attributes.access', 'private']]), ['models']);
   assert.deepEqual(
     caps([
       ['attributes.developer.budget.limit', '1'],
-      ['attributes.routing.model.coding', 'gemini-3-flash-preview'],
+      ['attributes.routing.model.coding', 'gemini-3.6-flash'],
     ]).sort(),
     ['budget', 'routing']
   );

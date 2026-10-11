@@ -5,7 +5,7 @@
   <UserPromptSource>{flow.userPrompt}</UserPromptSource>
   <Embeddings>
     <VertexAI>
-      <URL>https://__GCP_REGION__-aiplatform.googleapis.com/v1/projects/__GCP_PROJECT_ID__/locations/__GCP_REGION__/publishers/google/models/text-embedding-004:predict</URL>
+      <URL>https://__GCP_REGION__-aiplatform.googleapis.com/v1/projects/__GCP_PROJECT_ID__/locations/__GCP_REGION__/publishers/google/models/text-embedding-005:predict</URL>
     </VertexAI>
   </Embeddings>
   <SimilaritySearch>

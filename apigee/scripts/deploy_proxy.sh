@@ -50,7 +50,8 @@ bash "${SCRIPT_DIR}/package_bundle.sh" "$PROXY_NAME"
 BUNDLE_ZIP="${ROOT_DIR}/apigee/dist/${PROXY_NAME}.zip"
 
 echo "=== Deploying $PROXY_NAME to Org: $ORG, Env: $ENV ==="
-TOKEN=$(gcloud auth application-default print-access-token 2>/dev/null || gcloud auth print-access-token --impersonate-service-account="${UI_MGMT_SA}" 2>/dev/null || gcloud auth print-access-token)
+TOKEN=${APIGEE_TOKEN:-}
+[ -n "$TOKEN" ] || TOKEN=$(gcloud auth application-default print-access-token 2>/dev/null || gcloud auth print-access-token --impersonate-service-account="${UI_MGMT_SA}" 2>/dev/null || gcloud auth print-access-token)
 
 # 1. Import proxy revision
 echo "Importing proxy revision..."

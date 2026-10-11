@@ -62,10 +62,10 @@ The client calls `POST /ai/v1/models/{model}:generateContent`.
 
 Product attributes (per persona):
 ```json
-{"name":"routing.model.coding","value":"claude-opus-4-5@20251101"},
+{"name":"routing.model.coding","value":"claude-opus-5-5"},
 {"name":"routing.model.deep_reasoning","value":"gemini-3.1-pro-preview"},
-{"name":"routing.model.simple","value":"gemini-3.1-flash-lite"},
-{"name":"routing.model.general","value":"gemini-3-flash-preview"}
+{"name":"routing.model.simple","value":"gemini-3.5-flash-lite"},
+{"name":"routing.model.general","value":"gemini-3.6-flash"}
 ```
 
 The classifier can be any fast model or service, such as a small Gemini Flash-Lite call with a JSON

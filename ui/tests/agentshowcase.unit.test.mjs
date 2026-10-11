@@ -49,10 +49,10 @@ test('refused tool servers show in the timeline once per server without the prot
 });
 
 const RATES = {
-  'gemini-3.1-flash-lite': { input: 0.075, output: 0.3 },
-  'gemini-3-flash-preview': { input: 0.15, output: 0.6 },
+  'gemini-3.5-flash-lite': { input: 0.075, output: 0.3 },
+  'gemini-3.6-flash': { input: 0.15, output: 0.6 },
   'gemini-3.1-pro-preview': { input: 1.25, output: 5.0 },
-  'claude-haiku-4-5': { input: 1.0, output: 5.0 },
+  'claude-haiku-5-5': { input: 1.0, output: 5.0 },
 };
 
 // ---------------------------------------------------------------------------
@@ -84,12 +84,12 @@ const RUN = [
   { type: 'run', run_id: 'r1', prompt: 'Where is ORD-1042?', sides: ['baseline', 'governed'] },
   { side: 'governed', type: 'run_started', label: 'With Apigee', llm: 'Apigee AI Gateway /auto', mcp_servers: ['Business tools MCP'], t_ms: 0 },
   { side: 'governed', type: 'tools_offered', tools: ['getOrderStatus', 'issueRefund'], count: 2, t_ms: 300 },
-  { side: 'governed', type: 'llm_step', step: 1, model: 'gemini-3.1-flash-lite', status: 200, billable: true, cache: 'MISS', tokens: { prompt: 1000, output: 20 }, t_ms: 2000 },
+  { side: 'governed', type: 'llm_step', step: 1, model: 'gemini-3.5-flash-lite', status: 200, billable: true, cache: 'MISS', tokens: { prompt: 1000, output: 20 }, t_ms: 2000 },
   { side: 'governed', type: 'governance_event', kind: 'routed', detail: "Auto-routed 'simple'", t_ms: 2000 },
   { side: 'governed', type: 'tool_call', rpc_id: 3, name: 'issueRefund', args: { amount: 120 }, t_ms: 2001 },
   { side: 'governed', type: 'tool_result', rpc_id: 3, name: 'issueRefund', is_error: true, http_status: 403, latency_ms: 80, result: { error: 'REFUND_LIMIT' }, t_ms: 2100 },
   { side: 'governed', type: 'governance_event', kind: 'refund_limit', detail: 'Refunds over $50 need supervisor approval.', t_ms: 2100 },
-  { side: 'governed', type: 'llm_step', step: 2, model: 'gemini-3-flash-preview', status: 200, billable: true, cache: 'DISABLED', tokens: { prompt: 2000, output: 100 }, t_ms: 3500 },
+  { side: 'governed', type: 'llm_step', step: 2, model: 'gemini-3.6-flash', status: 200, billable: true, cache: 'DISABLED', tokens: { prompt: 2000, output: 100 }, t_ms: 3500 },
   { side: 'governed', type: 'final', text: 'I opened a case.', error: null, t_ms: 3500 },
   { side: 'governed', type: 'metrics', e2e_ms: 3500, llm_steps: 2, tool_calls: 1, tokens: { prompt: 3000, output: 120, thoughts: 0, total: 3120 }, t_ms: 3500 },
   { side: 'governed', type: 'run_finished', t_ms: 3500 },
@@ -139,7 +139,7 @@ test('reducer ignores unknown events and sides', () => {
 // ---------------------------------------------------------------------------
 
 test('rateFor strips version suffixes and rejects unknown models', () => {
-  assert.deepEqual(rateFor('claude-haiku-4-5@20251001', RATES), { input: 1.0, output: 5.0 });
+  assert.deepEqual(rateFor('claude-haiku-5-5', RATES), { input: 1.0, output: 5.0 });
   assert.equal(rateFor('mystery-model', RATES), null);
   assert.equal(rateFor(null, RATES), null);
 });
@@ -147,7 +147,7 @@ test('rateFor strips version suffixes and rejects unknown models', () => {
 test('priceSteps uses the same rate card for both sides and skips cache hits and failures', () => {
   const items = [
     { kind: 'llm', model: 'gemini-3.1-pro-preview', status: 200, billable: true, tokens: { prompt: 132_000, output: 300 } },
-    { kind: 'llm', model: 'gemini-3.1-flash-lite', status: 200, billable: false, cache: 'HIT', tokens: { prompt: 1200, output: 20 } },
+    { kind: 'llm', model: 'gemini-3.5-flash-lite', status: 200, billable: false, cache: 'HIT', tokens: { prompt: 1200, output: 20 } },
     { kind: 'llm', model: null, status: 400, billable: false, tokens: { prompt: 0, output: 0 } },
     { kind: 'llm', model: 'mystery', status: 200, billable: true, tokens: { prompt: 10, output: 10 } },
     { kind: 'hop', status: 200 },
@@ -166,7 +166,7 @@ test('sideSummary reports cost, tools and governance for the comparison card', (
   assert.equal(s.toolsOffered, 2);
   assert.deepEqual(s.toolsCalled, ['issueRefund']);
   assert.equal(s.toolErrors, 1);
-  assert.deepEqual(s.models, ['gemini-3.1-flash-lite', 'gemini-3-flash-preview']);
+  assert.deepEqual(s.models, ['gemini-3.5-flash-lite', 'gemini-3.6-flash']);
   assert.deepEqual(s.governance, ['routed', 'refund_limit']);
 });
 
@@ -200,7 +200,7 @@ test('scenarios: eight, numbered, plain customer voice with no tool names', () =
   assert.equal(SHOWCASE_SCENARIOS[1].prompt, SHOWCASE_SCENARIOS[0].prompt);
   // Scenario 8 runs the ungoverned agent on the cheapest allowed model.
   const cheap = SHOWCASE_SCENARIOS.find((s) => s.id === 'cheaper-model');
-  assert.equal(cheap.baselineModel, 'gemini-3.1-flash-lite');
+  assert.equal(cheap.baselineModel, 'gemini-3.5-flash-lite');
   assert.ok(BASELINE_MODELS.some((m) => m.id === cheap.baselineModel));
   // ...and always asks for a fresh answer, so the routed stronger model shows.
   assert.equal(cheap.useCache, false);
@@ -214,7 +214,7 @@ test('parseRunBody validates prompt, sides and profile', () => {
   assert.deepEqual(parseRunBody({ prompt: '  hi  ' }), { prompt: 'hi', sides: ['baseline', 'governed'], profileId: 'customer_service', useCache: true, baselineModel: null, industry: null });
   assert.equal(parseRunBody({ prompt: 'hi', industry: 'banking' }).industry, 'banking');
   assert.equal(parseRunBody({ prompt: 'hi', industry: 'Banking; drop' }).industry, null);
-  assert.equal(parseRunBody({ prompt: 'hi', baselineModel: 'gemini-3-flash-preview' }).baselineModel, 'gemini-3-flash-preview');
+  assert.equal(parseRunBody({ prompt: 'hi', baselineModel: 'gemini-3.6-flash' }).baselineModel, 'gemini-3.6-flash');
   assert.equal(parseRunBody({ prompt: 'hi', baselineModel: 'gpt-4o; drop' }).baselineModel, null);
   assert.equal(parseRunBody({ prompt: 'hi', useCache: false }).useCache, false);
   assert.deepEqual(parseRunBody({ prompt: 'hi', sides: ['governed', 'x'] }).sides, ['governed']);

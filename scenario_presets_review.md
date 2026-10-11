@@ -106,7 +106,7 @@ Generated from 6 preset cards.
 **Sub-buttons** (from `AUTO_ROUTING_EXAMPLES`):
 
 1. **Simple / Fast** — Auto: Simple Lookup
-   - Expected route: `gemini-3.1-flash-lite`
+   - Expected route: `gemini-3.5-flash-lite`
    - Trivial factual lookup routed to Gemini Flash Lite.
    - Prompt:
 
@@ -124,7 +124,7 @@ Generated from 6 preset cards.
      ```
 
 3. **Coding** — Auto: Coding & Implementation
-   - Expected route: `claude-opus-4-5@20251101`
+   - Expected route: `claude-opus-5-5`
    - Coding implementation prompt routed to Claude Opus.
    - Prompt:
 
@@ -143,12 +143,12 @@ Generated from 6 preset cards.
 | Category | Tokenomics |
 | Badge | Pass → Alert → 429 (`emerald`) |
 | Description | Prevent abuse through granular token limits on every LLM call. |
-| Card override | `{ model: 'claude-haiku-4-5@20251001', useCache: false, activeUser: 'admin' }` |
+| Card override | `{ model: 'claude-haiku-5-5', useCache: false, activeUser: 'admin' }` |
 
 **Sub-buttons** (from `TOKEN_LIMIT_EXAMPLES`):
 
 1. **Pass (200)** — Token Quota 1/4: Within Quota (200 OK)
-   - Model: `claude-haiku-4-5@20251001`
+   - Model: `claude-haiku-5-5`
    - First call of the window: roughly 40% of the 300-token allocation. No alert.
    - Prompt:
 
@@ -157,7 +157,7 @@ Generated from 6 preset cards.
      ```
 
 2. **Alert >50%** — Token Quota 2/4: Nearing Threshold (200 + alert)
-   - Model: `claude-haiku-4-5@20251001`
+   - Model: `claude-haiku-5-5`
    - Consumption crosses 50% of the allocation. The gateway still serves it, and sets x-gateway-token-quota-status: near-threshold, which the UI turns into an alert.
    - Prompt:
 
@@ -166,7 +166,7 @@ Generated from 6 preset cards.
      ```
 
 3. **Alert 100%** — Token Quota 3/4: Quota Used Up (200 + alert)
-   - Model: `claude-haiku-4-5@20251001`
+   - Model: `claude-haiku-5-5`
    - Admitted because the counter was still below the limit when it arrived. This response pushes the window past 100%, and the gateway warns that the next call will be rejected.
    - Prompt:
 
@@ -175,7 +175,7 @@ Generated from 6 preset cards.
      ```
 
 4. **Blocked (429)** — Token Quota 4/4: Quota Exceeded (429)
-   - Model: `claude-haiku-4-5@20251001`
+   - Model: `claude-haiku-5-5`
    - The counter is now over the limit, so LTQ-TokenEnforce rejects the request before it reaches the model (429). Nothing is billed.
    - Prompt:
 
@@ -194,7 +194,7 @@ Generated from 6 preset cards.
 | Category | Performance |
 | Badge | Miss → Hit (`emerald`) |
 | Description | Faster responses and lower cost when a similar query has been seen before. |
-| Card override | `{ useCache: true, model: 'claude-opus-4-5@20251101', activeUser: 'admin' }` |
+| Card override | `{ useCache: true, model: 'claude-opus-5-5', activeUser: 'admin' }` |
 
 **Sub-buttons** (from `CACHE_EXAMPLES`):
 
@@ -225,7 +225,7 @@ Generated from 6 preset cards.
 | Category | Performance |
 | Badge | No Cache (`cyan`) |
 | Description | The same query with caching off, as a cost and latency baseline. |
-| Card override | `{ useCache: false, model: 'claude-opus-4-5@20251101', activeUser: 'admin' }` |
+| Card override | `{ useCache: false, model: 'claude-opus-5-5', activeUser: 'admin' }` |
 
 **Single prompt** (no sub-buttons):
 

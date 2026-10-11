@@ -311,7 +311,7 @@ describe('1. Local Auth & Identity Endpoint (/api/me)', () => {
     }
     // Rule 14: `/v1/projects/**` was removed from the proxy. `/models/{model}:generateContent`
     // is one of only two remaining ingress paths.
-    const targetUrl = `${vertexBaseUrl}/models/gemini-3.1-flash-lite:generateContent`;
+    const targetUrl = `${vertexBaseUrl}/models/gemini-3.5-flash-lite:generateContent`;
     const res = await fetchWithRetry(targetUrl, {
       method: 'POST',
       headers: {
@@ -330,7 +330,7 @@ describe('1. Local Auth & Identity Endpoint (/api/me)', () => {
 });
 
 describe('2. Apigee AI Gateway - Live Vertex AI (Gemini)', { concurrency: 1 }, () => {
-  const model = 'gemini-3.1-flash-lite';
+  const model = 'gemini-3.5-flash-lite';
   const buildUrl = () =>
     `${vertexBaseUrl}/models/${model}:generateContent`;
 
@@ -615,7 +615,7 @@ describe('2. Apigee AI Gateway - Live Vertex AI (Gemini)', { concurrency: 1 }, (
   // strict now, and to make that safe these two tests mint their OWN identity: LTQ-TokenEnforce
   // is keyed on flow.emailId, so a per-run email guarantees an empty 300-token window regardless
   // of what the rest of the suite (or a concurrent demo) has already spent.
-  const QUOTA_MODEL = 'claude-haiku-4-5@20251001';
+  const QUOTA_MODEL = 'claude-haiku-5-5';
   const quotaJwt = mintIdentityJwt(`quota-live-test-${Date.now()}@example.com`);
   // Both of these must be lazy. vertexBaseUrl and ADMIN_KEY are only assigned in the before()
   // hook, which runs AFTER this describe body is evaluated. Capturing them eagerly yields an
@@ -682,7 +682,7 @@ describe('2. Apigee AI Gateway - Live Vertex AI (Gemini)', { concurrency: 1 }, (
     // There is no Claude-specific route any more. Anthropic models use the same
     // surface and the same Gemini `contents` body as every other model; the
     // gateway converts the request and the response.
-    const localClaudeUrl = `${vertexBaseUrl}/models/claude-opus-4-5@20251101:generateContent`;
+    const localClaudeUrl = `${vertexBaseUrl}/models/claude-opus-5-5:generateContent`;
     const res = await fetchWithRetry(localClaudeUrl, {
       method: 'POST',
       headers: {
@@ -818,7 +818,7 @@ describe('3. Apigee Tools Gateway - Live MCP Backend (prod)', () => {
 describe('4. Apigee AI Gateway - Intelligent Auto-Routing (/auto)', { concurrency: 1 }, () => {
   const getAutoUrl = () => `${vertexBaseUrl}/auto`;
 
-  it('🧠 Scenario: Simple prompt auto-routes to Gemini 3.1 Flash Lite (low cost tier)', async () => {
+  it('🧠 Scenario: Simple prompt auto-routes to Gemini 3.5 Flash Lite (medium cost tier)', async () => {
     const res = await fetchWithRetry(getAutoUrl(), {
       method: 'POST',
       headers: {
@@ -833,9 +833,10 @@ describe('4. Apigee AI Gateway - Intelligent Auto-Routing (/auto)', { concurrenc
 
     assert.strictEqual(res.status, 200, `Expected 200 OK, got ${res.status}`);
     assert.strictEqual(res.headers.get('x-auto-routed'), 'true', 'Expected x-auto-routed header to be true');
-    assert.strictEqual(res.headers.get('x-gateway-model'), 'gemini-3.1-flash-lite');
+    assert.strictEqual(res.headers.get('x-gateway-model'), 'gemini-3.5-flash-lite');
     assert.strictEqual(res.headers.get('x-gateway-provider'), 'google');
-    assert.strictEqual(res.headers.get('x-gateway-cost-tier'), 'low');
+    // 3.5 Flash-Lite bills $2.50/1M output, so it is the medium band (low is <= $0.30).
+    assert.strictEqual(res.headers.get('x-gateway-cost-tier'), 'medium');
 
     const data = await res.json();
     assert.ok(data.candidates && data.candidates.length > 0, 'Should return candidate content');
@@ -869,7 +870,7 @@ describe('4. Apigee AI Gateway - Intelligent Auto-Routing (/auto)', { concurrenc
     assert.ok(data.candidates && data.candidates.length > 0);
   });
 
-  it('🧠 Scenario: Coding prompt auto-routes to Claude Opus 4.5 on Vertex (anthropic / high cost tier)', async () => {
+  it('🧠 Scenario: Coding prompt auto-routes to Claude Opus 5.5 on Vertex (anthropic / high cost tier)', async () => {
     const res = await fetchWithRetry(getAutoUrl(), {
       method: 'POST',
       headers: {
@@ -889,7 +890,7 @@ describe('4. Apigee AI Gateway - Intelligent Auto-Routing (/auto)', { concurrenc
 
     assert.strictEqual(res.status, 200, `Expected 200 OK, got ${res.status}`);
     assert.strictEqual(res.headers.get('x-auto-routed'), 'true');
-    assert.strictEqual(res.headers.get('x-gateway-model'), 'claude-opus-4-5@20251101');
+    assert.strictEqual(res.headers.get('x-gateway-model'), 'claude-opus-5-5');
     assert.strictEqual(res.headers.get('x-gateway-provider'), 'anthropic');
     assert.strictEqual(res.headers.get('x-gateway-cost-tier'), 'high');
 

@@ -60,7 +60,7 @@ which `OAS-ValidateRequest` enforces.
 | :--- | :--- | :--- |
 | `POST /auto` and `POST /auto:generateContent` (both entitled, sharing one quota value) | `AutoRoutingFlow` | `SC-ModelRouter` classifies the prompt using TypeSafe AI JEV System One; `JS-AutoRouting` maps the category to a model via the product's `routing.model.*` attributes |
 | `POST /models/gemini-*` | `GeminiDirectFlow` | `AM-PrepGeminiDirect` pins `flow.target_provider = google` |
-| `POST /models/claude-haiku-4-5*` | `LLMTokenLimitFlow` (shadows the empty `AnthropicDirectFlow`) | Additionally runs `LTQ-TokenEnforce` — the token-limit demo path |
+| `POST /models/claude-haiku-5-5*` | `LLMTokenLimitFlow` (shadows the empty `AnthropicDirectFlow`) | Additionally runs `LTQ-TokenEnforce` — the token-limit demo path |
 | `POST /models/claude-*` | `AnthropicDirectFlow` | `AM-PrepClaudeDirect` pins `flow.target_provider = anthropic` |
 
 The OpenAPI spec additionally declares the `:streamGenerateContent` path shape so
@@ -234,7 +234,7 @@ Source: [default.xml#L99-L190](../apigee/proxies/ai-gateway-v1/apiproxy/proxies/
 | Flow | Steps | Condition (verbatim) |
 | :--- | :--- | :--- |
 | `OptionsPreFlight` | `CORS-Headers` | `request.verb == "OPTIONS" AND request.header.origin != null AND request.header.Access-Control-Request-Method != null` |
-| `LLMTokenLimitFlow` | `LTQ-TokenEnforce` | `(proxy.pathsuffix MatchesPath "/models/claude-haiku-4-5@20251001:generateContent") or (flow.model == "claude-haiku-4-5@20251001") or (proxy.pathsuffix JavaRegex "^/models/claude-haiku-4-5.*")` |
+| `LLMTokenLimitFlow` | `LTQ-TokenEnforce` | `(proxy.pathsuffix MatchesPath "/models/claude-haiku-5-5:generateContent") or (flow.model == "claude-haiku-5-5") or (proxy.pathsuffix JavaRegex "^/models/claude-haiku-4-5.*")` |
 | `AutoRoutingFlow` | `KVM-GetRouterCredentials`, `AM-PrepRouterRequest`, `SC-ModelRouter`, `JS-AutoRouting` | `request.verb != "OPTIONS" and ((proxy.pathsuffix MatchesPath "/auto*") or (proxy.pathsuffix JavaRegex "^/auto.*"))` |
 | `GeminiDirectFlow` | *(empty)* | `(proxy.pathsuffix MatchesPath "/models/gemini*") or (proxy.pathsuffix JavaRegex "^/models/gemini.*")` |
 | `AnthropicDirectFlow` | *(empty)* | `(proxy.pathsuffix MatchesPath "/models/claude*") or (proxy.pathsuffix JavaRegex "^/models/claude.*")` |
@@ -365,15 +365,15 @@ and [customer_support_and_sales.json](../apigee/products/customer_support_and_sa
 | Model | Resources | Engineering & IT | Analysts & Knowledge Workers | Customer Support & Sales |
 | :--- | :--- | :--- | :--- | :--- |
 | `auto` | `/auto`, `/auto:*` (separate configs, equal limits) | 50000 / 1 min | 30000 / 1 min | 20000 / 2 min |
-| **`claude-haiku-4-5@20251001`** | `/models/claude-haiku-4-5@20251001:*` | **300 / 1 min** | *not granted* | **300 / 1 min** |
-| `gemini-3.1-flash-lite` | `/models/gemini-3.1-flash-lite:*` | 10000 / 1 min | 5000 / 1 min | 2000 / 1 min |
-| `gemini-3-flash-preview` | `/models/gemini-3-flash-preview:*` | 10000 / 1 min | 5000 / 1 min | 2000 / 1 min |
+| **`claude-haiku-5-5`** | `/models/claude-haiku-5-5:*` | **300 / 1 min** | *not granted* | **300 / 1 min** |
+| `gemini-3.5-flash-lite` | `/models/gemini-3.5-flash-lite:*` | 10000 / 1 min | 5000 / 1 min | 2000 / 1 min |
+| `gemini-3.6-flash` | `/models/gemini-3.6-flash:*` | 10000 / 1 min | 5000 / 1 min | 2000 / 1 min |
 | `gemini-3.1-pro-preview` | `/models/gemini-3.1-pro-preview:*` | 10000 / 1 min | 5000 / 1 min | *not granted* |
-| `claude-opus-4-5@20251101` | `/models/claude-opus-4-5@20251101:*` | 10000 / 1 min | *not granted* | *not granted* |
+| `claude-opus-5-5` | `/models/claude-opus-5-5:*` | 10000 / 1 min | *not granted* | *not granted* |
 | `gemini-3.7-flash` | `/models/gemini-3.7-flash:*` | 10000 / 1 min | 5000 / 1 min | *not granted* |
 | `gemini-3.8-flash` | `/models/gemini-3.8-flash:*` | 10000 / 1 min | 5000 / 1 min | *not granted* |
 
-Each product applies one limit to every operation **except** `claude-haiku-4-5@20251001`,
+Each product applies one limit to every operation **except** `claude-haiku-5-5`,
 which is pinned to **300 / 1 min** wherever it is granted (Engineering & IT and Customer
 Support & Sales; raised from 50 for the threshold-alert demo).
 
@@ -393,7 +393,7 @@ it. `AutoRoutingFlow` (which contains the `JS-AutoRouting` step) keys off bare
 `OAS-ValidateRequest` with 400, because the path is absent from the OpenAPI spec.
 
 > [!IMPORTANT]
-> `claude-haiku-4-5@20251001` is the deliberate **token-limit demo model** at
+> `claude-haiku-5-5` is the deliberate **token-limit demo model** at
 > **300 tokens/minute**, in every product that grants it. This is why `LLMTokenLimitFlow` exists
 > and is conditioned on exactly that model. To change the demo limit, edit the
 > **API Product JSON** and re-provision — do **not** edit the policy XML.
@@ -624,7 +624,7 @@ flowchart LR
   > (the *requested* model) with the provider's reported `modelVersion` part-way
   > through the response flow. Vertex reports Anthropic models with a hyphen
   > instead of the `@` revision separator, so a request for
-  > `claude-haiku-4-5@20251001` returned `claude-haiku-4-5-20251001`.
+  > `claude-haiku-5-5` returned `claude-haiku-5-5`.
   > `LTQ-TokenCount` resolves `LLMModelSource` from `{flow.model}`, so it looked
   > up a model present in no API Product `operationConfig` and failed with
   > `keymanagement.service.InvalidAPICallAsNoApiProductMatchFound`. Because that
@@ -665,9 +665,9 @@ flowchart LR
   > **403** when the $20 balance is exhausted — effectively a call-volume cap. The
   > budget quota charges **real model cost** and returns **429**. They diverge by
   > orders of magnitude: cheap high-volume traffic exhausts the wallet first, while
-  > an expensive-model blowout trips the budget first. For example `gemini-3.7-flash`
-  > at $7.50 / 1M output burns $20 of real cost in roughly 2,700 calls while
-  > consuming only ~$2.70 of wallet. Sizing the budget above the wallet, as the old
+  > an expensive-model blowout trips the budget first. For example `gemini-3.1-pro-preview`
+  > at $12.00 / 1M output burns $20 of real cost in roughly 1,700 calls while
+  > consuming only ~$1.70 of wallet. Sizing the budget above the wallet, as the old
   > $100 fallback did, makes it unreachable and removes the only guard against a
   > cost blowout.
 
@@ -923,10 +923,10 @@ verifyapikey.VA-VerifyAPIKey.apiproduct.routing.model.<category>
 
 | Router category | Engineering & IT | Analysts & Knowledge Workers | Customer Support & Sales |
 | :--- | :--- | :--- | :--- |
-| `coding` | `claude-opus-4-5@20251101` | `gemini-3.1-pro-preview` | `claude-haiku-4-5@20251001` |
+| `coding` | `claude-opus-5-5` | `gemini-3.1-pro-preview` | `claude-haiku-5-5` |
 | `deep_reasoning` | `gemini-3.1-pro-preview` | `gemini-3.1-pro-preview` | `gemini-3.1-pro-preview` |
-| `simple` | `gemini-3.1-flash-lite` | `gemini-3.1-flash-lite` | `gemini-3.1-flash-lite` |
-| `general` | `gemini-3-flash-preview` | `gemini-3-flash-preview` | `gemini-3-flash-preview` |
+| `simple` | `gemini-3.5-flash-lite` | `gemini-3.5-flash-lite` | `gemini-3.5-flash-lite` |
+| `general` | `gemini-3.6-flash` | `gemini-3.6-flash` | `gemini-3.6-flash` |
 
 Those values live in
 [engineering_and_it.json](../apigee/products/engineering_and_it.json),
@@ -953,7 +953,7 @@ now **trace metadata only** — it no longer participates in selecting a model.
 > **The persona cap is now enforced by the product, not by the code.** Previously a
 > caller on the legacy Standard tier was held to flash models by an `if (isStandard)`
 > branch in this file. That branch is gone: a Customer Support & Sales caller never
-> reaches `claude-opus-4-5@20251101`, and reaches `gemini-3.1-pro-preview` only on `/auto`
+> reaches `claude-opus-5-5`, and reaches `gemini-3.1-pro-preview` only on `/auto`
 > for `deep_reasoning` questions, because that is all its routing attributes name (and an
 > Analysts & Knowledge Workers caller cannot reach Opus). `ui/tests/autorouting.unit.test.mjs` asserts
 > that no model literal survives in the policy and that every `routing.model.*` value is a
@@ -974,7 +974,7 @@ now **trace metadata only** — it no longer participates in selecting a model.
 > [!NOTE]
 > Customer Support & Sales uses fast, low-cost models, and Pro only for `deep_reasoning`
 > on `/auto`; it never routes to Opus. The Engineering & IT coding target is
-> `claude-opus-4-5@20251101`.
+> `claude-opus-5-5`.
 
 ### 8.2 `CalculateCost.js`
 
@@ -1037,13 +1037,13 @@ Rate resolution is a cascade against the KVM rate card only (there is no bundled
 property set):
 
 1. **KVM** — parse `flow.model_rates_json`; exact model key match.
-2. **KVM, version-stripped** — `claude-opus-4-5@20251101` → `claude-opus-4-5`.
+2. **KVM, version-stripped** — `claude-opus-5-5` → `claude-opus-5-5`.
 3. **KVM, prefix match** — against a fixed list
    ([CalculateCost.js#L52-L64](../apigee/proxies/ai-gateway-v1/apiproxy/resources/jsc/CalculateCost.js#L52-L64)):
-   `gemini-3.1-flash-lite`, `gemini-3-flash-preview`,
+   `gemini-3.5-flash-lite`, `gemini-3.6-flash`,
    `gemini-3.7-flash`, `gemini-3.8-flash`,
    `gemini-3.1-pro-preview`, `gemini-2.5-pro`, `gemini-2.5-flash`,
-   `claude-opus-4-5`, `claude-opus`, `claude-haiku-4-5`.
+   `claude-opus-5-5`, `claude-opus`, `claude-haiku-5-5`.
 4. **KVM `default` key.**
 5. If still unresolved (card missing, not valid JSON, or no matching key), the call is
    **not priced**: `flow.cost_source` = `unavailable: <reason>`, tier `unknown`, no
@@ -1070,12 +1070,12 @@ From [model_rate_card.json](../apigee/config/model_rate_card.json), published to
 | Model key | Input | Output |
 | :--- | ---: | ---: |
 | `gemini-2.5-flash` *(retired; rate kept for historical analytics)* | 0.30 | 2.50 |
-| `gemini-3.1-flash-lite` | 0.075 | 0.30 |
-| `gemini-3-flash-preview` | 0.15 | 0.60 |
-| `gemini-3.1-pro-preview` | 1.25 | 5.00 |
-| `gemini-2.5-pro` | 1.25 | 5.00 |
-| `claude-haiku-4-5` | 1.00 | 5.00 |
-| `claude-opus-4-5` | 15.00 | 75.00 |
+| `gemini-3.5-flash-lite` | 0.30 | 2.50 |
+| `gemini-3.6-flash` | 0.75 | 3.75 |
+| `gemini-3.1-pro-preview` | 2.00 | 12.00 |
+| `gemini-2.5-pro` | 1.25 | 10.00 |
+| `claude-haiku-5-5` | 0.10 | 0.50 |
+| `claude-opus-5-5` | 4.00 | 20.00 |
 | `default` | 0.15 | 0.60 |
 
 The `claude-3-5-*` / `claude-3-7-*`
@@ -1088,8 +1088,8 @@ to Vertex in this project.
 > A bundled `model_rates.properties` fallback used to exist and, because
 > `KVM-GetModelRates` had an invalid `<Parameter value="..."/>` key, silently priced
 > every call until it was removed in September 2026. Versioned IDs resolve via
-> the version-stripped key, so `claude-opus-4-5@20251101` bills off
-> `claude-opus-4-5` and `claude-haiku-4-5@20251001` bills off `claude-haiku-4-5`.
+> the version-stripped key, so `claude-opus-5-5` bills off
+> `claude-opus-5-5` and `claude-haiku-5-5` bills off `claude-haiku-5-5`.
 
 ### 8.3 `ClaudeRequestPrep.js`
 
@@ -1099,7 +1099,7 @@ invoked by `JS-ClaudeRequestPrep` in the `claude-vertex-target` PreFlow request.
 1. **Model normalisation.** If `flow.target_model` is empty, contains
    `claude-3-` (the whole legacy generation, which is no longer published to
    Vertex in this project), or contains `claude-default`, it is rewritten to
-   `claude-opus-4-5@20251101`
+   `claude-opus-5-5`
    ([ClaudeRequestPrep.js#L10-L17](../apigee/proxies/ai-gateway-v1/apiproxy/resources/jsc/ClaudeRequestPrep.js#L10-L17)).
 2. **Gemini → Claude translation.** If the body has `contents[]`, each entry is
    mapped to a Claude message (`role: "model"` → `"assistant"`) whose content is
@@ -1177,13 +1177,13 @@ else (including `tool_use`) → `STOP`. It emits
     "promptTokenCount": 0, "candidatesTokenCount": 0,
     "totalTokenCount": 0, "trafficType": "ON_DEMAND"
   },
-  "modelVersion": "claude-opus-4-5"
+  "modelVersion": "claude-opus-5-5"
 }
 ```
 
 with token counts taken from `usage.input_tokens` / `usage.output_tokens` and
 `modelVersion` from `claudeJson.model`, falling back to `flow.target_model`, then
-to the literal `claude-opus-4-5`.
+to the literal `claude-opus-5-5`.
 
 This is what lets a client POST a Gemini-shaped body to `/models/claude-*` and
 receive a Gemini-shaped response. It is also what makes
@@ -1268,7 +1268,7 @@ Semantic caching **ships** in `ai-gateway-v1`. It is opt-in per request.
 | :--- | :--- |
 | Activation | Request header `use-cache: true` **or** `x-use-cache: true` |
 | Prompt source | `{flow.userPrompt}` |
-| Embeddings | Vertex AI `text-embedding-004:predict`, `asia-southeast1` |
+| Embeddings | Vertex AI `text-embedding-005:predict`, `asia-southeast1` |
 | Index endpoint | `indexEndpoints/INDEX_ENDPOINT_ID:findNeighbors` |
 | Deployed index ID | `semantic_cache` |
 | Similarity threshold | **0.95** |
@@ -1560,7 +1560,7 @@ not documentation.
 | Item | Detail |
 | :--- | :--- |
 | Semantic cache infrastructure IDs are hardcoded | Index endpoint, index ID, and project are literals in the SCL/SCP policy XML — not parameterised per environment |
-| `AM-PrepGeminiDirect` hardcodes a default model | Its `<Value>` fallback is `gemini-3-flash-preview`, which must be updated by hand whenever the default Gemini model changes |
+| `AM-PrepGeminiDirect` hardcodes a default model | Its `<Value>` fallback is `gemini-3.6-flash`, which must be updated by hand whenever the default Gemini model changes |
 | `KVM-GetRouterCredentials` is `continueOnError="false"` | A KVM infrastructure fault fails the `/auto` request, whereas `SC-ModelRouter` (`continueOnError="true"`) fails open to `routing.model.general`. Intentional per `7c881ad` ("fails loudly"), but the two halves of the router chain degrade differently |
 
 Previously listed here and now **resolved in code**, verified today:
@@ -1587,11 +1587,11 @@ Previously listed here and now **resolved in code**, verified today:
   entitlement**. Neither AI product grants `/models/auto` or `/models/auto:*` any
   more, so there is no longer an entitlement without a matching flow.
 - [test_token_limit.sh](../apigee/scripts/test_token_limit.sh)
-  targets `/models/claude-haiku-4-5@20251001:generateContent` — the model
+  targets `/models/claude-haiku-5-5:generateContent` — the model
   `LLMTokenLimitFlow` is conditioned on — no longer sends the meaningless
   `x-enforce-token-limit` header, and now requires `API_KEY` in the environment,
   exiting 1 if it is unset.
 - The rate card now carries a `gemini-2.5-flash` rate
   (0.30 / 2.50), so the headline demo model no longer bills at the `default` rate.
-- `AM-PrepClaudeDirect` now falls back to `claude-opus-4-5@20251101`, matching
+- `AM-PrepClaudeDirect` now falls back to `claude-opus-5-5`, matching
   what `ClaudeRequestPrep.js` would coerce it to anyway.

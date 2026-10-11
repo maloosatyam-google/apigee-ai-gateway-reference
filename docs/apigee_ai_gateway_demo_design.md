@@ -81,7 +81,7 @@ flowchart TB
         P6["6. MLC-EnforceMonetizationLimits (403) + QC-EnforceBudgetLimit"]
         P7["7. Direct prep: AM-PrepGeminiDirect / AM-PrepClaudeDirect"]
         P8["8. SCL-Semantic-Cache-Lookup (only when use-cache header is true)"]
-        P9["9. Conditional flows: AutoRoutingFlow (KVM-GetRouterCredentials → AM-PrepRouterRequest →<br/>SC-ModelRouter to TypeSafe JEV System One → JS-AutoRouting) or LTQ-TokenEnforce (claude-haiku-4-5)"]
+        P9["9. Conditional flows: AutoRoutingFlow (KVM-GetRouterCredentials → AM-PrepRouterRequest →<br/>SC-ModelRouter to TypeSafe JEV System One → JS-AutoRouting) or LTQ-TokenEnforce (claude-haiku-5-5)"]
     end
 
     subgraph Vertex["Google Cloud Vertex AI"]
@@ -157,14 +157,14 @@ Every step carries `request.verb != "OPTIONS"`.
 | Flow | Condition | Steps |
 | :--- | :--- | :--- |
 | `OptionsPreFlight` | `OPTIONS` + `Origin` + `Access-Control-Request-Method` | `CORS-Headers` |
-| `LLMTokenLimitFlow` | `/models/claude-haiku-4-5@20251001:generateContent`, or `flow.model == "claude-haiku-4-5@20251001"`, or regex `^/models/claude-haiku-4-5.*` | `LTQ-TokenEnforce` |
+| `LLMTokenLimitFlow` | `/models/claude-haiku-5-5:generateContent`, or `flow.model == "claude-haiku-5-5"`, or regex `^/models/claude-haiku-4-5.*` | `LTQ-TokenEnforce` |
 | `AutoRoutingFlow` | `/auto*` or regex `^/auto.*` | `KVM-GetRouterCredentials` → `AM-PrepRouterRequest` → `SC-ModelRouter` (first three only when `flow.userPrompt` is non-empty) → `JS-AutoRouting` |
 | `GeminiDirectFlow` | `/models/gemini*` or regex `^/models/gemini.*` | — |
 | `AnthropicDirectFlow` | `/models/claude*` or regex `^/models/claude.*` | — |
 
 > [!WARNING]
 > `LTQ-TokenEnforce` runs **only** inside `LLMTokenLimitFlow`. Token-limit rejections are
-> therefore only reproducible on `claude-haiku-4-5@20251001`. Token *counting* (`LTQ-TokenCount`)
+> therefore only reproducible on `claude-haiku-5-5`. Token *counting* (`LTQ-TokenCount`)
 > runs on every successful, non-cached response, and `JS-TokenQuotaThreshold` then reports
 > consumption against the product limit (`x-gateway-token-quota-*`) on those same responses.
 
@@ -306,13 +306,13 @@ Concrete production examples:
 
 ```bash
 # Model-agnostic
-https://api.example.com/ai/v1/models/gemini-3.1-flash-lite:generateContent
+https://api.example.com/ai/v1/models/gemini-3.5-flash-lite:generateContent
 
 # Auto-routing
 https://api.example.com/ai/v1/auto
 
 # Token-limit demo model (300 tokens/min from the API Product)
-https://api.example.com/ai/v1/models/claude-haiku-4-5@20251001:generateContent
+https://api.example.com/ai/v1/models/claude-haiku-5-5:generateContent
 ```
 
 > [!NOTE]
@@ -387,9 +387,9 @@ The AI products carry `llmOperationGroup.llmTokenQuota`; the MCP products carry
 
 | Product | File | Scope |
 | :--- | :--- | :--- |
-| Engineering and IT (*Engineering & IT*) | [engineering_and_it.json](../apigee/products/engineering_and_it.json) | **9 operationConfigs / 8 models**: `auto` (two configs: `/auto`, `/auto:*`), `gemini-3.1-flash-lite`, `gemini-3-flash-preview`, `gemini-3.1-pro-preview`, `claude-haiku-4-5@20251001` (300/min), `claude-opus-4-5@20251101`, `gemini-3.7-flash`, `gemini-3.8-flash`; 10000 tok/min (`auto` 50000); budget $20/month |
-| Analysts and Knowledge Workers (*Analysts & Knowledge Workers*) | [analysts_and_knowledge_workers.json](../apigee/products/analysts_and_knowledge_workers.json) | **7 operationConfigs / 6 models**: `auto` (two configs), `gemini-3.1-pro-preview`, `gemini-3.1-flash-lite`, `gemini-3-flash-preview`, `gemini-3.7-flash`, `gemini-3.8-flash` (no Opus, no Haiku); 5000 tok/min (`auto` 30000); budget $10/month |
-| Customer Support and Sales (*Customer Support & Sales*) | [customer_support_and_sales.json](../apigee/products/customer_support_and_sales.json) | **5 operationConfigs / 4 models**: `auto` (two configs), `gemini-3.1-flash-lite`, `gemini-3-flash-preview`, `claude-haiku-4-5@20251001` (300/min); 2000 tok/min (`auto` 20000 / 2 min rolling); budget $5/month |
+| Engineering and IT (*Engineering & IT*) | [engineering_and_it.json](../apigee/products/engineering_and_it.json) | **8 operationConfigs / 7 models**: `auto` (two configs: `/auto`, `/auto:*`), `gemini-3.5-flash-lite`, `gemini-3.6-flash`, `gemini-3.1-pro-preview`, `claude-haiku-5-5` (300/min), `claude-opus-5-5`, `gemini-3.8-flash`; 10000 tok/min (`auto` 50000); budget $20/month |
+| Analysts and Knowledge Workers (*Analysts & Knowledge Workers*) | [analysts_and_knowledge_workers.json](../apigee/products/analysts_and_knowledge_workers.json) | **7 operationConfigs / 6 models**: `auto` (two configs), `gemini-3.1-pro-preview`, `gemini-3.5-flash-lite`, `gemini-3.6-flash`, `gemini-3.8-flash` (no Opus, no Haiku); 5000 tok/min (`auto` 30000); budget $10/month |
+| Customer Support and Sales (*Customer Support & Sales*) | [customer_support_and_sales.json](../apigee/products/customer_support_and_sales.json) | **5 operationConfigs / 4 models**: `auto` (two configs), `gemini-3.5-flash-lite`, `gemini-3.6-flash`, `claude-haiku-5-5` (300/min); 2000 tok/min (`auto` 20000 / 2 min rolling); budget $5/month |
 | Enterprise Tools MCP | `enterprise_tools_mcp.json` | All 12 Customer Service / Business Insights tools (`mcp`, same quotas), plus every BigQuery (`bigquery-mcp`) and ServiceNow (`servicenow-mcp`) tool |
 | Customer Service Tools MCP | `customer_service_tools_mcp.json` | `tools/list` + 7 Customer Service tools (`mcp`) |
 | Business Insights Tools MCP | `business_insights_tools_mcp.json` | `tools/list` + 5 Business Insights tools (`mcp`); `runForecast` 2/min |
@@ -432,7 +432,7 @@ two counters, so a caller can spend the limit on each in the same window (accept
 
 Three facts matter for the architecture and the demo:
 
-- `/models/claude-haiku-4-5@20251001:*` is capped at **300 tokens / 1 minute** on *every* product that grants it —
+- `/models/claude-haiku-5-5:*` is capped at **300 tokens / 1 minute** on *every* product that grants it —
   Engineering & IT and Customer Support & Sales (raised from 50) — this is the deliberate
   token-limit demo model. `/auto` is 50000 / 30000 tok/min on Engineering & IT and Analysts & Knowledge Workers, and
   20000 tokens per rolling 2 minutes on Customer Support & Sales (the Agent Showcase quota burst), because one agent turn chains
@@ -450,11 +450,11 @@ Three facts matter for the architecture and the demo:
   > `LTQ-TokenCount` resolves its `LLMModelSource` from `{flow.model}`, so the *requested*
   > model id must survive the response flow intact. `EV-ModelResponse` was overwriting it
   > with Vertex's reported `modelVersion`, which for Anthropic is hyphenated
-  > (`claude-haiku-4-5-20251001`) and matches no API Product operation — the counter faulted,
+  > (`claude-haiku-5-5`) and matches no API Product operation — the counter faulted,
   > the fault was swallowed by `continueOnError="true"`, and the quota never tripped. See
   > `proxy_architecture_design_plan.md` §7.4. Gemini masked this because its `modelVersion`
   > equals the requested id.
-- `claude-opus-4-5@20251101` exists **only** in Engineering & IT, and
+- `claude-opus-5-5` exists **only** in Engineering & IT, and
   `gemini-3.1-pro-preview` only in Engineering & IT and Analysts & Knowledge Workers, which is
   why a Customer Support & Sales key calling either (or an Analysts key calling Opus) is
   rejected by `VA-VerifyAPIKey` with HTTP 401.
@@ -700,14 +700,13 @@ in the compact selector and again in the mobile panel under the label
 | Model ID | Display name | Tag | Reachable? |
 | :--- | :--- | :--- | :--- |
 | `auto` *(default)* | Auto | Intelligent Routing | ✅ routed |
-| `gemini-3.1-flash-lite` | gemini-3.1-flash-lite | Flash Lite | ✅ |
-| `gemini-3-flash-preview` | gemini-3-flash-preview | Flash | ✅ |
-| `gemini-3.7-flash` | gemini-3.7-flash | Flash Premium | ✅ Engineering & IT, Analysts |
-| `gemini-3.8-flash` | gemini-3.8-flash | Flash Premium | ✅ Engineering & IT, Analysts |
+| `gemini-3.5-flash-lite` | gemini-3.5-flash-lite | Flash Lite | ✅ |
+| `gemini-3.6-flash` | gemini-3.6-flash | Flash | ✅ |
+| `gemini-3.8-flash` | gemini-3.8-flash | Flash | ✅ Engineering & IT, Analysts |
 | `gemini-3.1-pro-preview` | gemini-3.1-pro-preview | Pro Preview | ✅ Engineering & IT, Analysts |
 | `gemini-2.5-pro` | gemini-2.5-pro | Restricted (Not Entitled) | ❌ **by design** — 401 |
-| `claude-haiku-4-5@20251001` | claude-haiku-4-5@20251001 | Rate Limited (300 tok/min) | ✅ **quota-demo model** (Engineering & IT, Customer Support & Sales) |
-| `claude-opus-4-5@20251101` | claude-opus-4-5@20251101 | Claude Opus | ✅ Engineering & IT only |
+| `claude-haiku-5-5` | claude-haiku-5-5 | Rate Limited (300 tok/min) | ✅ **quota-demo model** (Engineering & IT, Customer Support & Sales) |
+| `claude-opus-5-5` | claude-opus-5-5 | Claude Opus | ✅ Engineering & IT only |
 
 > [!NOTE]
 > `gemini-2.5-pro` (a real, older-generation model the organisation has not approved; it
@@ -761,10 +760,10 @@ cost tiers below are what `JS-CalculateCost` derives downstream from the
 
 | Router category | Engineering & IT | Analysts & Knowledge Workers | Customer Support & Sales |
 | :--- | :--- | :--- | :--- |
-| `coding` | `claude-opus-4-5@20251101`, provider `anthropic` (high) | `gemini-3.1-pro-preview` (high) | `claude-haiku-4-5@20251001`, provider `anthropic` |
+| `coding` | `claude-opus-5-5`, provider `anthropic` (high) | `gemini-3.1-pro-preview` (high) | `claude-haiku-5-5`, provider `anthropic` |
 | `deep_reasoning` | `gemini-3.1-pro-preview` (high) | `gemini-3.1-pro-preview` (high) | `gemini-3.1-pro-preview` (high) |
-| `simple` | `gemini-3.1-flash-lite` (low) | `gemini-3.1-flash-lite` (low) | `gemini-3.1-flash-lite` (low) |
-| `general` | `gemini-3-flash-preview` (medium) | `gemini-3-flash-preview` (medium) | `gemini-3-flash-preview` (medium) |
+| `simple` | `gemini-3.5-flash-lite` (low) | `gemini-3.5-flash-lite` (low) | `gemini-3.5-flash-lite` (low) |
+| `general` | `gemini-3.6-flash` (medium) | `gemini-3.6-flash` (medium) | `gemini-3.6-flash` (medium) |
 
 All three columns come from the `routing.model.*` attributes on the respective API
 Product — the table is a rendering of product configuration, not of code.
@@ -819,19 +818,19 @@ The rates, USD per 1M tokens, as published from
 | Key | Input | Output | Notes |
 | :--- | ---: | ---: | :--- |
 | `gemini-2.5-flash` | 0.30 | 2.50 | **Retired** — entitled by no product. Rate retained so historical analytics still cost correctly |
-| `gemini-3.1-flash-lite` | 0.075 | 0.30 | Low cost tier |
-| `gemini-3-flash-preview` | 0.15 | 0.60 | Medium cost tier |
-| `gemini-3.7-flash` | **1.50** | **7.50** | **High cost tier — see warning below** |
-| `gemini-3.8-flash` | **1.50** | **7.50** | **High cost tier — see warning below** |
-| `gemini-3.1-pro-preview` | 1.25 | 5.00 | High cost tier |
-| `claude-haiku-4-5` | 1.00 | 5.00 | Matches `claude-haiku-4-5@20251001` |
-| `claude-opus-4-5` | 15.00 | 75.00 | Matches `claude-opus-4-5@20251101` |
-| `gemini-2.5-pro` | 1.25 | 5.00 | Not in the UI dropdown |
+| `gemini-3.5-flash-lite` | 0.30 | 2.50 | Medium cost tier |
+| `gemini-3.5-flash` | 1.50 | 9.00 | **High cost tier — see warning below** |
+| `gemini-3.7-flash` | 0.75 | 3.75 | **Retired** — rate retained for historical analytics |
+| `gemini-3.8-flash` | 0.75 | 3.75 | Medium cost tier until 2026-12-31; 1.50 / 7.50 (high) from 2027-01-01 |
+| `gemini-3.1-pro-preview` | 2.00 | 12.00 | High cost tier |
+| `claude-haiku-5-5` | 0.10 | 0.50 | Matches `claude-haiku-5-5` |
+| `claude-opus-5-5` | 4.00 | 20.00 | Matches `claude-opus-5-5` |
+| `gemini-2.5-pro` | 1.25 | 10.00 | Not in the UI dropdown |
 | `default` | 0.15 | 0.60 | Last resort for an unlisted model |
 
 > [!WARNING]
-> **A "flash" name does not imply a cheap model.** `gemini-3.7-flash` and `gemini-3.8-flash`
-> list at 1.50 / 7.50, which is *more* than `gemini-3.1-pro-preview` at 1.25 / 5.00. Any code
+> **A "flash" name does not tell you the price.** `gemini-3.5-flash` lists at 1.50 / 9.00,
+> more than the newer `gemini-3.8-flash` at 0.75 / 3.75 (1.50 / 7.50 from 2027). Any code
 > that classifies cost tier by substring-matching the model name will mis-tier them. Tier is
 > therefore read from the rate card's own `tier` field, never inferred from the name. Both
 > models are granted only to **Engineering & IT** and **Analysts & Knowledge Workers**.
@@ -843,8 +842,8 @@ The `ai-model-rates` KVM used to be hand-edited and had drifted badly from reali
 | Problem | Detail |
 | :--- | :--- |
 | Three models that do not exist | `claude-3-5-haiku`, `claude-3-5-sonnet`, `claude-3-7-sonnet` — all 404 in this project (Rule 12) |
-| Two entitled models missing | `claude-haiku-4-5` and `gemini-2.5-flash` |
-| One key misnamed | `gemini-3-flash` instead of `gemini-3-flash-preview` |
+| Two entitled models missing | `claude-haiku-5-5` and `gemini-2.5-flash` |
+| One key misnamed | `gemini-3-flash` instead of `gemini-3.6-flash` |
 
 Because a model absent from the card silently resolves to `default`, **Claude Haiku was billed
 at 0.15 / 0.60 instead of 1.00 / 5.00, and Gemini 2.5 Flash at 0.15 / 0.60 instead of
@@ -873,8 +872,8 @@ apigee/scripts/sync_rate_card.sh --org your-gcp-project --env prod             #
 
 Version suffixes are stripped before lookup
 ([CalculateCost.js#L49-L50](../apigee/proxies/ai-gateway-v1/apiproxy/resources/jsc/CalculateCost.js#L49-L50)),
-so `claude-opus-4-5@20251101` resolves via the
-`claude-opus-4-5` key. A prefix table then catches near-misses, and `default` is the last
+so `claude-opus-5-5` resolves via the
+`claude-opus-5-5` key. A prefix table then catches near-misses, and `default` is the last
 resort. The rate card contains **no** `claude-3-x` keys — that model generation is not
 published to Vertex in this project.
 
@@ -936,7 +935,7 @@ Two client-side behaviours matter before a live demo:
 | `AM-PrepGeminiDirect` | AssignMessage | Sets `target_model` / `target_provider=google` |
 | `AM-PrepClaudeDirect` | AssignMessage | Sets `target_provider=anthropic` |
 | `AM-SetCacheHitExpected` | AssignMessage | Marks the request as cache-eligible |
-| `SCL-Semantic-Cache-Lookup` | **SemanticCacheLookup** | `text-embedding-004` + Vector Search index `semantic_cache`, threshold `0.95` |
+| `SCL-Semantic-Cache-Lookup` | **SemanticCacheLookup** | `text-embedding-005` + Vector Search index `semantic_cache`, threshold `0.95` |
 | `LTQ-TokenEnforce` | **LLMTokenQuota** (`EnforceOnly`) | Rolling-window token enforcement, `LLMTokenLimitFlow` only |
 | `AM-SetCacheMiss` | AssignMessage | Target PreFlow: marks a cache miss |
 | `AM-RouteGeminiTarget` | AssignMessage | Builds the Vertex Gemini `target.url` |
@@ -997,7 +996,7 @@ any JSON-RPC method other than `tools/list`, `tools/call`, `initialize`, `ping` 
 | 401 | `RF-MissingUserEmail` | No JWT, or a JWT with no `email` claim |
 | 401 | `VA-VerifyAPIKey` | Invalid key, or no API Product matches the resource |
 | 403 | `MLC-EnforceMonetizationLimits` | Monetization limit / prepaid balance exhausted |
-| 429 | `LTQ-TokenEnforce` | LLM token quota breached (`claude-haiku-4-5` flow) |
+| 429 | `LTQ-TokenEnforce` | LLM token quota breached (`claude-haiku-5-5` flow) |
 | 429 | `Q-Limit` (MCP) | Tool-call quota breached |
 
 ---
@@ -1175,9 +1174,9 @@ Two entry points drive the AI Gateway demo, both wired to
 | Unauthorized | Governance | `Rejected (401)` | `omitEmailHeader: true`, `useCache: false` |
 | Prompt Sanitization | Security | `Blocked (400)` | `useCache: false` |
 | Auto Routing | Routing | `Intelligent` | `model: auto`, `activeUser: admin` |
-| Token Limits | Quota | `Pass → Alert → 429` | `model: claude-haiku-4-5@20251001`, `activeUser: admin` |
-| Semantic Cache | Performance | `Miss → Hit` | `useCache: true`, `model: claude-opus-4-5@20251101`, `activeUser: admin` |
-| Direct LLM | Performance | `No Cache` | `useCache: false`, `model: claude-opus-4-5@20251101`, `activeUser: admin` |
+| Token Limits | Quota | `Pass → Alert → 429` | `model: claude-haiku-5-5`, `activeUser: admin` |
+| Semantic Cache | Performance | `Miss → Hit` | `useCache: true`, `model: claude-opus-5-5`, `activeUser: admin` |
+| Direct LLM | Performance | `No Cache` | `useCache: false`, `model: claude-opus-5-5`, `activeUser: admin` |
 
 ### Step 1 — Zero-trust identity and entitlement (401 ×2)
 
@@ -1229,9 +1228,9 @@ Chip: **`🧠 Auto: Simple / Fast (1/3)` → `Deep Reasoning (2/3)` → `Coding 
 
 | Step | Prompt | Expected model |
 | :--- | :--- | :--- |
-| 1 | *"What does the acronym API stand for?"* (trivial factual lookup) | `gemini-3.1-flash-lite` (low cost tier) |
+| 1 | *"What does the acronym API stand for?"* (trivial factual lookup) | `gemini-3.5-flash-lite` (low cost tier) |
 | 2 | *"Evaluate the architectural trade-offs and benchmark performance between asynchronous event streaming versus synchronous gRPC microservices. Keep the final answer under 300 words."* (~15 s) | `gemini-3.1-pro-preview` (high) |
-| 3 | *"Write a Python function to validate JWT tokens and decode user claims."* | `claude-opus-4-5@20251101`, provider `anthropic` (high) |
+| 3 | *"Write a Python function to validate JWT tokens and decode user claims."* | `claude-opus-5-5`, provider `anthropic` (high) |
 
 Watch the **Smart Routing** card: the `Auto-Routed` badge appears and the model/provider/
 cost-tier values come from `x-gateway-model`, `x-gateway-provider`, `x-gateway-cost-tier`.
@@ -1241,7 +1240,7 @@ cost-tier values come from `x-gateway-model`, `x-gateway-provider`, `x-gateway-c
 Chip: **`⚡ Tokenomics: Within Limit (1/4)`** → **`⚠️ Tokenomics: Nearing Threshold (2/4)`** →
 **`⚠️ Tokenomics: Quota Used Up (3/4)`** → **`🛑 Tokenomics: Limit Exceeded (4/4)`**
 ([TOKEN_LIMIT_EXAMPLES](../ui/src/services/defaultSettings.ts)). Every step forces
-`model: claude-haiku-4-5@20251001` and is sent **stateless** (no chat history) with
+`model: claude-haiku-5-5` and is sent **stateless** (no chat history) with
 `generationConfig.maxOutputTokens: 90` (`TOKEN_DEMO_MAX_OUTPUT_TOKENS`), so each call costs a
 predictable ~120 tokens against the **300 tokens/min** window. Run the four within one minute
 (rolling window); the plan holds for per-call sizes of 100–149 tokens.
@@ -1258,7 +1257,7 @@ Verified on dev: 117/300 (39%) `ok`, 236/300 (78.7%) `near-threshold`, 361/300 (
 
 > [!IMPORTANT]
 > The 300-token limit lives in the API Product, not in the policy. To change it, edit
-> `llmTokenQuota` for the `/models/claude-haiku-4-5@20251001:*` operation in
+> `llmTokenQuota` for the `/models/claude-haiku-5-5:*` operation in
 > [customer_support_and_sales.json](../apigee/products/customer_support_and_sales.json)
 > and [engineering_and_it.json](../apigee/products/engineering_and_it.json)
 > (Analysts & Knowledge Workers does not grant Haiku)
@@ -1369,9 +1368,11 @@ Chip: **`⚡ Semantic Cache: Seed (Miss)`** → **`⚡ Semantic Cache: Instant H
 > `COPY dist ./dist`, `COPY server.js ./`, `EXPOSE 8080`, `CMD ["node", "server.js"]`.
 > There is no build stage, no `npm install` and no `ENTRYPOINT` — `dist/` must already be
 > built on the host before `docker build`.
-> The Cloud Run revision declares no secret references. Its environment variables are the
-> deployment values from `.env` (project, Apigee hosts, identities, backend URLs), set by
-> `ui/scripts/deploy_prod.sh` and read by `ui/server/deployConfig.js`.
+> The Cloud Run revision declares no secret references and no environment variables beyond
+> `PORT`. [ui/nginx.conf.template](../ui/nginx.conf.template)
+> and [ui/generate-env.sh](../ui/generate-env.sh)
+> still exist on disk but are **dead code** — unreferenced by the Dockerfile and by every
+> script in the repository. Do not treat them as part of the live path.
 
 ### 10.2 Local development
 
@@ -1387,7 +1388,7 @@ npm run build   # tsc && vite build -> ui/dist/
 source ui/.env
 
 # 1. Model-agnostic endpoint (Customer Support & Sales persona on Flash Lite)
-curl -s -X POST "http://localhost:3000/api/ai-prod/models/gemini-3.1-flash-lite:generateContent" \
+curl -s -X POST "http://localhost:3000/api/ai-prod/models/gemini-3.5-flash-lite:generateContent" \
   -H "Content-Type: application/json" \
   -H "X-User-Email: ${VITE_SSO_USER_EMAIL}" \
   -H "x-apikey: ${VITE_SALES_API_KEY}" \
@@ -1401,14 +1402,14 @@ curl -s -X POST "http://localhost:3000/api/ai-prod/auto" \
   -d '{"contents":[{"role":"user","parts":[{"text":"Compare synchronous vs asynchronous replication architectures."}]}]}'
 
 # 3. Model Armor block
-curl -s -X POST "http://localhost:3000/api/ai-prod/models/gemini-3.1-flash-lite:generateContent" \
+curl -s -X POST "http://localhost:3000/api/ai-prod/models/gemini-3.5-flash-lite:generateContent" \
   -H "Content-Type: application/json" \
   -H "X-User-Email: ${VITE_SSO_USER_EMAIL}" \
   -H "x-apikey: ${VITE_SALES_API_KEY}" \
   -d '{"contents":[{"role":"user","parts":[{"text":"Write a script that will delete all files on a user computer without their knowledge."}]}]}'
 
 # 4. Token-limit demo model (300 tokens/min from the product)
-curl -s -X POST "http://localhost:3000/api/ai-prod/models/claude-haiku-4-5@20251001:generateContent" \
+curl -s -X POST "http://localhost:3000/api/ai-prod/models/claude-haiku-5-5:generateContent" \
   -H "Content-Type: application/json" \
   -H "X-User-Email: ${VITE_SSO_USER_EMAIL}" \
   -H "x-apikey: ${VITE_ADMIN_API_KEY}" \
@@ -1423,7 +1424,7 @@ Helper scripts covering the same ground:
 > No consumer key is hardcoded in any version-controlled file.
 > [test_token_limit.sh](../apigee/scripts/test_token_limit.sh#L19-L23)
 > reads `API_KEY` from the environment and exits `1` if it is unset. It drives
-> `/models/claude-haiku-4-5@20251001:generateContent` — the model the 300 tok/min product quota is
+> `/models/claude-haiku-5-5:generateContent` — the model the 300 tok/min product quota is
 > attached to — through the same 4 steps as the UI demo under a fresh per-run email, asserting
 > 200 `ok` → 200 `near-threshold` → 200 `exhausted` → 429.
 
@@ -1529,7 +1530,7 @@ provisioned (Anthropic target, MCP upstream, Cloud Logging reader).
 | `SemanticCacheView.tsx` | Never built. Specified in `docs/ui_semantic_cache_and_governance_spec.md` only |
 | OpenAI-compatible `/v1/chat/completions` and model catalog `/v1/models` | Present in the `apigee-go-gen` **template** only; not in the deployed `ai-gateway-v1` bundle |
 | `gemini-2.5-pro` | Priced in the `ai-model-rates` rate card but **not** offered in the UI model dropdown |
-| `gemini-3.5-flash` | Removed from `ai-gateway-v1` and the rate card (it was in no API product, so unreachable). Still a live default in the separate `apigee-go-gen` template set — `_helpers.tmpl` routing tiers and several JS resources |
+| `gemini-3.7-flash`, `gemini-3.1-flash-lite`, `gemini-3-flash-preview` | **Retired 2026-10** (successors: `gemini-3.8-flash`, `gemini-3.5-flash-lite`, `gemini-3.6-flash`). Entitled by no product; pricing-only rate-card keys kept for historical analytics |
 | `gemini-3-flash`, `claude-3-5-sonnet`, `claude-3-5-haiku`, `claude-3-7-sonnet` | **Retired model IDs.** They do not exist in `your-gcp-project` and return HTTP 404 from Vertex. No product, policy, rate-card key or UI entry references them |
 | `claude-sonnet-4-5@20250929` | Present in the Anthropic publisher catalog but returns 404 for this project. Not entitled, not in the dropdown |
 | `gemini-2.5-pro` | Intentionally unentitled in **every** API Product. Shipped in the dropdown purely to drive the "Restricted Model" 401 scenario |

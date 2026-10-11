@@ -77,6 +77,7 @@ import {
   type AttributionSortColumn,
   type SortDirection,
 } from '../utils/monetizationSort';
+import ModelWatchAlert from './ModelWatchAlert';
 
 // Provider logo/mark component replacing raw GOOG/ANTH text badges
 /** Friendly persona label for a persona API product name. */
@@ -113,12 +114,11 @@ const ModelProviderIcon = ({ model }: { model: string }) => {
 };
 
 const CATALOG_MODELS = [
-  { id: 'gemini-3.1-flash-lite', name: 'Gemini 3.1 Flash Lite', provider: 'google', desc: 'Ultra-low latency, cost-effective' },
-  { id: 'gemini-3-flash-preview', name: 'Gemini 3 Flash Preview', provider: 'google', desc: 'Flagship fast multimodal reasoning' },
+  { id: 'gemini-3.5-flash-lite', name: 'Gemini 3.5 Flash Lite', provider: 'google', desc: 'Ultra-low latency, cost-effective' },
+  { id: 'gemini-3.6-flash', name: 'Gemini 3.6 Flash', provider: 'google', desc: 'Flagship fast multimodal reasoning' },
   { id: 'gemini-3.1-pro-preview', name: 'Gemini 3.1 Pro Preview', provider: 'google', desc: 'Frontier reasoning & advanced coding' },
-  { id: 'claude-haiku-4-5@20251001', name: 'Claude 4.5 Haiku', provider: 'anthropic', desc: 'Lightweight Anthropic model (300 tpm token-quota demo: 3 calls, then 429)' },
-  { id: 'claude-opus-4-5@20251101', name: 'Claude 4.5 Opus', provider: 'anthropic', desc: 'Anthropic flagship reasoning model' },
-  { id: 'gemini-3.7-flash', name: 'Gemini 3.7 Flash', provider: 'google', desc: 'Hybrid reasoning model' },
+  { id: 'claude-haiku-5-5', name: 'Claude 4.5 Haiku', provider: 'anthropic', desc: 'Lightweight Anthropic model (300 tpm token-quota demo: 3 calls, then 429)' },
+  { id: 'claude-opus-5-5', name: 'Claude 4.5 Opus', provider: 'anthropic', desc: 'Anthropic flagship reasoning model' },
   { id: 'gemini-3.8-flash', name: 'Gemini 3.8 Flash', provider: 'google', desc: 'Next-gen flash model' },
   { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', provider: 'google', desc: 'Stable legacy flash model' },
   { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', provider: 'google', desc: 'Stable legacy pro model' },
@@ -525,7 +525,7 @@ export const MonetizationManager: React.FC<MonetizationManagerProps> = ({
   const [newOutputRate, setNewOutputRate] = useState('0.60');
 
   // Interactive Calculator State
-  const [calcModel, setCalcModel] = useState<string>('gemini-3-flash-preview');
+  const [calcModel, setCalcModel] = useState<string>('gemini-3.6-flash');
   const [calcPromptTokens, setCalcPromptTokens] = useState<number>(2500);
   const [calcOutputTokens, setCalcOutputTokens] = useState<number>(800);
 
@@ -1150,6 +1150,9 @@ export const MonetizationManager: React.FC<MonetizationManagerProps> = ({
             </div>
         </div>
 
+        {/* Daily pricing & model watch (rate card drift, deprecations, new models) */}
+        <ModelWatchAlert />
+
         {/* Status Alerts */}
         {error && (
           <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center justify-between animate-in fade-in duration-150">
@@ -1407,7 +1410,7 @@ export const MonetizationManager: React.FC<MonetizationManagerProps> = ({
                   {/* Models List */}
                   <div className="space-y-2">
                     {configuredModels.map((m) => {
-                      const isHaiku = m.model === 'claude-haiku-4-5@20251001';
+                      const isHaiku = m.model === 'claude-haiku-5-5';
                       const isAuto = m.model === 'auto';
                       const isLowLimit = parseInt(m.limit, 10) <= 100;
 
@@ -2864,7 +2867,7 @@ export const MonetizationManager: React.FC<MonetizationManagerProps> = ({
                 <input
                   type="text"
                   required
-                  placeholder="e.g., gemini-3.1-pro-preview, claude-opus-4-5@20251101"
+                  placeholder="e.g., gemini-3.1-pro-preview, claude-opus-5-5"
                   value={newModelId}
                   onChange={(e) => setNewModelId(e.target.value)}
                   className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-900 font-mono focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 shadow-xs"

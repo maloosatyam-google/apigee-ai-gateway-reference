@@ -155,7 +155,7 @@ export function isRefusedByKey(proxy, status) {
   return (proxy === 'bigquery-mcp' || proxy === 'servicenow-mcp') && (Number(status) === 401 || Number(status) === 403);
 }
 
-/** Rate-card lookup tolerant of version suffixes (claude-haiku-4-5@20251001). */
+/** Rate-card lookup tolerant of version suffixes (claude-haiku-5-5). */
 export function rateFor(model, rates) {
   if (!rates || absent(model)) return null;
   for (const c of [model, String(model).split('@')[0]]) {

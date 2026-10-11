@@ -37,13 +37,13 @@ const STATS = {
   environments: [
     {
       dimensions: [
-        dim(['alice@example.com', 'gemini-3-flash-preview'], {
+        dim(['alice@example.com', 'gemini-3.6-flash'], {
           'sum(message_count)': 10,
           'sum(is_error)': 1,
           'sum(dc_prompt_token_count)': 1_000_000,
           'sum(dc_candidates_token_count)': 0,
         }),
-        dim(['bob@example.com', 'claude-opus-4-5@20251101'], {
+        dim(['bob@example.com', 'claude-opus-5-5'], {
           'sum(message_count)': 2,
           'sum(is_error)': 0,
           'sum(dc_prompt_token_count)': 0,
@@ -60,13 +60,13 @@ const STATS = {
   ],
 };
 const RATES = {
-  'gemini-3-flash-preview': { input: 0.5, output: 3 },
-  'claude-opus-4-5': { input: 5, output: 25 },
+  'gemini-3.6-flash': { input: 0.5, output: 3 },
+  'claude-opus-5-5': { input: 5, output: 25 },
   default: { input: 0.15, output: 0.6 },
 };
 
 test('rateFor picks the longest matching key, then default', () => {
-  assert.equal(rateFor('claude-opus-4-5@20251101', RATES).output, 25);
+  assert.equal(rateFor('claude-opus-5-5', RATES).output, 25);
   assert.equal(rateFor('mystery-model', RATES).output, 0.6);
 });
 
@@ -84,7 +84,7 @@ test('aggregateUsage prices at the rate card and ranks by spend', () => {
 test('aggregateUsage filters to one user and groups by model', () => {
   const out = aggregateUsage(STATS, RATES, { user: 'alice@example.com', groupBy: 'model' });
   assert.equal(out.totals.distinctUsers, 1);
-  assert.deepEqual(out.rows.map((r) => r.model), ['gemini-3-flash-preview']);
+  assert.deepEqual(out.rows.map((r) => r.model), ['gemini-3.6-flash']);
 });
 
 test('aggregateUsage computes cache hit rate from HIT and MISS only', () => {

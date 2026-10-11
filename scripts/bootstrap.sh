@@ -20,6 +20,8 @@
 #   products        API products, developers, apps and industry packs
 #   bucket          GCS bucket for the customer theme library
 #   ui              build and deploy the UI to Cloud Run (ui/scripts/deploy_prod.sh)
+#   modelwatch      daily pricing & model watch: Cloud Run job + Cloud Scheduler
+#                   (services/model-watch/deploy.sh)
 #
 # Prerequisites: gcloud (logged in as a project Owner or equivalent), Node 20+, Python 3.10+,
 # an Apigee X org in the project with two environments attached to environment groups whose
@@ -42,7 +44,7 @@ for a in "$@"; do
     *) STEPS+=("$a") ;;
   esac
 done
-ALL_STEPS=(apis iam modelarmor vectorsearch datacollectors backends kvms proxies products bucket ui)
+ALL_STEPS=(apis iam modelarmor vectorsearch datacollectors backends kvms proxies products bucket ui modelwatch)
 [ "${#STEPS[@]}" -eq 0 ] && STEPS=("${ALL_STEPS[@]}")
 
 require_config GCP_PROJECT_ID GCP_REGION APIGEE_ORG APIGEE_HOST_PROD DEMO_ADMIN_EMAIL
@@ -309,9 +311,17 @@ do_ui() {
   echo "  Put the service behind IAP + an HTTPS load balancer: docs/cloud_run_iap_deployment_guide.md"
 }
 
+do_modelwatch() {
+  step "Daily pricing & model watch"
+  if gc run jobs describe model-watch --region "$R" >/dev/null 2>&1; then ok "Cloud Run job model-watch"
+  else miss "Cloud Run job model-watch"; fi
+  $CHECK && return
+  bash "${ROOT}/services/model-watch/deploy.sh"
+}
+
 for s in "${STEPS[@]}"; do
   case "$s" in
-    apis|iam|modelarmor|vectorsearch|datacollectors|backends|kvms|proxies|products|bucket|ui) "do_$s" ;;
+    apis|iam|modelarmor|vectorsearch|datacollectors|backends|kvms|proxies|products|bucket|ui|modelwatch) "do_$s" ;;
     *) echo "Unknown step: $s (valid: ${ALL_STEPS[*]})" >&2; exit 2 ;;
   esac
 done

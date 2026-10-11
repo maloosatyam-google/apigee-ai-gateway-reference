@@ -8,7 +8,7 @@ SemanticCacheLookup:
   UserPromptSource: '{jsonPath(''$.contents[-1].parts[-1].text'',request.content,true)}'
   Embeddings:
     VertexAI:
-      URL: https://__GCP_REGION__-aiplatform.googleapis.com/v1/projects/__GCP_PROJECT_ID__/locations/__GCP_REGION__/publishers/google/models/text-embedding-004:predict
+      URL: https://__GCP_REGION__-aiplatform.googleapis.com/v1/projects/__GCP_PROJECT_ID__/locations/__GCP_REGION__/publishers/google/models/text-embedding-005:predict
   SimilaritySearch:
     VertexAI:
       URL: https://__VECTOR_SEARCH_ENDPOINT_HOST__/v1/projects/__GCP_PROJECT_ID__/locations/__GCP_REGION__/indexEndpoints/__VECTOR_SEARCH_INDEX_ENDPOINT_ID__:findNeighbors

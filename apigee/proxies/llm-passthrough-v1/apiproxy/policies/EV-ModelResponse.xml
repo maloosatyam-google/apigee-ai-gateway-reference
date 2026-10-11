@@ -10,7 +10,7 @@
 
       That silently broke the LLM token quota on the Claude path. Vertex reports Anthropic
       models with a hyphen instead of the "@" revision separator, so a request for
-      "claude-haiku-4-5@20251001" comes back as modelVersion "claude-haiku-4-5-20251001".
+      "claude-haiku-5-5" comes back as modelVersion "claude-haiku-5-5".
       LTQ-TokenCount resolves its LLMModelSource from {flow.model}, so it looked up a model
       that appears in no API product operationConfig and failed with
       keymanagement.service.InvalidAPICallAsNoApiProductMatchFound. Because that policy is
@@ -35,7 +35,7 @@
       <JSONPath>$.usageMetadata.totalTokenCount</JSONPath>
     </Variable>
     <!-- Reasoning models report thinking tokens separately from candidatesTokenCount, but
-         Vertex bills them at the output rate. Without this, a gemini-3.7-flash call that
+         Vertex bills them at the output rate. Without this, a gemini-3.8-flash call that
          consumed 92 tokens was costed as 8. -->
     <Variable name="thoughtsTokenCount">
       <JSONPath>$.usageMetadata.thoughtsTokenCount</JSONPath>

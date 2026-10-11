@@ -2,8 +2,8 @@ try {
     var extractedModel = context.getVariable("model");
     var bodyStr = context.getVariable("request.content") || "";
     
-    var defaultModel = context.getVariable("propertyset.model_locations.default.model") || "gemini-3.5-flash";
-    var defaultFallback = context.getVariable("propertyset.model_locations.default.fallback") || "gemini-3.1-flash-lite";
+    var defaultModel = context.getVariable("propertyset.model_locations.default.model") || "gemini-3.6-flash";
+    var defaultFallback = context.getVariable("propertyset.model_locations.default.fallback") || "gemini-3.5-flash-lite";
     var defaultPublisher = context.getVariable("propertyset.model_locations.default.publisher") || "google";
     var defaultTarget = context.getVariable("propertyset.model_locations.default.target") || "gemini";
     var defaultFormat = context.getVariable("propertyset.model_locations.default.format") || "gemini";
@@ -162,7 +162,7 @@ try {
 
 } catch (e) {
     print("Error resolving Smart Router model and location: " + e);
-    var defModel = context.getVariable("propertyset.model_locations.default.model") || "gemini-3.5-flash";
+    var defModel = context.getVariable("propertyset.model_locations.default.model") || "gemini-3.6-flash";
     var defTarget = context.getVariable("propertyset.model_locations.default.target") || "gemini";
     context.setVariable("model", defModel);
     context.setVariable("primary_model", defModel);
