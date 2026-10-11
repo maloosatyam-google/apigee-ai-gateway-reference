@@ -77,8 +77,8 @@ export const SHOWCASE_SCENARIOS = [
     id: 'cheaper-model',
     step: 8,
     title: 'Cheaper model?',
-    prompt: "I'm sending seven items back to you for repair, weighing 7, 6, 5, 4, 3, 3 and 2 kg. Your return boxes: Small holds up to 6 kg for $6, Medium up to 10 kg for $11, Large up to 14 kg for $15. Items can't be split. What's the cheapest set of boxes, what goes in each, and the total cost?",
-    expect: 'Answers "why not just use a cheaper model?". Without governance, the agent is switched to the cheapest model (Flash-Lite) for this question and usually gets the box plan wrong ($36 to $38) or gives up. With AI & Tools Governance, a question that needs deep reasoning goes to a stronger model (Pro) and the answer is right: $32, one box of each size, each exactly full (for example Large 7+5+2, Medium 6+4, Small 3+3). Answer reuse is off here, so the stronger model answers every time. Easy questions still go to small, cheap models.',
+    prompt: "I'm sending eight items back to you for repair, weighing 9, 8, 7, 6, 5, 4, 3 and 2 kg. Your return boxes: Small holds up to 7 kg for $7, Medium up to 11 kg for $10, Large up to 16 kg for $14. Items can't be split. What's the cheapest set of boxes, what goes in each, and the total cost?",
+    expect: 'Answers "why not just use a cheaper model?". Without governance, the agent is switched to the cheapest model (Flash-Lite) for this question and gets the box plan wrong: it usually reaches for the big boxes ($41 to $48), or gives a plan that does not fit. With AI & Tools Governance, a question that needs deep reasoning goes to a stronger model (Pro) and the answer is right: $40, four Medium boxes, each exactly full (9+2, 8+3, 7+4, 6+5). Answer reuse is off here, so the stronger model answers every time. Easy questions still go to small, cheap models.',
     // The ungoverned agent's model for this scenario (the picker shows the switch).
     baselineModel: 'gemini-3.5-flash-lite',
     // Always a fresh answer, so the routed Pro call shows instead of a reused one.

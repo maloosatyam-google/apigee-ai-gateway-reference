@@ -29,14 +29,12 @@ apigee/templates/ai-gateway/
 ```
 
 > [!NOTE]
-> `resources/properties/` ships empty. Because Git does not track empty directories it may be
-> absent on a fresh clone; `apigee-go-gen` writes the rendered propertysets into it. Create it if
-> your render fails on a missing path.
+> `apigee-go-gen` writes the rendered propertysets into `resources/properties/`. The directory
+> may be missing on a fresh clone; create it if your render fails on a missing path.
 
-> [!IMPORTANT]
-> These policy filenames follow the template set's own convention, **not** the hand-maintained
-> `ai-gateway-v1` XML bundle's. The `SC-` prefix exists only here, and suffixes are lowercase and
-> hyphenated (`AM-model.yaml`, `JS-extract-prompt.yaml`). Do not normalise one set to the other.
+Policy filenames in this template differ from the XML bundle in `apigee/proxies/ai-gateway-v1/`:
+the `SC-` prefix is used only here, and suffixes are lowercase and hyphenated
+(`AM-model.yaml`, `JS-extract-prompt.yaml`).
 
 ---
 
@@ -46,8 +44,7 @@ All commands below are written to run from the **repository root**.
 
 ### 1. Install `apigee-go-gen`
 
-`apigee-go-gen` is an **external, upstream tool** — it is not vendored in this repository and there
-is no `apigeegg/` directory here. Get it from
+`apigee-go-gen` is not included in this repository. Get it from
 [github.com/apigee/apigee-go-gen](https://github.com/apigee/apigee-go-gen) (see the
 [releases page](https://github.com/apigee/apigee-go-gen/releases) for prebuilt binaries):
 
@@ -75,14 +72,13 @@ Swap in `values.quickstart.yaml` for a minimal render.
 ### 3. Deploy to Apigee
 
 > [!CAUTION]
-> `values.yaml` sets `gateway.name: ai-gateway-v1`, which is the **live, primary proxy** serving
-> `https://api.example.com/ai/v1`. Deploying this rendered bundle under that
-> name with `--ovr` **overwrites the hand-maintained `ai-gateway-v1` bundle**. The XML bundle in
-> `apigee/proxies/ai-gateway-v1/` is the source of truth for production; this template set is a
-> parallel, experimental generator and the two are not kept in sync.
+> `values.yaml` sets `gateway.name: ai-gateway-v1`, the name of the live proxy serving
+> `https://api.example.com/ai/v1`. Deploying the rendered bundle under that
+> name with `--ovr` replaces the deployed `ai-gateway-v1` proxy. The rendered bundle does not
+> match the XML bundle in `apigee/proxies/ai-gateway-v1/`, which is what production runs.
 
-**Recommended — side-by-side experimental deploy** under a distinct name, leaving production alone.
-Override the name at render time so the bundle's internal name matches:
+**Recommended: deploy side by side** under a different name. Set the name at render time so the
+bundle's internal name matches:
 
 ```bash
 apigee-go-gen render apiproxy \
@@ -100,8 +96,7 @@ apigeecli apis create bundle \
     --default-token
 ```
 
-**Only if you intend to replace production** — this is destructive and creates a new revision of
-the live proxy:
+**To replace production** (creates a new revision of the live proxy):
 
 ```bash
 apigeecli apis create bundle \
@@ -119,10 +114,9 @@ apigeecli apis create bundle \
 ## 📚 Model Catalog
 
 The `models:` block in `values.yaml` is rendered into `models.catalog` by `_helpers.tmpl` and
-served from the `/v1/models` endpoint, so **every entry is advertised to clients**. Only list
-models that actually resolve in this project, and keep pricing in sync with the authoritative rate
-card at
-[`apigee/proxies/ai-gateway-v1/apiproxy/resources/properties/model_rates.properties`](../../proxies/ai-gateway-v1/apiproxy/resources/properties/model_rates.properties).
+served from the `/v1/models` endpoint, so clients see every entry. List only models that
+resolve in your project, and match the prices to the rate card in
+[`apigee/config/model_rate_card.json`](../../config/model_rate_card.json).
 
 Rates are USD per 1M tokens.
 
@@ -138,14 +132,13 @@ Rates are USD per 1M tokens.
 | `claude-opus-5-5` | anthropic | us-east5 | 4.000 | 20.000 |
 
 > [!WARNING]
-> **Deliberately absent**: `gemini-3-flash`, `claude-3-5-sonnet`, `claude-3-5-haiku` and
-> `claude-3-7-sonnet`. These return **HTTP 404** from Vertex in this project — there is no
-> `claude-3-x` generation published here at all. Verify any new model ID against the live
-> `your-gcp-project` publisher catalog before adding it.
+> Do not add `gemini-3-flash`, `claude-3-5-sonnet`, `claude-3-5-haiku` or `claude-3-7-sonnet`
+> to the catalog. They return **HTTP 404** from Vertex in this project, which publishes no
+> `claude-3-x` models. Check any new model ID against the `your-gcp-project` publisher catalog
+> before you add it.
 
-The legacy names are still handled: the `routing.aliases` block **forward-maps** them onto models
-that do resolve, so an old client gets a working response instead of a 404. These aliases are
-intentional and must not be removed alongside the catalog entries.
+The `routing.aliases` block maps older and generic model names onto models that resolve, so
+clients that request them get a response instead of a 404:
 
 | Alias | Resolves to |
 | :--- | :--- |
@@ -155,11 +148,9 @@ intentional and must not be removed alongside the catalog entries.
 | `gpt-4o` / `gpt-4o-mini` | `gemini-3.1-pro-preview` / `gemini-3.5-flash-lite` |
 | `auto`, `gateway/auto` | `gemini-3.6-flash` |
 
-`gemini-2.5-flash` is listed here because this template catalog is self-contained and its rate
-table must stay internally consistent. It is **no longer the token-quota demo model** — that
-moved to `claude-haiku-5-5`, now at 300 tokens/min (originally 50) — and in the hand-maintained
-`ai-gateway-v1` bundle it has been **retired outright** ahead of its 2026-10-20 end of life,
-entitled by no API product. Do not infer the live entitlement set from this table.
+The catalog does not show which models API products entitle. For example, `gemini-2.5-flash`
+is in the template catalog, but no API product on the deployed `ai-gateway-v1` proxy entitles
+it (end of life 2026-10-20). The token-quota demo model is `claude-haiku-5-5`, at 300 tokens/min.
 
 ---
 
@@ -199,8 +190,8 @@ models:
 
 ## 🎛 Feature Toggles
 
-You can toggle features on or off in `values.yaml`. These are the **actual shipped defaults** —
-note that `monetization` and `llm_judge` default to `false`:
+Turn features on or off in `values.yaml`. The defaults are below; `monetization` and
+`llm_judge` are off:
 
 ```yaml
 features:

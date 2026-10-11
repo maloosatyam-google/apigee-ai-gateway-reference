@@ -17,7 +17,6 @@
   The correct JWKS for IAP is the ES256 set at
   https://www.gstatic.com/iap/verify/public_key-jwk (not the RS256 oauth2/v3/certs endpoint).
 
-  Full trust model: docs/proxy_architecture_design_plan.md §3.1.1
 -->
 <DecodeJWT async="false" continueOnError="true" enabled="true" name="DJWT-ExtractUserIdentity">
   <DisplayName>DJWT-ExtractUserIdentity</DisplayName>

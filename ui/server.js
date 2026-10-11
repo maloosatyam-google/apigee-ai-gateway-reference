@@ -843,8 +843,7 @@ const server = http.createServer(async (req, res) => {
     // It must say RS256 and carry a non-empty signature segment: Apigee's
     // DecodeJWT rejects the `alg: none` / empty-signature form outright (401),
     // even though it never verifies the signature. Same shape as
-    // apigee/scripts/generate_demo_traffic.py. Development affordance only --
-    // see the VerifyJWT note in docs/apigee_ai_gateway_demo_design.md.
+    // apigee/scripts/generate_demo_traffic.py. Development affordance only.
     //
     // The construction lives in server/adminAgentCore.js because the Admin
     // Agent mints the same token server-side; one definition, no drift.

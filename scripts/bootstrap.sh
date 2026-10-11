@@ -25,8 +25,8 @@
 #
 # Prerequisites: gcloud (logged in as a project Owner or equivalent), Node 20+, Python 3.10+,
 # an Apigee X org in the project with two environments attached to environment groups whose
-# hostnames you put in APIGEE_HOST_PROD / APIGEE_HOST_DEV. No Apigee yet? See
-# docs/phase2_apigee_provisioning.md.
+# hostnames you put in APIGEE_HOST_PROD / APIGEE_HOST_DEV. No Apigee yet? Provision it first:
+# https://cloud.google.com/apigee/docs/api-platform/get-started/install-cli-non-peered-paygo
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

@@ -7,7 +7,7 @@ GitHub's **Report a vulnerability** (Security tab) on this repository.
 
 ## Secrets in this repository
 
-There are none, by design:
+The repository contains no secrets:
 
 - All environment-specific values live in a gitignored `.env` (template: `.env.example`).
 - Third-party credentials (e.g. `TYPESAFE_API_KEY`) are written to the **encrypted** Apigee

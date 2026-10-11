@@ -4,18 +4,17 @@ A presenter's talk track for the live demo UI.
 
 Everything in this app is real: every prompt goes through a deployed Apigee proxy to a real
 model on Vertex AI, and every number in the telemetry panel came back from that call. There
-are no mocked responses. Say that out loud early — it is the single most credible thing
-about the demo, and people assume the opposite.
+are no mocked responses. Tell the audience this early.
 
 ---
 
 ## 0. Before you present
 
-| Check | Why |
+| Check | Details |
 | --- | --- |
-| Open the UI and send one throwaway prompt | Cold-start on the first call makes the gateway look slow. Warm it up before anyone is watching. |
-| Confirm the environment badge in the footer | It reads `PROD` or `DEV`. Demo from **prod**. Dev is for testing changes. |
-| Persona is **Admin** | Non-admin personas hide the Admin Console tab and are blocked from some models — correct behaviour, but not what you want mid-flow. |
+| Open the UI and send one throwaway prompt | The first call after a cold start is slow. Warm it up before anyone is watching. |
+| Confirm the environment badge in the footer | It reads `PROD` or `DEV`. Demo from **prod**. |
+| Persona is **Admin** | Non-admin personas hide the Admin Console tab and are blocked from some models. |
 | Hit **Reset** | Clears the transcript so the first "what changed" hint is clean. |
 | Demo data is fresh | **Guide me** resets the Customer Service demo data (orders, refunds, cases) when it starts. Presenting without the tour? Press **Reset Demo Data** on the MCP tab first, or earlier runs will have changed ORD-1042's refundable balance and the case list. |
 | Industry is set | Pick the customer's theme, or set the industry on the Apigee theme (e.g. **Education**). With a pack, the MCP tab and Agent Showcase use that industry's tools, hero customer and $30 / $120 story, and show a **Tools: &lt;industry&gt;** badge. The pack's story, flows and prompts are in [industries/README.md](../industries/README.md) and [MAPPING.md](../industries/MAPPING.md). **Reset Demo Data** also resets the pack data. |
@@ -32,8 +31,7 @@ about the demo, and people assume the opposite.
 ## 1. The five-minute version: **Guide me**
 
 Bottom-right, next to the settings cog. It walks 24 steps, switches tabs for you, and
-**fires real gateway calls as it goes** — so the narration lands on live telemetry rather
-than on a description of it. The order:
+**fires real gateway calls as it goes**, so each step shows live telemetry. The order:
 
 | Part | Steps | What it covers |
 |---|---|---|
@@ -43,8 +41,8 @@ than on a description of it. The order:
 | Agent Showcase | 17–21 | Same question to both agents, ungoverned vs governed columns, over-the-limit request → ServiceNow approval ticket, scoreboard, Agent Analytics. |
 | Admin | 22–23 | Analytics and Monetization (admin persona only). |
 
-Theme Studio is a modal, so the tour points at the palette button rather than opening it;
-close the studio to carry on with the tour.
+The tour points at the palette button. Theme Studio opens as a modal: close it to carry on
+with the tour.
 
 Use it when:
 
@@ -52,8 +50,8 @@ Use it when:
 - You have five minutes, not thirty.
 - You want the audience to self-serve after the meeting.
 
-Controls: **Next** / **Back**, `Esc` to leave, and the tour is non-modal, so you can click
-the thing it is pointing at while the step is still on screen. That is deliberate.
+Controls: **Next** / **Back**, `Esc` to leave. The tour is non-modal, so you can click
+the thing it is pointing at while the step is still on screen.
 
 ---
 
@@ -85,8 +83,8 @@ anyone needing to read the panel.
 in a cheaper model for one category is a config change, not a deployment."*
 
 > [!NOTE]
-> The router chain lives in the proxy's `AutoRoutingFlow`, so it only executes for `/auto`
-> requests. A direct call to `/models/<name>` skips it entirely and pays nothing for it.
+> The router runs only for `/auto` requests. A direct call to `/models/<name>` goes straight
+> to that model.
 
 ---
 
@@ -116,9 +114,8 @@ meaning** — not a repeat. The cache matched on embedding similarity, not on st
 same question twice the same way."*
 
 > [!IMPORTANT]
-> On a cache hit the panel says **"Served from cache"** and credits *no* model. That is not
-> a gap — the cache is keyed on the prompt alone and the router never runs, so the gateway
-> genuinely cannot attribute a model. Claiming one would be a lie in a telemetry panel.
+> On a cache hit the panel says **"Served from cache"** and credits *no* model: no model
+> ran and the router was not called. If asked, say the cache is keyed on the prompt alone.
 
 ---
 
@@ -178,8 +175,7 @@ This opens the exact ordered sequence of Apigee policies that specific call exec
 auth, Model Armor, routing, cache lookup, quota, cost accounting. Not a generic diagram;
 that call's path.
 
-This is usually the moment the architect in the room starts asking good questions. Leave
-time for it.
+Leave time for questions here.
 
 ---
 
@@ -213,7 +209,7 @@ to re-run it.
 
 | Symptom | Cause | Recovery |
 | --- | --- | --- |
-| Cache **Instant Hit** returns a MISS | The cache TTL is short. It is 3 minutes: if the seed ran longer ago than that, it has lapsed. | Click **Instant Hit** again: if the seed is older than ~2 minutes, the UI re-runs **Seed (Miss)** first automatically. Say "the cache has a deliberately short TTL here so the demo does not go stale". |
+| Cache **Instant Hit** returns a MISS | The cache TTL is short. It is 3 minutes: if the seed ran longer ago than that, it has lapsed. | Click **Instant Hit** again: if the seed is older than ~2 minutes, the UI re-runs **Seed (Miss)** first automatically. Say "the cache TTL is kept short here so the demo stays fresh". |
 | First call of the session is slow | Cold start. | Warm it up before you present (see §0). |
 | Admin Console tab is missing | You are not on the Admin persona. | Gateway Settings → persona → Admin. |
 | A `/auto` prompt routes somewhere you did not expect | The router is a real classifier on a real prompt. It is allowed to disagree with you. | Lean in: *"that is a genuine classification, not a lookup table — and if you disagree with it, you change the product attribute, not the code."* |
@@ -243,11 +239,10 @@ PORT=3000 DEFAULT_ENV=dev node server.js
 ```
 
 Offline tests (`npm test`) never touch a gateway. Live tests run against **prod only** and
-only when invoked explicitly — dev is a shared sandbox that users change directly, so it is
-never a test target. The live suite spends prod token quota and budget and seeds the prod
-semantic cache, so do not run it right before someone else demos:
+only when invoked explicitly. The live suite spends prod token quota and budget and seeds
+the prod semantic cache, so do not run it right before someone else demos:
 
 ```bash
-npm run test:live        # PROD only (sets TEST_ALLOW_PROD=1; dev is never a test target)
+npm run test:live        # PROD only (sets TEST_ALLOW_PROD=1)
 npm run test:live:prod   # alias of test:live
 ```

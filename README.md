@@ -6,10 +6,52 @@
 [![Node 20](https://img.shields.io/badge/Node-20-339933.svg)](https://nodejs.org/)
 [![Cloud Run](https://img.shields.io/badge/Google_Cloud-Cloud_Run-4285F4.svg)](https://cloud.google.com/run)
 
-An enterprise-grade demonstration and development platform showcasing **Apigee API Management**,
-the **Apigee AI Gateway**, the **Apigee MCP Tools Gateway**, and **Google ADK (Agent Development Kit)**
-microservices — with live policy trace telemetry, identity-driven entitlement governance,
-product-driven LLM token quotas, and Apigee native monetization.
+A demonstration and development platform for **Apigee API Management**, the **Apigee AI Gateway**,
+the **Apigee MCP Tools Gateway** and **Google ADK (Agent Development Kit)** microservices. It shows
+live policy trace telemetry, identity-driven entitlements, product-driven LLM token quotas and
+Apigee native monetization.
+
+---
+
+## 🏁 Set it up in your own project
+
+**You need:** a Google Cloud project with an Apigee X org and two environments (`dev`, `prod`)
+attached to environment groups; `gcloud` signed in as a project Owner; Node 20+; Python 3.10+.
+No Apigee yet? Follow
+[Install Apigee using the CLI (non-VPC-peered, Pay-as-you-go)](https://cloud.google.com/apigee/docs/api-platform/get-started/install-cli-non-peered-paygo)
+first.
+
+```bash
+cp .env.example .env            # fill in the "Required" block
+scripts/install_hooks.sh        # optional: secret scan on every commit and push
+scripts/bootstrap.sh --check    # read-only: shows what exists and what is missing
+scripts/bootstrap.sh            # creates everything; idempotent, safe to re-run
+```
+
+`bootstrap.sh` runs these steps in order; pass step names to run only some of them
+(for example `scripts/bootstrap.sh proxies products`):
+
+| Step | Creates |
+| :--- | :--- |
+| `apis` | Enables the Google APIs the demo uses |
+| `iam` | Service accounts and IAM roles (UI management SA, proxy runtime SA) |
+| `modelarmor` | Model Armor templates for prompts and responses |
+| `vectorsearch` | Vector Search index and endpoint for the semantic cache (first run ~30–60 min; writes the IDs into `.env`) |
+| `datacollectors` | Apigee analytics data collectors |
+| `backends` | Cloud Run backends: customer service, business insights, industry APIs, ServiceNow MCP, Agent Showcase |
+| `kvms` | Apigee KVMs: rate card, business-API config, router credentials |
+| `proxies` | Deploys every proxy in `apigee/proxies` to dev and prod |
+| `products` | API products, developers, apps and industry packs |
+| `bucket` | GCS bucket for the customer theme library |
+| `ui` | Builds and deploys the UI to Cloud Run |
+| `modelwatch` | Daily pricing & model watch (Cloud Run job + Cloud Scheduler) |
+
+Then put the UI behind IAP and an HTTPS load balancer:
+[Cloud Run + IAP deployment guide](docs/cloud_run_iap_deployment_guide.md). To run the UI on your
+machine instead, see [Running the UI playground locally](#running-the-ui-playground-locally).
+
+The values in the tables below (`example.com` hosts, `your-gcp-project`) are placeholders; yours come
+from `.env`.
 
 ---
 
@@ -19,7 +61,7 @@ product-driven LLM token quotas, and Apigee native monetization.
 | :--- | :--- | :--- |
 | Interactive UI Playground | `https://ai-ui.alexdemo.demo.example.com/` | IAP-fronted Cloud Run service |
 | AI Gateway | `https://api.example.com/ai/v1` | `<BasePath>/ai/v1</BasePath>` in [default.xml](apigee/proxies/ai-gateway-v1/apiproxy/proxies/default.xml#L184) |
-| MCP Tools Gateway | `https://api.example.com/mcp` | UI-managed `mcp` proxy — defined in the Apigee UI, intentionally not in this repo (see section 7) |
+| MCP Tools Gateway | `https://api.example.com/mcp` | UI-managed `mcp` proxy, defined in the Apigee UI and not in this repo (see section 7) |
 | MCP OAuth Protected Resource Metadata | `https://api.example.com/.well-known/oauth-protected-resource/mcp` | UI-managed `mcp` proxy (Apigee UI) |
 
 ---
@@ -28,25 +70,25 @@ product-driven LLM token quotas, and Apigee native monetization.
 
 ### 1. 🧠 Model Routing (`/ai/v1/auto`)
 
-Routing is a **two-stage decision**: the TypeSafe AI JEV System One router classifies the
-prompt, and the caller's API product decides which model that classification is allowed to reach.
+Routing has two stages: the TypeSafe AI JEV System One router classifies the prompt, and the
+caller's API product decides which model that classification goes to.
 
-**Stage 1 — classify.** `KVM-GetRouterCredentials` reads the router key from the **encrypted**
-`ai-gateway-creds` KVM (no secret in the bundle), the native `AM-PrepRouterRequest` AssignMessage
-builds the request (no JavaScript), and `SC-ModelRouter` calls **TypeSafe AI JEV System One**
-(`jev-latest`) with a `choice` question pinning the answer to one of four categories — `coding`,
-`deep_reasoning`, `simple`, `general`. The chain runs in `AutoRoutingFlow`, after the semantic-cache
-lookup, so cache hits never call the router.
+**Stage 1: classify.** `KVM-GetRouterCredentials` reads the router key from the encrypted
+`ai-gateway-creds` KVM, the `AM-PrepRouterRequest` AssignMessage builds the request, and
+`SC-ModelRouter` calls **TypeSafe AI JEV System One** (`jev-latest`) with a `choice` question that
+pins the answer to one of four categories: `coding`, `deep_reasoning`, `simple`, `general`. The
+chain runs in `AutoRoutingFlow`, after the semantic-cache lookup, so cache hits never call the
+router.
 
-**Stage 2 — entitle.** [AutoRouting.js](apigee/proxies/ai-gateway-v1/apiproxy/resources/jsc/AutoRouting.js)
+**Stage 2: entitle.** [AutoRouting.js](apigee/proxies/ai-gateway-v1/apiproxy/resources/jsc/AutoRouting.js)
 reads the category and resolves the model from a **custom attribute on the caller's API product**:
 
 ```
 verifyapikey.VA-VerifyAPIKey.apiproduct.routing.model.<category>
 ```
 
-The policy contains **no model names and no prompt heuristics**. The model map lives entirely on
-the product, so the same classification yields a different model per persona product:
+The model map lives on the product, so the same classification yields a different model per
+persona product:
 
 | Router category | Engineering & IT | Analysts & Knowledge Workers | Customer Support & Sales |
 | :--- | :--- | :--- | :--- |
@@ -59,62 +101,60 @@ Only **Engineering & IT** can reach `claude-opus-5-5`. **Analysts & Knowledge Wo
 tops out at `gemini-3.1-pro-preview`. **Customer Support & Sales** calls only
 `gemini-3.5-flash-lite` / `gemini-3.6-flash` / `claude-haiku-5-5` directly, and on
 `/auto` uses `gemini-3.1-pro-preview` only for questions the router classifies `deep_reasoning`
-(Agent Showcase scenario 8). The key check on `/auto` runs against the `/auto` operation, so this
-needs no direct Pro operation on the product; it can never reach `claude-opus-5-5`. Changing the routing map is a **product edit, not a code change**; re-run
-`apigee/scripts/provision_unified_credentials.py` and the new mapping takes effect in ~10s with no
+(Agent Showcase scenario 8). The key check on `/auto` runs against the `/auto` operation, so the
+product needs no direct Pro operation for this; it can never reach `claude-opus-5-5`.
+
+To change the routing map, edit the product, re-run
+`apigee/scripts/provision_unified_credentials.py`, and the new mapping takes effect in ~10s with no
 proxy redeploy.
 
-**Degradation is explicit.** `SC-ModelRouter` is `continueOnError="true"` with a 2.5s timeout, and
-an empty prompt skips the callout entirely. If the classifier times out, errors, or returns
-something unparseable, the category stays unresolved and the request falls back to the product's
-`routing.model.general`. There is no hidden second classifier: a product that declares no routing
-attributes resolves **no model at all** rather than quietly serving one it may not entitle.
+**Fallback.** `SC-ModelRouter` is `continueOnError="true"` with a 2.5s timeout, and an empty prompt
+skips the callout. If the classifier times out, errors, or returns something unparseable, the
+request uses the product's `routing.model.general`. If a product declares no routing attributes,
+no model is resolved.
 
-`flow.target_provider` is derived from the resolved model name (`claude…` → `anthropic`) and is what
+`flow.target_provider` is derived from the resolved model name (`claude…` → `anthropic`) and
 selects the Claude Vertex target at route time. The policy writes `flow.target_model`, `flow.model`,
 `flow.target_provider`, `flow.autoRouted`, `flow.routerCategory` and `flow.routingTier`; the chosen
-category is echoed to the caller as `x-gateway-category`. `flow.routingTier` is **tracing only** —
-it no longer selects a model.
+category is returned to the caller as `x-gateway-category`. `flow.routingTier` is for tracing only.
 
-**Routing selects a model; it does not do costing.** `flow.costTier` is set in exactly one place,
-[CalculateCost.js](apigee/proxies/ai-gateway-v1/apiproxy/resources/jsc/CalculateCost.js),
-which derives it from the rate resolved out of the `ai-model-rates` KVM — on cache hits too. The
-router used to carry a hardcoded `costTier` literal beside each decision that beat the KVM on the
-`/auto` path; that, and the hardcoded zero cost in `AM-SetCacheHitExpected`, have been removed.
+`flow.costTier` is set by
+[CalculateCost.js](apigee/proxies/ai-gateway-v1/apiproxy/resources/jsc/CalculateCost.js)
+from the rate resolved out of the `ai-model-rates` KVM, on cache hits too.
 
 ### 2. 🛡️ Access Control & Model Armor
 
-- **Prompt sanitization** — [SUP-UserPrompt.xml](apigee/proxies/ai-gateway-v1/apiproxy/policies/SUP-UserPrompt.xml)
+- **Prompt sanitization**: [SUP-UserPrompt.xml](apigee/proxies/ai-gateway-v1/apiproxy/policies/SUP-UserPrompt.xml)
   is a `SanitizeUserPrompt` policy bound to Model Armor template
   `projects/your-gcp-project/locations/asia-southeast1/templates/apigee-sanitize-user-prompt`.
-- **Response sanitization** — `SMR-SanitizeModelResponse` runs on successful non-passthrough responses.
-- **Identity first** — the request PreFlow resolves identity from a Bearer JWT
+- **Response sanitization**: `SMR-SanitizeModelResponse` runs on successful non-passthrough responses.
+- **Identity first**: the request PreFlow resolves identity from a Bearer JWT
   (`DJWT-ExtractUserIdentity` → `AM-SetUserIdentity`) and raises `RF-MissingUserEmail` →
-  **HTTP 401** if no `email` claim resolves. The JWT is the **only** accepted source: there is no
-  `X-User-Email` header fallback, and a request bearing only that header is rejected.
-- **API key verification** — `VA-VerifyAPIKey` runs *after* identity resolution and *before* Model Armor.
-- **Blocked calls stay attributable** — the proxy's `DefaultFaultRule` runs `DC-FaultAnalytics`,
-  re-emitting `dc_user_email` and `dc_model_name` on the fault path. Without it, faults skip the
-  response flow and a blocked request would be counted fleet-wide but belong to no caller.
+  **HTTP 401** if no `email` claim resolves. The JWT is the only accepted identity source; a
+  request that sends only an `X-User-Email` header is rejected.
+- **API key verification**: `VA-VerifyAPIKey` runs *after* identity resolution and *before* Model Armor.
+- **Blocked calls are attributed**: the proxy's `DefaultFaultRule` runs `DC-FaultAnalytics`,
+  which records `dc_user_email` and `dc_model_name` on the fault path, so blocked requests are
+  attributed to the caller in analytics.
 
 Anything calling the AI Gateway must send **both** an `x-apikey` *and* an identity JWT. The key
 authorises (product, models, quota); the JWT identifies (`email` claim). The
-[`agents/`](agents/) ADK service forwards the end
-user's own token from the inbound `/chat` request so ledger, wallet and token-quota spend are
-attributed to the real person, and falls back to `APIGEE_IDENTITY_TOKEN` for headless runs.
+[`agents/`](agents/) ADK service forwards the end user's own token from the inbound `/chat`
+request, so ledger, wallet and token-quota spend are attributed to that person, and uses
+`APIGEE_IDENTITY_TOKEN` for headless runs.
 
 > [!IMPORTANT]
 > API key verification executes **before** Model Armor in the PreFlow. A request that fails key
-> validation — including one naming a model its API Product does not entitle — is rejected with
-> **HTTP 401** before any prompt is sent for safety evaluation, so an unauthenticated caller
-> cannot drive a billable Model Armor call.
+> validation, including one naming a model its API Product does not entitle, is rejected with
+> **HTTP 401** before any prompt is sent to Model Armor, so an unauthenticated caller cannot
+> trigger a billable Model Armor call.
 
-### 3. 🎟️ Tokenomics — Product-Driven LLM Token Quotas
+### 3. 🎟️ Tokenomics: Product-Driven LLM Token Quotas
 
-Token limits are **not hardcoded in the proxy**. Both
+Token limits come from the API product, not the proxy. Both
 [LTQ-TokenEnforce.xml](apigee/proxies/ai-gateway-v1/apiproxy/policies/LTQ-TokenEnforce.xml)
 and `LTQ-TokenCount.xml` are `LLMTokenQuota` policies that read `limit` / `interval` / `timeUnit`
-dynamically from the API Product attached to the verified key:
+from the API Product attached to the verified key:
 
 ```xml
 <LLMTokenQuota continueOnError="false" enabled="true" name="LTQ-TokenEnforce" type="rollingwindow">
@@ -130,39 +170,33 @@ dynamically from the API Product attached to the verified key:
 </LLMTokenQuota>
 ```
 
-The inline `count="1000"` / `1` / `minute` values are fallback defaults only — the `*Ref` attributes win.
+The inline `count="1000"` / `1` / `minute` values are fallback defaults only; the `*Ref` attributes win.
 `LTQ-TokenEnforce` enforces, `LTQ-TokenCount` counts, and both share the `common-counter` shared name.
 
 > [!NOTE]
-> **Token-quota demo model: `claude-haiku-5-5`, 300 tokens/min on every persona product that grants it** (Engineering & IT and Customer Support & Sales;
-> Analysts & Knowledge Workers has no Haiku)
-> (raised from 50 so the demo can show a pass, two threshold alerts and then a 429).
-> It moved off `gemini-2.5-flash` ahead of that model's 2026-10-20 retirement. Claude hosts the
-> demo correctly because `JS-FormatClaudeResponse` synthesises `usageMetadata.totalTokenCount`
-> in the *target* response flow, before `LTQ-TokenCount` reads it in PostFlow — so the demo now
-> also proves token governance works across providers, not just on Google's response shape.
+> **Token-quota demo model: `claude-haiku-5-5`, 300 tokens/min on every persona product that grants it**
+> (Engineering & IT and Customer Support & Sales; Analysts & Knowledge Workers has no Haiku).
+> The demo shows a pass, two threshold alerts and then a 429. `JS-FormatClaudeResponse` writes
+> `usageMetadata.totalTokenCount` in the *target* response flow, before `LTQ-TokenCount` reads it
+> in PostFlow, so token quotas apply to Claude as well as Gemini.
 >
-> `gemini-2.5-flash` has since been **retired outright**: its `operationConfig` was removed from
-> the (now-legacy) AI tiers and is absent from every persona product, so it is entitled by no
-> product and now returns **401** at `VA-VerifyAPIKey`.
-> Its rate-card entry, `CalculateCost.js` prefix entry and
-> analytics colour are deliberately kept, because `server.js` re-costs historical analytics from
-> the rate card and deleting them would silently re-price past traffic at the `default` rate.
+> **Current models:** `gemini-3.5-flash-lite` (simple), `gemini-3.6-flash` (general), `gemini-3.8-flash`,
+> `gemini-3.1-pro-preview` (deep reasoning; Gemini 4 Argon is its planned successor), `claude-haiku-5-5`
+> and `claude-opus-5-5` (global endpoint).
 >
-> **2026-10 model refresh:** retired `gemini-3.7-flash` and `gemini-3.5-flash` (deprecated 2026-10-08),
-> `gemini-3.1-flash-lite`, `gemini-3-flash-preview`, `claude-haiku-4-5` and `claude-opus-4-5`. Current models:
-> `gemini-3.5-flash-lite` (simple), `gemini-3.6-flash` (general), `gemini-3.8-flash`, `gemini-3.1-pro-preview`
-> (deep reasoning; Gemini 4 Argon is its planned successor), `claude-haiku-5-5` and `claude-opus-5-5` (global
-> endpoint). As with `gemini-2.5-flash`, the retired IDs keep pricing-only rate-card, `CalculateCost.js` and
-> analytics-colour entries so historical traffic is not re-priced at the `default` rate.
+> **Retired models:** `gemini-2.5-flash`, `gemini-3.7-flash`, `gemini-3.5-flash`, `gemini-3.1-flash-lite`,
+> `gemini-3-flash-preview`, `claude-haiku-4-5` and `claude-opus-4-5` are not entitled by any persona
+> product; `gemini-2.5-flash` returns **401** at `VA-VerifyAPIKey`. Keep their rate-card,
+> `CalculateCost.js` prefix and analytics-colour entries: `server.js` re-costs historical analytics
+> from the rate card, and removing an entry re-prices past traffic at the `default` rate.
 
-**`claude-haiku-5-5` is the deliberate token-limit demo model at 300 tokens / 1 minute.**
-`/auto` is 20000 tokens / 2 minutes (rolling) and every other operation in
-[customer_support_and_sales.json](apigee/products/customer_support_and_sales.json) is 2000 tokens / 1 minute. `/auto` has a higher cap because one agent turn chains several model calls and thinking tokens count. The 2-minute rolling window is for the Agent Showcase quota burst (scenario 7): spent tokens stay counted long enough to show the 429, and a second burst right after is stopped at once. The product declares **5 `operationConfigs` across 4 models** (`auto`
-has two — `/auto` and `/auto:*`), exactly one `llmOperation` per config (the Management API
-rejects more with `Operations must contain exactly one entity`, and rejects an empty config with
-`Operations must contain exactly one entity but found 0 entities` — which is why retiring a model
-means deleting its whole wrapper, not just its operation):
+**Customer Support & Sales quotas.** `claude-haiku-5-5` is the token-limit demo model at
+300 tokens / 1 minute. `/auto` is 20000 tokens / 2 minutes (rolling) and every other operation in
+[customer_support_and_sales.json](apigee/products/customer_support_and_sales.json) is 2000 tokens / 1 minute.
+`/auto` has a higher cap because one agent turn chains several model calls and thinking tokens count.
+The 2-minute rolling window serves the Agent Showcase quota burst (scenario 7): spent tokens stay
+counted long enough to show the 429, and a second burst right after is stopped at once. The product
+declares **5 `operationConfigs` across 4 models** (`auto` has two: `/auto` and `/auto:*`):
 
 | Resource | Model | Token quota |
 | :--- | :--- | :--- |
@@ -172,29 +206,26 @@ means deleting its whole wrapper, not just its operation):
 | `/models/gemini-3.6-flash:*` | `gemini-3.6-flash` | 2000 / 1 min |
 | **`/models/claude-haiku-5-5:*`** | `claude-haiku-5-5` | **300 / 1 min** |
 
+Each `operationConfig` holds exactly one `llmOperation`. The Management API rejects more
+(`Operations must contain exactly one entity`) and rejects an empty config
+(`Operations must contain exactly one entity but found 0 entities`), so to retire a model, delete
+its whole `operationConfig`.
+
 > [!NOTE]
-> **Auto-routing is two resources that must carry one number.** All three persona products declare `/auto`
-> *and* `/auto:*` as separate `operationConfigs`, each with its own quota — the Management API
-> forbids two operations in one config, so they cannot share a single quota block. That once let
-> them drift apart: a single quota change left one route at 3000 and the other at 2000, giving the
-> confusing state "3,000 tokens a minute (2,000 at base route)".
->
-> History: `/auto:*` was removed in `02e21bf` because of that drift (the UI only calls bare
-> `/ai/v1/auto`). It has since been **restored** so Gemini-SDK-style clients can call
-> `/ai/v1/auto:generateContent`, this time with a guard:
+> **Keep the two auto-routing quotas equal.** All three persona products declare `/auto` *and*
+> `/auto:*` as separate `operationConfigs`, each with its own quota. `/auto:*` lets Gemini-SDK-style
+> clients call `/ai/v1/auto:generateContent`; the UI calls bare `/ai/v1/auto`.
 > [products.unit.test.mjs](ui/tests/products.unit.test.mjs) fails unless `/auto` and `/auto:*`
 > have **equal** `llmTokenQuota` in every persona product JSON and in `DEFAULT_PRODUCTS`, and the Admin
-> Console (`MonetizationManager`) edits quotas by model, so both configs move together.
+> Console (`MonetizationManager`) edits quotas by model, so both configs change together.
 >
-> Caveat: they are still two counters, so a caller can spend the limit on `/auto` **and** again on
-> `/auto:*` in the same window — accepted for the demo. `/auto:streamGenerateContent` is **not**
-> supported (refused by `RF-StreamingNotSupported`); streaming for `/auto` is on the roadmap.
+> They are two counters, so a caller can spend the limit on `/auto` **and** again on `/auto:*` in
+> the same window. `/auto:streamGenerateContent` is **not** supported and is refused by
+> `RF-StreamingNotSupported`.
 
-Enforcement is wired through the dedicated `LLMTokenLimitFlow` conditional flow, which fires on
-`/models/claude-haiku-5-5:generateContent`, on
-`flow.model == "claude-haiku-5-5"`, or on the regex `^/models/claude-haiku-4-5.*` — the
-last clause deliberately omits the `@date` suffix so a future revision of the same model still
-matches. Breaching the limit returns **HTTP 429**.
+Enforcement runs in the `LLMTokenLimitFlow` conditional flow, which fires on
+`/models/claude-haiku-5-5:generateContent`, on `flow.model == "claude-haiku-5-5"`, or on the regex
+`^/models/claude-haiku-4-5.*`. Breaching the limit returns **HTTP 429**.
 
 **Threshold alert before the 429.**
 [JS-TokenQuotaThreshold.xml](apigee/proxies/ai-gateway-v1/apiproxy/policies/JS-TokenQuotaThreshold.xml)
@@ -204,67 +235,60 @@ divides `ratelimit.LTQ-TokenCount.used.count` by the product limit
 `verifyapikey.VA-VerifyAPIKey.apiproduct.developer.llmQuota.limit` and sets
 `x-gateway-token-quota-status` to `ok` (≤ 50%), `near-threshold` (> 50% and < 100%) or `exhausted`
 (≥ 100%), alongside used / limit / percentage / warning headers (see section 6). The threshold is
-the policy's `threshold` property (`0.5`). The policy is `continueOnError="true"` and
-observability-only: it never blocks a call. The Chat Playground turns the signal into an amber
-*Nearing token quota threshold* banner (rose *Token quota exhausted*) at the top of the chat, driven
-by the most recent call that carried it, plus a small chip on the message itself — parsed by
+the policy's `threshold` property (`0.5`). The policy is `continueOnError="true"` and only reports;
+it never blocks a call. The Chat Playground shows an amber *Nearing token quota threshold* banner
+(rose *Token quota exhausted*) at the top of the chat, driven by the most recent call that carried
+the signal, plus a small chip on the message itself, parsed by
 [tokenQuota.js](ui/src/utils/tokenQuota.js). Cache hits and errors carry no signal.
 
-> [!NOTE]
-> The limit comes from the API product, not `ratelimit.LTQ-TokenCount.allowed.count`: for a
-> `CountOnly` policy the runtime reports `Long.MAX_VALUE` (`9223372036854775807`) there, which made
-> every call read as 0% (verified on dev).
-
-The **Token Limits** demo is 4 stateless calls (no chat history, `maxOutputTokens: 90`, ~120 tokens
-each), run within one minute because the window is rolling. Clicking a later sub-step directly
-(e.g. **4. Blocked (429)**) first runs the earlier steps it depends on; the Semantic Cache
-**Instant Hit** sub-step likewise seeds first if needed
+**Run the Token Limits demo.** It makes 4 stateless calls (no chat history, `maxOutputTokens: 90`,
+~120 tokens each); run them within one minute because the window is rolling. Clicking a later
+sub-step directly (e.g. **4. Blocked (429)**) first runs the earlier steps it depends on; the
+Semantic Cache **Instant Hit** sub-step likewise seeds first if needed
 ([scenarioPrereqs.js](ui/src/utils/scenarioPrereqs.js)). In the scenario bar under the prompt
-box, clicking a chip runs its next step; hovering for ~0.6 s or clicking its ▾ opens a picker to
+box, click a chip to run its next step; hover for ~0.6 s or click its ▾ to open a picker and
 run any step directly:
 
 | Step | Window after the call | Result |
 | :--- | :--- | :--- |
 | 1 | ~40% | 200, `ok` |
 | 2 | ~80% | 200 + `near-threshold` alert |
-| 3 | > 100% | 200 + `exhausted` alert — still admitted, because `LTQ-TokenEnforce` is `EnforceOnly` and the counter was under the limit when the request arrived |
+| 3 | > 100% | 200 + `exhausted` alert. Still admitted: `LTQ-TokenEnforce` is `EnforceOnly` and the counter was under the limit when the request arrived |
 | 4 | — | **429** from `LTQ-TokenEnforce` |
 
-Verified on dev: 117/300 (39%) `ok`, 236/300 (78.7%) `near-threshold`, 361/300 (120.3%)
-`exhausted`, then 429. The plan holds for any per-call size of 100–149 tokens.
+Expected values on dev: 117/300 (39%) `ok`, 236/300 (78.7%) `near-threshold`, 361/300 (120.3%)
+`exhausted`, then 429. The sequence holds for any per-call size of 100–149 tokens.
 
 > [!IMPORTANT]
-> The counter is keyed on `flow.emailId`, the SSO-derived caller identity — **not** on the consumer
-> key. Every demo user shares the same `Unified Admin … App` credential, so a key-keyed window
-> meant two people demoing at once shared one token budget and the second got a 429 they did
-> not cause. `LTQ-TokenEnforce` and `LTQ-TokenCount` must declare an **identical** `<Identifier>`:
-> they share `common-counter`, and if they diverge the enforcer reads a counter nobody writes to
-> and the quota silently stops working.
+> The counter is keyed on `flow.emailId`, the SSO-derived caller identity, **not** on the consumer
+> key. Every demo user shares the same `Unified Admin … App` credential, and each person still
+> gets their own token window. `LTQ-TokenEnforce` and `LTQ-TokenCount` must declare an
+> **identical** `<Identifier>`: they share `common-counter`, and if they differ the quota is no
+> longer enforced.
 
 ### 4. 💳 Apigee Native Monetization & Prepaid Wallets
 
-- **Cost calculation** — `KVM-GetModelRates` loads the `ai-model-rates` KVM (`rate_card` entry),
+- **Cost calculation**: `KVM-GetModelRates` loads the `ai-model-rates` KVM (`rate_card` entry),
   then [CalculateCost.js](apigee/proxies/ai-gateway-v1/apiproxy/resources/jsc/CalculateCost.js)
   computes `flow.tx_cost_micros`.
-- **Wallet deduction** — `QC-DeductBudget` debits the developer wallet, and
+- **Wallet deduction**: `QC-DeductBudget` debits the developer wallet, and
   `JS-AuditBudgetAccounting` records the outcome in `flow.budget_status`.
   `MLC-EnforceMonetizationLimits` gates the request on the way in with a 403.
 
-- **Budget enforcement** — `QC-EnforceBudgetLimit` checks the counter on the way in and
+- **Budget enforcement**: `QC-EnforceBudgetLimit` checks the counter on the way in and
   `RF-BudgetExceeded` returns **HTTP 429 `RESOURCE_EXHAUSTED`** when it is exhausted.
 
   > [!IMPORTANT]
-  > The quota policy is `continueOnError="true"` on purpose, so its raw
+  > `QC-EnforceBudgetLimit` is `continueOnError="true"`, so its raw
   > `policies.ratelimit.QuotaViolation` never reaches the client; `RF-BudgetExceeded` raises the
-  > 429 instead, in the same envelope as every other guardrail. **Deleting that step silently
-  > disables budget enforcement entirely** — which is exactly the state this proxy was in until
-  > it was added. There is no `ratelimit.<policy>.exceeded` variable; the working signal is
-  > `ratelimit.<policy>.failed = true and ratelimit.<policy>.exceed.count > 0`.
-- **Prepaid provisioning** — [server.js](ui/server.js#L531-L569)
-  sets `billingType: PREPAID` and credits a **$20 USD** starting balance. This now runs from the
-  explicit `/api/me/onboard` step rather than silently on sign-in — see
-  [First-run developer onboarding](#first-run-developer-onboarding).
-- **Rate plans & attribution** — surfaced through the `/api/monetization/*` endpoints
+  > 429 in the gateway's standard error envelope. **Removing `RF-BudgetExceeded` disables budget
+  > enforcement.** Its condition is
+  > `ratelimit.<policy>.failed = true and ratelimit.<policy>.exceed.count > 0`; there is no
+  > `ratelimit.<policy>.exceeded` variable.
+- **Prepaid provisioning**: [server.js](ui/server.js#L531-L569)
+  sets `billingType: PREPAID` and credits a **$20 USD** starting balance during the
+  `/api/me/onboard` step; see [First-run developer onboarding](#first-run-developer-onboarding).
+- **Rate plans & attribution**: available through the `/api/monetization/*` endpoints
   (rate plans, subscriptions, attributions, credit, config).
 
 ### 5. ⚡ Cache (Vertex AI Vector Search)
@@ -274,29 +298,28 @@ embeds the prompt with Vertex AI `text-embedding-005` and queries a Vertex AI Ve
 endpoint (`DeployedIndexID: semantic_cache`) with a similarity **threshold of 0.95**.
 `SCP-Semantic-Cache-Populate` writes successful responses back.
 
-Caching is **opt-in per request** — the lookup only runs when the `use-cache` or `x-use-cache`
+Caching is **opt-in per request**: the lookup runs only when the `use-cache` or `x-use-cache`
 header is `true`. On a hit, `flow.cached` is `"true"`, which skips `QC-DeductBudget` and
-`LTQ-TokenCount` — so a cache hit costs no tokens and no wallet balance.
+`LTQ-TokenCount`, so a cache hit costs no tokens and no wallet balance.
 
-`KVM-GetModelRates` and `JS-CalculateCost` **do** still run on a hit; they are gated on
-`response.status.code = 200` alone. That is what populates `x-gateway-cost-tier` on a cached
-response, which was previously empty. `CalculateCost.js` zeroes the cost itself on a hit rather
-than being skipped. A hit reports `x-gateway-budget-status: skipped_cached`.
+`KVM-GetModelRates` and `JS-CalculateCost` still run on a hit (they are gated on
+`response.status.code = 200` alone), so a cached response carries `x-gateway-cost-tier`.
+`CalculateCost.js` sets the cost to zero on a hit. A hit reports `x-gateway-budget-status: skipped_cached`.
 
 ### 6. 📡 `x-gateway-*` Trace Telemetry Contract
 
-Every gateway response carries a block of trace headers set by a single policy,
+Every gateway response carries a block of trace headers set by
 [AM-SetResponseHeaders.xml](apigee/proxies/ai-gateway-v1/apiproxy/policies/AM-SetResponseHeaders.xml).
-This is a **contract, not a debugging aid** — the UI trace inspector, the analytics dashboard and
-the live test suite all read it, so headers must not be renamed or dropped.
+The UI trace inspector, the analytics dashboard and the live test suite all read these headers;
+do not rename or drop them.
 
 | Header | Source variable | Meaning |
 | :--- | :--- | :--- |
 | `x-gateway-model` | `flow.target_model` | Model actually invoked upstream |
-| `x-gateway-provider` | `flow.target_provider` | `google` or `anthropic` — also selects the Vertex target |
+| `x-gateway-provider` | `flow.target_provider` | `google` or `anthropic`; also selects the Vertex target |
 | `x-auto-routed` | `flow.autoRouted` | Whether `AutoRouting.js` chose the model |
 | `x-gateway-category` | `flow.routerCategory` | Category the router model returned: `coding` / `deep_reasoning` / `simple` / `general`. Empty when the classifier was skipped or failed |
-| `x-gateway-router-category` | `flow.routerCategory` | Alias of the above, kept so the UI trace inspector and the analytics dashboard can read either name |
+| `x-gateway-router-category` | `flow.routerCategory` | Alias of the above; the UI trace inspector and the analytics dashboard read either name |
 | `x-gateway-cost-tier` | `flow.costTier` | `low` / `medium` / `high` routing classification |
 | `x-gateway-cost-usd` | `flow.tx_cost_usd` | Computed request cost |
 | `x-gateway-currency` | *(literal `USD`)* | Currency for the cost fields |
@@ -309,9 +332,9 @@ the live test suite all read it, so headers must not be renamed or dropped.
 | `x-gateway-token-quota-limit` | `flow.token_quota_limit` | The product's `llmTokenQuota` limit for the operation |
 | `x-gateway-token-quota-used-pct` | `flow.token_quota_used_pct` | Used / limit as a percentage, one decimal place |
 | `x-gateway-token-quota-threshold-pct` | `flow.token_quota_threshold_pct` | Alert threshold (`50`) |
-| `x-gateway-token-quota-status` | `flow.token_quota_status` | `ok` / `near-threshold` / `exhausted` — set by `JS-TokenQuotaThreshold` |
+| `x-gateway-token-quota-status` | `flow.token_quota_status` | `ok` / `near-threshold` / `exhausted`, set by `JS-TokenQuotaThreshold` |
 | `x-gateway-token-quota-warning` | `flow.token_quota_warning` | Human-readable warning; empty when `ok` |
-| `x-gateway-budget-status` | `flow.budget_status` | Budget accounting outcome — see below |
+| `x-gateway-budget-status` | `flow.budget_status` | Budget accounting outcome; see below |
 | `x-gateway-budget-used-usd` | `flow.budget_used_usd` | Developer spend recorded this interval |
 | `x-gateway-budget-limit-usd` | `flow.budget_limit_usd` | Budget cap the counter is measured against |
 | `x-gateway-monetization-status` | `mint.limitscheck.status_message` | Monetization limit-check verdict |
@@ -319,37 +342,34 @@ the live test suite all read it, so headers must not be renamed or dropped.
 | `x-gateway-prepaid-currency` | `mint.limitscheck.prepaid_developer_currency` | Wallet currency |
 | `x-gateway-balance-remaining` | `flow.prepaid_balance_remaining` | Balance after this request's deduction |
 
-`x-gateway-budget-status` exists because budget accounting is fail-open by design and every way
-it can break is otherwise silent — `QC-DeductBudget` swallows its own faults, and a
-`JS-CalculateCost` failure skips the step with no fault raised at all.
-[AuditBudgetAccounting.js](apigee/proxies/ai-gateway-v1/apiproxy/resources/jsc/AuditBudgetAccounting.js)
-runs unconditionally after the deduction and names the outcome:
+Budget accounting fails open: `QC-DeductBudget` does not raise its own faults, and a
+`JS-CalculateCost` failure skips the deduction without a fault. Use `x-gateway-budget-status` to
+see the outcome. [AuditBudgetAccounting.js](apigee/proxies/ai-gateway-v1/apiproxy/resources/jsc/AuditBudgetAccounting.js)
+runs after every deduction and sets it:
 
 | Value | Meaning |
 | :--- | :--- |
 | `ok` | Cost computed, counter incremented |
-| `skipped_cached` | Semantic cache hit — deliberately not charged |
-| `skipped_no_cost` | **Silent failure** — costing produced no weight |
+| `skipped_cached` | Semantic cache hit; not charged |
+| `skipped_no_cost` | **Silent failure**: costing produced no weight |
 | `skipped_not_run` | Step condition matched nothing, or policy disabled |
-| `violation` | Quota raised, but the spend *was* recorded — cap now crossed |
-| `error` | **Silent failure** — quota faulted before counting; spend lost |
+| `violation` | Quota raised, but the spend *was* recorded; cap now crossed |
+| `error` | **Silent failure**: quota faulted before counting; spend lost |
 
-The same values are logged to Cloud Logging as `budgetStatus`, which is the surface to alert on.
+The same values are logged to Cloud Logging as `budgetStatus`; set alerts on that field.
 
-The policy runs with `continueOnError="true"` and `<IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>`,
-so an unset variable yields an absent or empty header rather than a fault — clients must treat every
-header as optional. On a cache hit the cost and token variables are never populated, which is why
-`x-gateway-cached` is the field to branch on.
+The header policy runs with `continueOnError="true"` and `<IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>`,
+so an unset variable yields an absent or empty header. Treat every header as optional. On a cache
+hit the cost and token variables are not populated; branch on `x-gateway-cached`.
 
 ### 7. 🛠️ Native MCP Server & Tools Governance
 
 The `mcp` proxy (`/mcp`, Customer Service / Business Insights / Enterprise tools) governs JSON-RPC 2.0 `tools/list` and
-`tools/call` traffic. It is **UI-managed by design**: it is created, edited and deployed in the
-Apigee UI, and its source is intentionally not in this repo, because pushing a repo bundle over it
-once broke the UI-managed configuration.
+`tools/call` traffic. Create, edit and deploy it in the Apigee UI; its source is not in this repo,
+and deploying a repo bundle over it overwrites the UI-managed configuration.
 [deploy_proxy.sh](apigee/scripts/deploy_proxy.sh) refuses `--proxy mcp`, and
-[proxybundle.unit.test.mjs](ui/tests/proxybundle.unit.test.mjs) asserts `apigee/proxies/mcp` does
-not exist.
+[proxybundle.unit.test.mjs](ui/tests/proxybundle.unit.test.mjs) fails if `apigee/proxies/mcp`
+exists.
 
 The repo-managed [bigquery-mcp](apigee/proxies/bigquery-mcp) and
 [servicenow-mcp](apigee/proxies/servicenow-mcp) gateways each carry seven policies (`CORS-Allow`,
@@ -359,13 +379,13 @@ The repo-managed [bigquery-mcp](apigee/proxies/bigquery-mcp) and
 | Method | Key required | Outcome |
 | :--- | :--- | :--- |
 | `tools/list`, `tools/call` | **Yes** (`VA-VerifyAPIKey` + `Q-Limit`) | Forwarded |
-| `initialize`, `ping`, `notifications/*` | No — the MCP products define only `tools/list` / `tools/call/<tool>` operations, so VerifyAPIKey would fail the handshake | Forwarded |
+| `initialize`, `ping`, `notifications/*` | No: the MCP products define only `tools/list` / `tools/call/<tool>` operations, so VerifyAPIKey would fail the handshake | Forwarded |
 | anything else (`resources/*`, `prompts/*`, …) | — | `RF-MethodNotAllowed` → **400** `{"jsonrpc":"2.0","id":null,"error":{"code":-32601,"message":"Method not allowed by gateway"}}` |
 
-`OPTIONS` (CORS preflight) bypasses the allowlist.
+`OPTIONS` (CORS preflight) is not checked against the allowlist.
 
 Authorization is expressed as **per-operation entries in the API product**, so a persona can only
-invoke the tools its product enumerates:
+invoke the tools its product lists:
 
 | Product | Operations | Quotas |
 | :--- | :--- | :--- |
@@ -378,22 +398,22 @@ The products are created by
 [provision_business_products.py](apigee/scripts/provision_business_products.py) and synced by
 `provision_unified_credentials.py`. **Customer Service Tools MCP** is attached to the Unified Sales
 App (Customer Support & Sales, 7 tools); **Business Insights Tools MCP** to the Unified Loans App
-(Analysts & Knowledge Workers, 5 tools); the Engineering & IT key sees all 12 tools
-others. A call without a key fails with **401** `FailedToResolveAPIKey`; a tool outside the
+(Analysts & Knowledge Workers, 5 tools); the Engineering & IT key sees all 12 tools.
+A call without a key fails with **401** `FailedToResolveAPIKey`; a tool outside the
 caller's product (a Support & Sales key calling `getProductMargins`, an Analyst key calling
 `getCustomer`) fails with **401** `InvalidApiKeyForGivenResource`. A third `runForecast` in a
 minute returns **429**.
 
 The MCP tools are REST APIs converted to MCP by Apigee: they were added in the Apigee UI
 (**Add tool**) to the prod `mcp` proxy from the OpenAPI specs that API hub syncs from the REST
-proxies below. The dev `mcp-dev` proxy carries no governance policies, so all MCP testing happens
-in prod. POST tools take their JSON body under an argument named `<operationId>Body`
+proxies below. The dev `mcp-dev` proxy carries no governance policies, so test MCP governance in
+prod. POST tools take their JSON body under an argument named `<operationId>Body`
 (`issueRefundBody`, `createSupportCaseBody`, `runForecastBody`); flat arguments return JSON-RPC
 **-32602**.
 
 #### Customer Service & Business Insights backends
 
-The demo scenario is generic — *your customers*. Two private REST services run on Cloud Run
+The demo scenario is generic: *your customers*. Two private REST services run on Cloud Run
 (project `your-gcp-project`, region `asia-southeast1`, `--no-allow-unauthenticated`; only the Apigee
 service account `ai-client@your-gcp-project.iam.gserviceaccount.com` can invoke them). Both are built
 from one image in [services/](services), selected by the `SERVICE` env var, over deterministic seed
@@ -403,33 +423,32 @@ demo "today" is 2026-09-25).
 | Cloud Run service | Apigee REST proxy | Base path | Spec |
 | :--- | :--- | :--- | :--- |
 | `customer-service-api` | [customer-service-v1](apigee/proxies/customer-service-v1) | `/customer-service/v1` | [customer-service.yaml](apigee/specs/customer-service.yaml) |
-| `business-insights-api` | [business-insights-v1](apigee/proxies/business-insights-v1) | `/business-insights/v1` | [business-insights.yaml](apigee/specs/business-insights.yaml) — aggregated data only, no individual customer data |
+| `business-insights-api` | [business-insights-v1](apigee/proxies/business-insights-v1) | `/business-insights/v1` | [business-insights.yaml](apigee/specs/business-insights.yaml): aggregated data only, no individual customer data |
 
 Each proxy runs PreFlow `CORS` → `KVM-GetConfig` → `JS-CheckCaller` → `RF-NotInternal` →
 `SA-Protect` (spike arrest), then one conditional flow per tool starting with
 `OAS-ValidateRequest` (the spec is bundled as `resources/oas/*.yaml`, and API hub syncs it from the
-proxy); unknown paths return **404**. The target PreFlow runs `AM-RemoveClientAuth` (stripping
-`Authorization`, `X-Serverless-Authorization`, `X-Goog-IAP-JWT-Assertion`, `x-api-key`, `x-apikey`
-so upstream IAP/Serverless-NEG tokens cannot shadow Apigee's token) and authenticates to Cloud Run
-with `GoogleIDToken`, and `ML-CloudLogging` writes to Cloud Logging.
+proxy); unknown paths return **404**. The target PreFlow runs `AM-RemoveClientAuth`, which strips
+`Authorization`, `X-Serverless-Authorization`, `X-Goog-IAP-JWT-Assertion`, `x-api-key` and `x-apikey`,
+then authenticates to Cloud Run with `GoogleIDToken`. `ML-CloudLogging` writes to Cloud Logging.
 
-- **Private-API check** — `RF-NotInternal` returns **403** `NOT_INTERNAL` unless the call comes
+- **Private-API check**: `RF-NotInternal` returns **403** `NOT_INTERNAL` unless the call comes
   from the Apigee MCP server, recognised by the internal hops Google infrastructure appends to
   `X-Forwarded-For` after the external load balancer, or from the Apigee NAT IP `34.124.136.14`
   (`nat-1`, the instance's only ACTIVE NAT address).
-- **Refund business rule** — `issueRefund` over **$50** is refused at the REST proxy with **403**
+- **Refund business rule**: `issueRefund` over **$50** is refused at the REST proxy with **403**
   `REFUND_LIMIT` ("Refunds over $50 need supervisor approval") before the backend, for caller
   keys on the **Customer Service Tools MCP** product (KVM `refund.limitedProducts`; the MCP server
   forwards the caller's `x-apikey`, which `AE-CallerKey` resolves). The all-tools Enterprise Tools
-  MCP product is not limited, which is what the Agent Showcase's ungoverned agent uses. $50 or
+  MCP product is not limited; the Agent Showcase's ungoverned agent uses it. $50 or
   less is approved. Via MCP it arrives as HTTP 403 with JSON-RPC
   `result.isError=true`. **Approvals via ServiceNow**: when a refund, credit or waiver is refused
   for approval, every showcase agent (generic and all industry packs) says plainly it was not
   applied and raises a ServiceNow incident with `createIncident` (category "Approval Request",
   priority "3 - Moderate"), then gives the customer the incident number. The Support & Sales key
   gets this one tool through the **ServiceNow Tools MCP - Create Incident** product
-  (`tools/list` 10/min, `createIncident` 5/min); every other ServiceNow tool still returns 401.
-- **Config** — encrypted per-env KVM `customer-tools-config`: `refund.maxAmount=50`,
+  (`tools/list` 10/min, `createIncident` 5/min); every other ServiceNow tool returns 401.
+- **Config**: encrypted per-env KVM `customer-tools-config`: `refund.maxAmount=50`,
   `refund.limitedProducts=Customer Service Tools MCP`,
   `internal.allowedIps` (NAT IPs), `internal.enforce=true`.
 
@@ -465,8 +484,8 @@ gateway stops, then one more. Each chip carries its expected outcome (Works / Bl
 | 4 | Support trends this month (401, analyst-only) | Revenue forecast (429 on the 3rd call in a minute) | Refund $120 (200, no limit on the all-tools product) |
 
 Object arguments (`issueRefundBody`, `createSupportCaseBody`, `runForecastBody`) are shown as
-sub-fields, enums as dropdowns, and blank optional fields are left out of the call so they don't
-fail the proxy's OpenAPI validation.
+sub-fields, enums as dropdowns, and blank optional fields are left out of the call so they pass
+the proxy's OpenAPI validation.
 
 **Demo data reset.** The Customer Service API keeps its seed data in memory, and the flows change
 it (the $30 refund lowers ORD-1042's refundable balance; *Log Support Case* adds a case). The UI
@@ -483,7 +502,7 @@ Each call is traced through **01 API Key Check → 02 Tools Filter → 03 Rate L
 third-party MCP servers such as Salesforce skip it). The refund limit shows as an amber
 business-rule stop after step 05, not as a Tools Filter denial.
 
-#### Industry packs — the MCP tab and Agent Showcase follow the industry
+#### Industry packs: the MCP tab and Agent Showcase follow the industry
 
 When the customer theme's industry has a pack, the demo switches to that industry's tools, story
 and agent prompts. 15 packs ship: Aviation, Banking, Education, Energy, Healthcare, Insurance,
@@ -501,14 +520,14 @@ maps each industry to its prompts, personas, MCP server, tools, showcase and the
 | MCP tab | Tools, business-area filter, presets and *Try a task* flows from the pack; the persona decides which tools list |
 | Agent Showcase | Both agents get the pack's instruction and MCP server in place of `/mcp` (BigQuery and ServiceNow stay); the governed Support & Sales key sees 13 tools and hits the limit at $120, the ungoverned admin key sees all tools and refunds |
 
-Industries without a pack (including ones the theme agent adds) keep the generic `/mcp` story
-above. The UI-managed `/mcp` proxy is untouched. Build and release steps:
+Industries without a pack (including ones the theme agent adds) use the generic `/mcp` story
+above. Packs do not change the UI-managed `/mcp` proxy. Build and release steps:
 [industries/README.md](industries/README.md#add-or-change-a-pack).
 
-### Entitlement tiers — what the products actually grant
+### Entitlement tiers: what the products grant
 
-Every grant is enumerated per model. There are **no `model="*"` entitlements and no `**` resource
-globs** — both were removed. Each model gets a single gateway-shaped resource:
+Every grant is listed per model. There are no `model="*"` entitlements and no `**` resource
+globs. Each model gets a single gateway-shaped resource:
 
 ```
 /models/<model>:*
@@ -516,8 +535,8 @@ globs** — both were removed. Each model gets a single gateway-shaped resource:
 
 | Product | Models | Resources | Token quota |
 | :--- | :--- | :--- | :--- |
-| **[Engineering & IT](apigee/products/engineering_and_it.json)** | `auto`, `gemini-3.5-flash-lite`, `gemini-3.6-flash`, `gemini-3.1-pro-preview`, `claude-haiku-5-5`, `claude-opus-5-5`, `gemini-3.7-flash`, `gemini-3.8-flash` — **8** | 9 `operationConfigs` (`auto` has two) | 10000 / min · `auto` → 50000 / min · `claude-haiku-5-5` → **300 / min** |
-| **[Analysts & Knowledge Workers](apigee/products/analysts_and_knowledge_workers.json)** | `auto`, `gemini-3.1-pro-preview`, `gemini-3.5-flash-lite`, `gemini-3.6-flash`, `gemini-3.7-flash`, `gemini-3.8-flash` — **6** (no Opus, no Haiku) | 7 `operationConfigs` (`auto` has two) | 5000 / min · `auto` → 30000 / min |
+| **[Engineering & IT](apigee/products/engineering_and_it.json)** | `auto`, `gemini-3.5-flash-lite`, `gemini-3.6-flash`, `gemini-3.1-pro-preview`, `claude-haiku-5-5`, `claude-opus-5-5`, `gemini-3.8-flash` — **7** | 8 `operationConfigs` (`auto` has two) | 10000 / min · `auto` → 50000 / min · `claude-haiku-5-5` → **300 / min** |
+| **[Analysts & Knowledge Workers](apigee/products/analysts_and_knowledge_workers.json)** | `auto`, `gemini-3.1-pro-preview`, `gemini-3.5-flash-lite`, `gemini-3.6-flash`, `gemini-3.8-flash` — **5** (no Opus, no Haiku) | 6 `operationConfigs` (`auto` has two) | 5000 / min · `auto` → 30000 / min |
 | **[Customer Support & Sales](apigee/products/customer_support_and_sales.json)** | `auto`, `gemini-3.5-flash-lite`, `gemini-3.6-flash`, `claude-haiku-5-5` — **4** | 5 `operationConfigs` (`auto` has two) | 2000 / min · `auto` → 20000 / 2 min · `claude-haiku-5-5` → **300 / min** |
 
 `auto` is granted as **an exact resource plus a verb-suffix resource** in all three persona products, as two
@@ -528,36 +547,32 @@ separate `operationConfigs` with equal quotas:
 /auto:*
 ```
 
-Apigee's `*` matches within a single path segment and requires **at least one character**, so
-`/auto*` does **not** match a bare `/auto` — hence `/auto` must be granted as its own exact
-resource. The tightened `:*` suffix form used for models is deliberate too: a trailing `*` placed
-directly after a model name leaks siblings (`/models/gemini-2.5-flash*` also granted
-`gemini-2.5-flash-lite`), whereas `:*` only absorbs the `:generateContent` /
+When writing resources, note that Apigee's `*` matches within a single path segment and requires
+**at least one character**: `/auto*` does **not** match a bare `/auto`, so grant `/auto` as its own
+exact resource. Use `:*` after a model name, not a bare trailing `*`: `/models/gemini-2.5-flash*`
+also matches `gemini-2.5-flash-lite`, whereas `:*` only absorbs the `:generateContent` /
 `:streamGenerateContent` suffix.
 
-The companion `/auto:*` resource was removed in `02e21bf` because, as a second `operationConfig`,
-it gave auto-routing two independently editable quotas that had silently disagreed. It has been
-**restored** with an equal-quota guard in `ui/tests/products.unit.test.mjs` (see the note in
-section 3), so `/auto:generateContent` is entitled and works. `/auto:streamGenerateContent` is
-**not** supported and is refused; streaming for `/auto` is on the roadmap.
+`/auto:generateContent` is entitled and works. `/auto:streamGenerateContent` is **not**
+supported and is refused.
 
 `AutoRoutingFlow` matches `proxy.pathsuffix MatchesPath "/auto*"` or the regex `^/auto.*`, so it
 serves both bare `/auto` (what the UI calls) and `/auto:generateContent`.
-`/models/auto` is no longer entitled by any product and is rejected with **400** at
+`/models/auto` is not entitled by any product and is rejected with **400** at
 `OAS-ValidateRequest`, because the path is absent from the OpenAPI spec.
 
 > [!NOTE]
-> Customer Support & Sales **does** include `claude-haiku-5-5`. It does **not** enumerate
+> Customer Support & Sales **does** include `claude-haiku-5-5`. It does **not** list
 > `gemini-3.1-pro-preview` or `claude-opus-5-5`, so calls to those models with a Customer
 > Support & Sales key are rejected by `VA-VerifyAPIKey`. Analysts & Knowledge Workers grants
 > `gemini-3.1-pro-preview` but neither Claude model; only Engineering & IT grants Opus. All three products use
 > `llmOperationGroup.operationConfigs[].llmTokenQuota` with exactly one `llmOperation` per config;
-> neither uses the classic product `quota` field. The 300 tokens/min `claude-haiku-5-5` demo cap
+> none uses the classic product `quota` field. The 300 tokens/min `claude-haiku-5-5` demo cap
 > applies in **every** product that grants Haiku (Engineering & IT, Customer Support & Sales).
 
-`gemini-2.5-pro` is deliberately **unentitled in every product**: a real, older-generation model the
-organisation has not approved for use. It powers the "Restricted Model" demo scenario: even an Engineering & IT key is rejected at `VA-VerifyAPIKey` with **HTTP 401** before any
-upstream call is made.
+`gemini-2.5-pro` is not entitled in any product. Requests for it, even with an Engineering & IT
+key, get **HTTP 401** at `VA-VerifyAPIKey` before any upstream call. Use it in the
+"Restricted Model" demo scenario to show an entitlement rejection.
 
 ---
 
@@ -566,7 +581,7 @@ upstream call is made.
 Every governed call is written to Cloud Logging by
 [`ML-CloudLogging`](apigee/proxies/ai-gateway-v1/apiproxy/policies/ML-CloudLogging.xml)
 at `projects/your-gcp-project/logs/apigee`. The policy sits in **`PostClientFlow`**, which runs after
-the response is flushed **and still fires on faults** — so successful, blocked and failed calls are
+the response is flushed **and also on faults**, so successful, blocked and failed calls are
 all captured.
 
 Each record carries the identity (`userEmail`), the resolved `model` and path-derived
@@ -574,13 +589,13 @@ Each record carries the identity (`userEmail`), the resolved `model` and path-de
 `prompt` and `response`, plus `faultName` / `errorMessage`.
 
 In the UI, the **Model Consumption Ledger** (Analytics & Cost) has a **View logs** link on every
-`(user, model)` row. It opens a per-call table — timestamp, status, request, response, tokens, cost
-and auto-routed / cached flags — with an **Open in Cloud Logging** deep link. Rows expand to reveal
+`(user, model)` row. It opens a per-call table (timestamp, status, request, response, tokens, cost
+and auto-routed / cached flags) with an **Open in Cloud Logging** deep link. Expand a row to see
 the untruncated request and response.
 
-The window selector offers `1h / 24h / 7d / 30d` and **opens on whichever range is selected on the
-Analytics & Cost tab** (`24h` by default), so the drill-down always covers the same period as the
-ledger row that spawned it. Narrowing it inside the modal does not change the dashboard.
+The window selector offers `1h / 24h / 7d / 30d` and **opens on the range selected on the
+Analytics & Cost tab** (`24h` by default), so the drill-down covers the same period as the
+ledger row. Changing it inside the modal does not change the dashboard.
 
 | Piece | Location |
 | :--- | :--- |
@@ -590,41 +605,37 @@ ledger row that spawned it. Narrowing it inside the modal does not change the da
 | UI | [`CallLogsModal.tsx`](ui/src/components/CallLogsModal.tsx) |
 
 > [!IMPORTANT]
-> The server identity (`apigee-ui-mgmt-sa@your-gcp-project.iam.gserviceaccount.com`) needs
+> Grant the server identity (`apigee-ui-mgmt-sa@your-gcp-project.iam.gserviceaccount.com`)
 > `roles/logging.viewer`. The same service account backs both local development and Cloud Run, so a
 > single grant covers both.
 
 > [!CAUTION]
-> `prompt` and `response` persist **full, untruncated** user content to Cloud Logging. This is a
-> deliberate demo-fidelity choice. Redact or drop those two fields before handling real user data.
+> `prompt` and `response` store **full, untruncated** user content in Cloud Logging. Redact or
+> drop those two fields before handling real user data.
 
-Model Armor blocks at `SUP-UserPrompt` in PreFlow, *before* the target model is resolved — such a
-record has an empty `model`, which is why `requestedModel` is logged and why the read API matches
-**either** field.
+Model Armor blocks at `SUP-UserPrompt` in PreFlow, *before* the target model is resolved, so such
+a record has an empty `model`. Its `requestedModel` holds the model from the path, and the read API
+matches **either** field.
 
 ---
 
-### 9. 🤖 Ask Apigee — conversational governance
+### 9. 🤖 Ask Apigee: conversational governance
 
 A chat panel docked to the right of the **Admin Console** that reads and changes gateway
-configuration in plain English. It is itself a customer of the gateway it administers: every turn
-goes out through `/ai/v1`, is metered, and shows up in the demo's own analytics alongside user
-traffic.
+configuration in plain English. Every turn goes out through `/ai/v1`, is metered, and shows up in
+the demo's analytics alongside user traffic.
 
-**It can only ever change dev.** `update_dev_product` writes a `(Dev)` clone of a tier, never the
-live product — the guard is
-[`assertWritableDevProduct`](ui/server/adminAgentCore.js),
-and a unit test asserts no `PUT` is ever addressed to a live tier. There is deliberately **no
-promote-to-prod path**: production is changed by raising a pull request against
-[`apigee/products/`](apigee/products). `POST
-/api/admin-agent/promote` is still routed, but only to return a `403` that explains this — deleting
-it would give a stale browser tab an opaque `404`.
+**It only changes dev.** `update_dev_product` writes a `(Dev)` clone of a tier, never the
+live product; [`assertWritableDevProduct`](ui/server/adminAgentCore.js) enforces this, and a unit
+test asserts no `PUT` is ever addressed to a live tier. There is no promote-to-prod path: change
+production by raising a pull request against [`apigee/products/`](apigee/products).
+`POST /api/admin-agent/promote` returns a `403` that explains this.
 
 | Concern | How it is handled |
 | :--- | :--- |
 | Blast radius | Writes land on `… (Dev)` clones pinned to `environments: ['dev']`; `assertDevOnlyEnvironments` refuses any write or `environments` change that would attach a clone to `prod` (or to "all environments") |
 | Undo | Byte-exact pre-write snapshot per change; `POST /revert` restores it |
-| Going live | Pull request against the product JSON — not available to the agent |
+| Going live | Pull request against the product JSON; not available to the agent |
 | Secrets | The sandbox consumer key never leaves the server; responses pass through `redactSecrets()` |
 | Runaway loops | 8 tool rounds and a 45s wall-clock ceiling per turn, and the loop never throws |
 
@@ -641,18 +652,18 @@ usage, costs and failed calls and nobody else's.
 **Screening and cache switches.** `ai-gateway-v1` reads three optional API product attributes in
 [`AM-ResolveGuardrailToggles`](apigee/proxies/ai-gateway-v1/apiproxy/policies/AM-ResolveGuardrailToggles.xml):
 `guardrail.modelArmor.prompt`, `guardrail.modelArmor.response` and `guardrail.semanticCache` (`on`|`off`;
-missing = `on`, so live products are unchanged). It reports the result in the `x-gateway-guardrails`
+missing = `on`). It reports the result in the `x-gateway-guardrails`
 response header. Ask Apigee may flip them on `(Dev)` products only (AI CoE / Platform), and:
 
 - **Skills first.** The server refuses a `guardrail.*` change unless `consult_skill` ran in the same
   turn. The cited skill sections are stored on the change record and shown on its card.
   `consult_skill` serves [`ui/server/skillDigest.json`](ui/server/skillDigest.json), a sectioned
-  copy of `.gemini/skills` (the Cloud Run image only contains `ui/`). Regenerate it with
+  copy of `.gemini/skills`. Regenerate it with
   `npm run gen:skill-digest`; a unit test fails if it is stale.
 - **Prove it.** `run_dev_test` with `sourceProduct` uses a per-product test app
-  (`ask-apigee-test-<tier>`, bound to that dev product only). The shared sandbox key spans every dev
-  product, so Apigee would resolve an arbitrary one. The result's `guardrailsCheck` compares what the
-  product asks for with what the gateway applied, and the agent may only call it proven when they match.
+  (`ask-apigee-test-<tier>`, bound to that dev product only). The result's `guardrailsCheck`
+  compares what the product asks for with what the gateway applied, and the agent may only call
+  the change proven when they match.
 
 **MCP tool access.** Each MCP API product is a persona's tool set: `payloadOperationGroup` lists
 `tools/call/<tool>` operations, each with its own per-minute quota. Ask Apigee can allow or remove
@@ -663,55 +674,35 @@ tools, or change a tool's quota, following
 - Writes go only to a `<product> Dev` clone. It is created from the live product on first use, is
   bound to `dev` only, and is auto-approved. `assertWritableMcpDev` refuses anything else. You can
   only add tools that some product already grants on the same MCP server.
-- `consult_skill` (`tools-gateway-manager`) must run in the same turn. A guardrail-skill consult does
+- `consult_skill` (`tools-gateway-manager`) must run in the same turn; other skill consults do
   not count. Citations are stored on the change, and revert restores the clone exactly.
 - `run_dev_tool_test` calls the tool on the dev gateway with a test app (`ask-apigee-mcp-test-<product>`)
   that holds only the clone. Apigee's `InvalidApiKeyForGivenResource` means **denied**; any backend
   answer means **allowed**. The result reports `matches` against the clone's tool list.
 
-`run_dev_test` fires a real metered prompt at the dev gateway with the sandbox key, which is why the
-test card is the one place the panel still shows tokens, cost and latency — there, the telemetry
-*is* the answer. Ordinary chat turns show none.
+`run_dev_test` fires a real metered prompt at the dev gateway with the sandbox key. Its test card
+shows tokens, cost and latency; ordinary chat turns show none.
 
-#### Model selection
+#### Model
 
-Chosen by benchmark against the live gateway, using the agent's own system instruction and tool
-declarations, 3 trials each:
-
-| Model | Plain answer | Tool turn | Tool calls | Thinking tokens | Cost / call |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **`gemini-3.1-flash-lite`** ✅ | 2334 ms | **2212 ms** | 3/3 | 0 | **$0.000101** |
-| `gemini-3-flash-preview` | 3747 ms | 2690 ms | 3/3 | 55 | $0.000235 |
-| `gemini-3.7-flash` | 3648 ms | 3249 ms | 3/3 | 48 | $0.002414 |
-| `gemini-3.8-flash` | **504 Gateway Timeout** | — | — | — | — |
-
-Measured 2026-09 on models since retired; in 2026-10 the agent moved to their successors,
-`gemini-3.5-flash-lite` (primary) and `gemini-3.6-flash` (fallback).
-`gemini-3.8-flash` was the original choice and timed out at the gateway under a tool-bearing
-request. `gemini-3.5-flash-lite` is entitled on **both** tiers, so
-[`AGENT_FALLBACK_MODEL`](ui/server/adminAgentCore.js)
-(`gemini-3.6-flash`, used on a 403/404 entitlement failure) is now a genuine last resort.
-
-> [!NOTE]
-> A smaller model needs firmer instructions. flash-lite initially guessed a model id
-> (`claude-3-haiku`) instead of reading the product, then *asked permission* to retry with the
-> correct name the error had just handed it. Two system-instruction rules fixed it: never guess a
-> model id, and self-correct immediately when an error lists the valid values.
+Ask Apigee uses `gemini-3.5-flash-lite`, entitled on **both** tiers. On a 403/404 entitlement
+failure it falls back to [`AGENT_FALLBACK_MODEL`](ui/server/adminAgentCore.js)
+(`gemini-3.6-flash`). Its system instruction tells it never to guess a model id and to retry
+immediately when an error lists the valid values.
 
 #### Endpoints
 
 All under `/api/admin-agent/*`, served by
 [`adminAgentService.js`](ui/server/adminAgentService.js):
 `GET /sandbox`, `POST /sandbox/provision`, `POST /chat`, `GET /changes`, `POST /revert`,
-`POST /test`, and the deliberately-disabled `POST /promote`.
+`POST /test`, and `POST /promote` (always 403).
 
 > [!IMPORTANT]
-> The sandbox app's Apigee resource name is `admin-copilot-dev`, from before the feature was renamed
-> from Admin Copilot. An Apigee app name cannot be edited in place, so renaming it would orphan the
-> provisioned consumer key. Only the resource id is frozen — its DisplayName reads
-> *Admin Agent Dev Sandbox*.
+> The sandbox app's Apigee resource name is `admin-copilot-dev`; its DisplayName is
+> *Admin Agent Dev Sandbox*. Do not rename the app: an Apigee app name cannot be edited in place,
+> and recreating it orphans the provisioned consumer key.
 
-### 10. 🆚 Agent Showcase — the same agent with and without AI governance
+### 10. 🆚 Agent Showcase: the same agent with and without AI governance
 
 The **Agent Showcase** tab sends one customer question to two ADK agents at once and streams both
 side by side ([AgentShowcase.tsx](ui/src/components/AgentShowcase.tsx), service in
@@ -720,7 +711,7 @@ side by side ([AgentShowcase.tsx](ui/src/components/AgentShowcase.tsx), service 
 
 With an industry pack selected, both agents take the pack's instruction and its `<id>-mcp` server in
 place of `/mcp`, and the scenario chips use the pack's story (a **Tools: &lt;industry&gt;** badge shows
-which); see [Industry packs](#industry-packs--the-mcp-tab-and-agent-showcase-follow-the-industry).
+which); see [Industry packs](#industry-packs-the-mcp-tab-and-agent-showcase-follow-the-industry).
 The tables below describe the generic story.
 
 | | Regular Gateway (Without AI governance) | With AI & Tools Governance |
@@ -748,7 +739,7 @@ Eight preset scenarios, measured on prod (27–28 Sep 2026):
 | 5 | Confidential data | Hands over the product margin | Margin tool not on the support key |
 | 6 | Prompt injection | Reaches Pro ($0.17) | Model Armor blocks it before any model runs |
 | 7 | Burst (usage limit) | — | 5 governed runs back to back, cache off: 3 answered, then 429 `LLMTokenQuotaViolation` (20000 tokens / 2 min) |
-| 8 | Cheaper model? | Switched to Flash-Lite for this question: wrong box plan ($36–$38) or gives up, in every run so far | Routed `deep_reasoning` to Gemini 3.1 Pro: $32, one box of each size, each exactly full, in one step (answer reuse off for this scenario) |
+| 8 | Cheaper model? | Switched to Flash-Lite for this question: wrong box plan ($41–$48, or a plan that doesn't fit) | Routed `deep_reasoning` to Gemini 3.1 Pro: $40, four Medium boxes, each exactly full, in one step (answer reuse off for this scenario) |
 
 Scenario 8 answers "why not just use a cheaper model?": picking it switches the ungoverned agent's
 model picker to Gemini 3.5 Flash-Lite, and picking another scenario puts the previous model back.
@@ -756,12 +747,12 @@ The Customer Support & Sales product routes `deep_reasoning` to `gemini-3.1-pro-
 only, so the governed agent pays for Pro just on the question that needs it; easy steps still go to
 Flash-Lite or Flash.
 
-Scenario 7 runs back to back rather than in parallel: the token quota is checked when a model call
-starts and counted when it ends, so parallel runs all pass the check before any of their tokens
-count. The window is a rolling 2 minutes, so S1–S6 run just before also count, and a second burst
-within 2 minutes is stopped at once. The **Agent comparison** sub-tab totals every run of the session per agent: input and
-output tokens, cost per model, models used, and each MCP tool with its server and outcome (OK,
-blocked, error). Scenario 4 changes demo data; use **Reset demo data** afterwards.
+Scenario 7 runs back to back, not in parallel: the token quota is checked when a model call
+starts and counted when it ends. The window is a rolling 2 minutes, so S1–S6 run just before also
+count, and a second burst within 2 minutes is stopped at once. The **Agent comparison** sub-tab
+totals every run of the session per agent: input and output tokens, cost per model, models used,
+and each MCP tool with its server and outcome (OK, blocked, error). Scenario 4 changes demo data;
+use **Reset demo data** afterwards.
 
 **Agent Analytics**, the second page in the Agent Showcase pane (switch in its title row), shows the same two agents over time
 (24 hours, 7 or 30 days; Prod or Dev) from what Apigee recorded, not from the browser session:
@@ -770,8 +761,8 @@ per-day chart, models and cost, what happened to each model call (answered, sema
 quota 429, policy block, provider 429, timeout), MCP calls by server, and the MCP tools each agent
 used. It reads `/api/analytics/agent-stats` ([agentAnalytics.js](ui/server/agentAnalytics.js)):
 - Apigee Analytics with the standard `useragent` dimension. The agent service is the only Python
-  client of the gateway (`python-httpx/*` for model calls, `google-adk/*` for MCP), so no proxy
-  change was needed and the history goes back to the first agent run. Model calls are split by
+  client of the gateway (`python-httpx/*` for model calls, `google-adk/*` for MCP), and the history
+  goes back to the first agent run. Model calls are split by
   proxy (`llm-passthrough-v1` = without governance, `ai-gateway-v1` = with governance), MCP calls by
   the key (Unified Admin app = without, Support & Sales app = with). MCP `initialize` handshakes
   pass before the key check, so they are counted separately.
@@ -779,9 +770,9 @@ used. It reads `/api/analytics/agent-stats` ([agentAnalytics.js](ui/server/agent
 - Tool names from the MCP proxies' Cloud Logging entries: `tools/call` requests whose params carry
   `_meta`, which ADK's MCP client adds and the UI's MCP playground does not.
 
-On screen the wording describes what the controls do (authorized tools, usage and business limits,
-safety checks, right-sized models), not how the gateway implements them. Both agents get the same
-rows in the same order, and every row is colour coded:
+On screen, rows describe what the controls do (authorized tools, usage and business limits,
+safety checks, right-sized models). Both agents get the same rows in the same order, and every row
+is colour coded:
 
 | Colour | Regular Gateway, without AI governance (risks) | With AI & Tools Governance (controls) |
 | :--- | :--- | :--- |
@@ -801,7 +792,6 @@ the ungoverned agent in red and the governed agent in blue.
 ├── AGENTS.md                              # Subagent persona registry & playbooks
 ├── GEMINI.md                              # Repository-level agent instructions
 ├── README.md
-├── scenario_presets_review.md
 ├── agents/                                # Agent Showcase service: Python Google ADK + FastAPI (private Cloud Run)
 │   ├── Dockerfile
 │   ├── deploy.sh                          # Build + deploy agent-showcase-api (asia-southeast1)
@@ -837,7 +827,7 @@ the ungoverned agent in red and the governed agent in blue.
 │   │   ├── servicenow-mcp/                # Standalone ServiceNow MCP Gateway — 7 policies
 │   │   ├── customer-service-v1/           # Private REST proxy → customer-service-api (generated)
 │   │   └── business-insights-v1/          # Private REST proxy → business-insights-api (generated)
-│   │   #   (no mcp/ — the native MCP Tools Gateway is UI-managed in Apigee, by design)
+│   │   #   (no mcp/: the native MCP Tools Gateway is managed in the Apigee UI)
 │   ├── specs/                             # Canonical OpenAPI specs for the REST proxies
 │   │   ├── customer-service.yaml
 │   │   └── business-insights.yaml
@@ -852,13 +842,10 @@ the ungoverned agent in red and the governed agent in blue.
 │   ├── templates/ai-gateway/              # Helm-style policy templates (YAML)
 │   └── dist/ai-gateway-v1.zip             # Packaged bundle output
 ├── docs/
-│   ├── apigee_ai_gateway_demo_design.md
 │   ├── best_practices_guide.md
 │   ├── cloud_run_iap_deployment_guide.md
 │   ├── demo_script.md                     # Presenter talk track for the live demo
 │   ├── industry_scenario_prompts.md       # Generated: AI-tab prompts per customer-theme industry
-│   ├── proxy_architecture_design_plan.md
-│   ├── ui_semantic_cache_and_governance_spec.md
 │   └── unified_credentials_and_products_reference.md
 ├── industries/                            # Industry packs: one <id>.json per industry (source of truth)
 │   ├── README.md                          # Pack list, slots, add/release steps
@@ -877,10 +864,10 @@ the ungoverned agent in red and the governed agent in blue.
 └── ui/                                    # React 18 + Vite 5 + Tailwind demo studio
     ├── Dockerfile                         # node:20-alpine, serves dist/ via server.js
     ├── server.js                          # Production Node server: static + /api/* + reverse proxy
-    ├── server/                             # Server-side modules (MUST be COPYed by the Dockerfile)
+    ├── server/                             # Server-side modules (each must be COPYed by the Dockerfile)
     │   ├── adminAgentCore.js              # Ask Apigee pure logic: guards, diffs, tool loop
     │   ├── adminAgentService.js           # Ask Apigee Apigee/gateway I/O + /api/admin-agent/*
-    │   ├── guardrailCatalog.js            # Guardrail control catalogue loader
+    │   ├── guardrailCatalog.js            # Policy control catalogue loader
     │   ├── themeLibrary.js                # Customer theme library (GCS) + theme agent: /api/themes/*
     │   ├── industryGenerator.js           # Industries the theme agent adds (slots into fixed prompt templates)
     │   ├── reloadHint.js                  # /reload-hint.js: flags a hard refresh (Cmd/Ctrl+Shift+R)
@@ -912,26 +899,45 @@ the ungoverned agent in red and the governed agent in blue.
             └── mcpClient.ts               # JSON-RPC 2.0 tool protocol client
 ```
 
-> [!NOTE]
-> `ui/nginx.conf.template` and `ui/generate-env.sh` still exist in the tree but are **not referenced
-> by [ui/Dockerfile](ui/Dockerfile)** or by any build
-> script. They are leftovers from an earlier NGINX-based container and are dead files today.
-
 ### UI navigation
 
-[Navbar.tsx](ui/src/components/Navbar.tsx) renders five
-primary tabs: **AI Gateway**, **MCP Gateway**, **Analytics & Cost**, **Admin Console** and
-**Agent Showcase** (Admin Console is admin-view only, and hosts Developer Wallets, Token Pricing, Rate Plans,
-**Guardrails & Policies**, and the docked **Ask Apigee** panel; a **Dev / Prod** toggle shows
-the Dev sandbox products (`Engineering and IT Dev`, `Analysts and Knowledge Workers Dev`,
-`Customer Support and Sales Dev`) and dev rate card, which
-are editable, or the live Prod config, which is **read-only**: saving there explains that prod
-changes go through a pull request, and the server refuses prod writes with 403 `prod_read_only`
-([consoleEnv.js](ui/server/consoleEnv.js)). **Compare Dev ↔ Prod** ([EnvCompareModal.tsx](ui/src/components/EnvCompareModal.tsx))
-lists model, quota, attribute and rate-card differences so Ask Apigee changes can be reviewed before a PR), plus an interactive **Architecture** button that opens
-[ArchitectureBlueprintModal.tsx](ui/src/components/ArchitectureBlueprintModal.tsx) — an interactive reference diagram opening on **Solution Overview** — an animated walkthrough ([AgentFlowDiagram.tsx](ui/src/components/AgentFlowDiagram.tsx)) of one agent loop: User → Agent → AI Gateway (policy chips light up) → Vertex AI returns a tool call → Agent → MCP Gateway → REST API (the optional Apigee-hosted MCP → REST step is the MCP Gateway's last step, highlighted in amber, so only the REST API sits outside; Self-hosted MCP and 3rd-party MCP drawn alongside with BigQuery, Salesforce, SAP and Jira logos; Other models shown as Anthropic, Amazon Bedrock, OpenAI, DeepSeek and self-hosted logos next to Gemini; logos are Simple Icons paths in brandLogos.ts) → tool result back through the AI Gateway → final answer to the user, with play/pause/step/speed controls, reduced-motion support, and AI Gateway / MCP Gateway boxes that drill down, alongside **AI Gateway Flow** and **MCP Tools Flow** with clickable policy XML inspection and live trace status correlation. Additionally, every tested request in `ChatPlayground` (`Target URL:`) and `McpTraceViewer` (`JSON-RPC 2.0`) includes a **`Request Flow`** button that opens the modal in **`⚡ Tested Request Flow`** mode, dynamically short-circuiting the pipeline diagram at the exact stopping policy (e.g., red perimeter block at Prompt Sanitization or green short-circuit at Semantic Cache HIT; the "why it stopped" explanation renders as a white callout next to the stopped step, not as another step) and omitting bypassed downstream stages. The underlying `AppTab` union in
-[types/index.ts](ui/src/types/index.ts#L131) also carries
-`kvm-pricing` and `rate-cards`, which render inside the Admin Console surface.
+[Navbar.tsx](ui/src/components/Navbar.tsx) renders five primary tabs: **AI Gateway**,
+**MCP Gateway**, **Analytics & Cost**, **Admin Console** and **Agent Showcase**, plus an
+**Architecture** button.
+
+**Admin Console** (admin view only) hosts Developer Wallets, Token Pricing, Rate Plans,
+**Guardrails & Policies**, and the docked **Ask Apigee** panel.
+
+- A **Dev / Prod** toggle shows either the Dev sandbox products (`Engineering and IT Dev`,
+  `Analysts and Knowledge Workers Dev`, `Customer Support and Sales Dev`) and dev rate card, which
+  are editable, or the live Prod config, which is **read-only**: saving there explains that prod
+  changes go through a pull request, and the server refuses prod writes with 403 `prod_read_only`
+  ([consoleEnv.js](ui/server/consoleEnv.js)).
+- **Compare Dev ↔ Prod** ([EnvCompareModal.tsx](ui/src/components/EnvCompareModal.tsx)) lists
+  model, quota, attribute and rate-card differences, so you can review Ask Apigee changes before
+  raising a PR.
+
+**Architecture** opens [ArchitectureBlueprintModal.tsx](ui/src/components/ArchitectureBlueprintModal.tsx),
+an interactive reference diagram with three views:
+
+- **Solution Overview** (the default): an animated walkthrough
+  ([AgentFlowDiagram.tsx](ui/src/components/AgentFlowDiagram.tsx)) of one agent loop: User →
+  Agent → AI Gateway (policy chips light up) → Vertex AI returns a tool call → Agent → MCP Gateway
+  → REST API → tool result back through the AI Gateway → final answer to the user. The optional
+  Apigee-hosted MCP → REST step is the MCP Gateway's last step, highlighted in amber, so only the
+  REST API sits outside. Self-hosted MCP and 3rd-party MCP are drawn alongside with BigQuery,
+  Salesforce, SAP and Jira logos; Other models are shown as Anthropic, Amazon Bedrock, OpenAI,
+  DeepSeek and self-hosted logos next to Gemini (logos are Simple Icons paths in brandLogos.ts).
+  It has play/pause/step/speed controls and reduced-motion support, and the AI Gateway / MCP
+  Gateway boxes drill down.
+- **AI Gateway Flow** and **MCP Tools Flow**: clickable policy XML inspection and live trace
+  status correlation.
+
+Every tested request in `ChatPlayground` (`Target URL:`) and `McpTraceViewer` (`JSON-RPC 2.0`) has
+a **`Request Flow`** button that opens the modal in **`⚡ Tested Request Flow`** mode. The pipeline
+diagram stops at the policy that ended the request (e.g. red perimeter block at Prompt
+Sanitization, or green short-circuit at Semantic Cache HIT) and omits the skipped downstream
+stages. The "why it stopped" explanation renders as a white callout next to the stopped step.
 
 **Analytics & Cost** has a **Prod / Dev** environment toggle (dev analytics is enabled) next to
 the 24H/7D/30D range, and two sections:
@@ -948,8 +954,8 @@ the 24H/7D/30D range, and two sections:
   between both sections. **Tools Used** and **Tool Call Logs** come from `/api/logs/tools`
   ([toolLogs.js](ui/server/toolLogs.js)), which reads the MCP proxies' ML-CloudLogging entries in
   Cloud Logging and parses the JSON-RPC bodies into per-tool counts, errors, latency and an expandable
-  request/response log. Those log entries carry no caller today, so with a user filter selected they
-  are shown as "unattributed" until the proxies log `developer.app.name` / `developer.email`.
+  request/response log. These log entries carry no caller, so with a user filter selected they
+  are shown as "unattributed".
 
 ### Customer themes
 
@@ -1020,18 +1026,18 @@ unchanged; scenarios never name the customer. Logic lives in
 
 ### First-run developer onboarding
 
-The UI **no longer auto-creates** Apigee developers on sign-in. `provisionUserDeveloperAndApp` is
+The UI does not create Apigee developers on sign-in. `provisionUserDeveloperAndApp` is
 called from `/api/me` with [`allowCreate: false`](ui/server.js#L743),
 so when the Management API returns 404 for the signed-in email the server responds with
 [`needsOnboarding: true`](ui/server.js#L355-L360) plus a
 suggested first/last name derived from the identity token, and creates nothing.
 
-`App.tsx` reacts to that flag by rendering
+`App.tsx` then shows
 [DeveloperOnboardingModal.tsx](ui/src/components/DeveloperOnboardingModal.tsx),
-which pre-fills the suggested names, requires a non-empty first name, trims both fields, and falls
-back to `lastName = firstName` when only one name is given. Submitting `POST`s to
+which pre-fills the suggested names, requires a non-empty first name, trims both fields, and uses
+`lastName = firstName` when only one name is given. Submitting `POST`s to
 [`/api/me/onboard`](ui/server.js#L774-L853), which
-re-runs the same provisioning routine with `allowCreate: true` and the user-validated names. That
+runs the same provisioning routine with `allowCreate: true` and the confirmed names. That
 single call provisions:
 
 | Step | Result |
@@ -1042,16 +1048,15 @@ single call provisions:
 | Wallet | **$20.00 USD** starting balance, credited once (skipped if a balance or prior credit exists) |
 | Subscriptions | `Engineering and IT PayAsYouGo` rate plan (the primary admin account, `admin@example.com`, is subscribed to all three persona products) |
 
-The response echoes `needsOnboarding: false` along with the new keys, so the UI can dismiss the
-modal and continue without a reload.
+The response returns `needsOnboarding: false` along with the new keys, and the UI closes the
+modal and continues without a reload.
 
 ### Balance display precision
 
-Wallet and consumption figures render to **2 decimal places** with the exact **6-decimal** value in
-a hover tooltip — see the `Exact balance: $…` / `Exact consumed: $…` `title` attributes in
-[MonetizationManager.tsx](ui/src/components/MonetizationManager.tsx#L788-L809).
-This matters because a single gateway call is priced in micro-dollars: a 2dp display alone would
-show `$0.00` for real traffic, while 6dp everywhere is unreadable in summary tiles.
+Wallet and consumption figures render to **2 decimal places**; hover to see the exact
+**6-decimal** value (the `Exact balance: $…` / `Exact consumed: $…` `title` attributes in
+[MonetizationManager.tsx](ui/src/components/MonetizationManager.tsx#L788-L809)). A single gateway
+call is priced in micro-dollars, so check the tooltip when a tile shows `$0.00`.
 
 ---
 
@@ -1061,7 +1066,7 @@ show `$0.00` for real traffic, while 6dp everywhere is unreadable in summary til
 
 - **Node.js** v20+ and **npm**
 - **Python** 3.10+ (only for the `agents/` ADK service)
-- **gcloud CLI** authenticated against GCP project `your-gcp-project` — the dev server shells out to
+- **gcloud CLI** authenticated against GCP project `your-gcp-project`. The dev server runs
   `gcloud auth print-access-token` and `gcloud auth print-identity-token` for Management API and
   SSO simulation
 
@@ -1093,19 +1098,19 @@ npm install
 npm run dev
 ```
 
-The Vite dev server listens on **`http://localhost:3000`** — the port is pinned in
-[vite.config.ts](ui/vite.config.ts#L1590-L1591).
+The Vite dev server listens on **`http://localhost:3000`** (set in
+[vite.config.ts](ui/vite.config.ts#L1590-L1591)).
 
 [vite.config.ts](ui/vite.config.ts) registers dev-only
 middleware that mirrors the production endpoints (`/api/me`, `/api/kvm/rates`,
 `/api/monetization/{balance,credit,rateplans,subscriptions,config,attributions}`,
-`/api/analytics/fleet-stats`, `/api/products`, `/api/products/reset`, `/api/demo/reset`, and `/api/admin-agent/*` —
-the last mounts the same `server/adminAgentService.js` as `server.js`) plus HTTP proxies for
-`/api/ai-dev`, `/api/ai-prod`, `/api/mcp-dev`, and `/api/mcp-prod`. `/api/logs/calls` is currently
+`/api/analytics/fleet-stats`, `/api/products`, `/api/products/reset`, `/api/demo/reset`, and `/api/admin-agent/*`,
+which mounts the same `server/adminAgentService.js` as `server.js`) plus HTTP proxies for
+`/api/ai-dev`, `/api/ai-prod`, `/api/mcp-dev`, and `/api/mcp-prod`. `/api/logs/calls` is
 served by `server.js` only.
 
-Build the production bundle (required before a container build — the Dockerfile copies `dist/`,
-it does not build it):
+Build the production bundle before a container build (the Dockerfile copies `dist/`; it does not
+build it):
 
 ```bash
 npm run build
@@ -1126,28 +1131,27 @@ Recognised keys: `VITE_DEFAULT_ENV`, `VITE_ADMIN_API_KEY`, `VITE_ADMIN_USER_EMAI
 
 > [!IMPORTANT]
 > `npm run test:live` targets **prod only** (the script sets `TEST_ALLOW_PROD=1`); there is no
-> `TEST_ENV` switch. `dev` is a shared sandbox people edit directly, so it is never used for
-> automated verification. Validate with `npm test` + `npm run build`, deploy, then run
-> `npm run test:live` against prod. It burns prod quota and budget and seeds the prod semantic cache.
+> `TEST_ENV` switch. Validate with `npm test` + `npm run build`, deploy, then run
+> `npm run test:live` against prod. It uses prod quota and budget and seeds the prod semantic cache.
 
 ---
 
 ## 🧪 Test Suites
 
 Suites live in [ui/tests/](ui/tests). `npm test`
-(= `npm run test:unit`) runs every offline unit suite listed in `package.json` — auto-routing, cost,
+(= `npm run test:unit`) runs every offline unit suite listed in `package.json`: auto-routing, cost,
 intent labels, cache analytics/attribution, products, monetization sorting, guardrail catalog,
-Apigee proxy-bundle integrity, the token-quota threshold signal (`tokenquota`), and
+Apigee proxy-bundle integrity, the token-quota threshold signal (`tokenquota`),
 Ask Apigee (`adminagent` + `adminagentroutes`, which spawns `server.js` on port 5473 and
 checks `vite.config.ts` parity), and the MCP tab / chat UI (`mcpplayground`: tool-form defaults,
 coercion and blank pruning, per-persona *Try a task* flows vs the preset catalog, the scenario
 bar step picker, Markdown + code highlighting and raw-HTML escaping, and the demo data reset).
 No credentials needed. `npm run test:mcp` runs the last one alone.
 
-UI logic the tests cover lives in plain `.js` modules with `.d.ts` types
-([ui/src/utils/](ui/src/utils): `mcpArgs`, `mcpFlows`, `scenarioStepMenu`, `markdownConfig`),
-because `node --test` cannot import the app's `.ts` files. Put new testable logic there and add
-new suite files to the `test` / `test:unit` scripts in `package.json` (they list files explicitly).
+To add tests for UI logic, put the logic in a plain `.js` module with `.d.ts` types under
+[ui/src/utils/](ui/src/utils) (e.g. `mcpArgs`, `mcpFlows`, `scenarioStepMenu`, `markdownConfig`);
+`node --test` cannot import the app's `.ts` files. Add new suite files to the `test` / `test:unit`
+scripts in `package.json`, which list files explicitly.
 
 | Suite | File | Command | Network |
 | :--- | :--- | :--- | :--- |
@@ -1165,21 +1169,20 @@ The live suite is organised into four describe blocks:
 4. Apigee AI Gateway — Intelligent Auto-Routing (`/auto`)
 
 It first probes `http://localhost:3000/api/me`; if the dev server is up it routes through the local
-proxy and harvests API keys from the `/api/me` response, otherwise it falls back to calling
-`https://api.example.com` directly. It also retries HTTP 429 responses with
-backoff, since the `claude-haiku-5-5` quota demo is deliberately tight.
+proxy and takes API keys from the `/api/me` response, otherwise it calls
+`https://api.example.com` directly. It retries HTTP 429 responses with
+backoff (the `claude-haiku-5-5` quota is 300 tokens/min).
 
-**The result depends on which target it picked**, so the suite prints a provenance banner naming the
-target, the JWT identity, and the source of each API key before any test runs:
+Before any test runs, the suite prints a banner naming the target, the JWT identity, and the source
+of each API key. Expected results per target:
 
 | Target | Result |
 | :--- | :--- |
 | Local proxy (`node server.js` on `:3000`) | **24 pass, 0 fail, 0 skipped** |
 | Direct Apigee (no local server) | **20 pass, 0 fail, 4 skipped** |
 
-The 4 skips are the tests that can only run against the local proxy — the two `/api/me` checks, the
-proxy route check, and the SSO-token test, which cannot obtain a token without `/api/me`. They are
-not upstream or provisioning failures.
+The 4 skips are expected: they are the tests that need the local proxy (the two `/api/me` checks,
+the proxy route check, and the SSO-token test, which gets its token from `/api/me`).
 
 When keys are not supplied via `.env` or `/api/me` the suite discovers them from Apigee with
 `gcloud`. Two separate developers are involved, and they are selected independently:
@@ -1191,13 +1194,13 @@ When keys are not supplied via `.env` or `/api/me` the suite discovers them from
 | `APIGEE_PERSONA_DEVELOPER` | `persona.owner@example.com` | Developer owning the **sales/loans** apps (MCP personas only) |
 
 > [!IMPORTANT]
-> The admin key must belong to the same developer as the JWT identity. The AI Gateway attributes LLM
+> Use an admin key that belongs to the same developer as the JWT identity. The AI Gateway attributes LLM
 > token quota to the JWT email (`flow.emailId`) but developer budget to the key's developer
-> (`verifyapikey.VA-VerifyAPIKey.developer.id`). If they diverge, the suite still passes while
-> measuring two different subjects. A duplicate admin app exists under `persona.owner@example.com`, so
+> (`verifyapikey.VA-VerifyAPIKey.developer.id`); if they differ, the suite still passes but
+> measures two different subjects. A duplicate admin app exists under `persona.owner@example.com`, and
 > the banner prints a `!!` warning whenever the discovered admin key's developer is not the JWT
-> identity. The sales/loans divergence is expected — those personas exist only for the MCP Gateway
-> demo and are deliberately owned by a different developer.
+> identity. A different developer for the sales/loans keys is expected: those personas belong to
+> `APIGEE_PERSONA_DEVELOPER` and are used only for the MCP Gateway demo.
 
 ```bash
 cd ui
@@ -1239,8 +1242,8 @@ It:
 1. Refuses to run with uncommitted changes, so the image tag always matches a commit
    (`ALLOW_DIRTY=1` overrides and tags `<sha>-dirty`).
 2. Tags the commit prod runs now as `prod-YYYY-MM-DD-pre-<change-name>` (the rollback point, read
-   from the live revision's `git-sha` label; pass `LIVE_SHA=<commit>` for revisions deployed
-   before the label existed) and pushes the tag.
+   from the live revision's `git-sha` label; pass `LIVE_SHA=<commit>` if the live revision has no
+   `git-sha` label) and pushes the tag.
 3. Runs `npm run build` and `npm test`.
 4. Builds `apigee-ai-gateway-ui:<sha>` with Cloud Build and adds `:latest` to the same image.
 5. Deploys `:<sha>` with the full security flag set and the `git-sha` label.
@@ -1283,7 +1286,7 @@ Full load balancer, IAP, DNS and troubleshooting detail lives in
 [services/model-watch](services/model-watch) is a Cloud Run job that Cloud Scheduler runs every day
 at 07:00 (Asia/Singapore). It reads the
 [Vertex AI pricing](https://cloud.google.com/gemini-enterprise-agent-platform/generative-ai/pricing) page
-(authoritative, since the gateway calls Vertex), the
+(source of truth, as the gateway calls Vertex), the
 [Gemini API pricing](https://ai.google.dev/gemini-api/docs/pricing) page (cross-check) and the
 [Gemini API changelog](https://ai.google.dev/gemini-api/docs/changelog), and writes
 `gs://<bucket>/model-watch/latest.json`.
@@ -1325,7 +1328,7 @@ Bundle packaging, validation and deployment are scripted in
 values under **Settings → Attributes**, then fills in each synced proxy's BU, team, owner
 (mocked as `<team>@example.com`), style (REST / MCP / WebSocket / GraphQL), service type
 (**Model** for the LLM proxies, **Code** otherwise), maturity, target users, description and
-version lifecycle. It never overwrites a description, owner or lifecycle that is already set. It
+version lifecycle. It never overwrites a description, owner or lifecycle that is already set, and
 can be re-run safely. Every `industries/*.json` pack is included automatically, and
 `provision_industry_pack.py` runs it for a new pack's `<id>-mcp`. A new proxy only appears in
 API hub after the Apigee plugin's 6-hourly sync, so re-run it after the next sync if the first run
@@ -1342,10 +1345,10 @@ python3 apigee/scripts/apihub_catalog.py --only banking-mcp          # one API (
 [generate_demo_traffic.py](apigee/scripts/generate_demo_traffic.py)
 populates Apigee Analytics and Monetization with realistic traffic ahead of a demo. It discovers
 every active developer and their approved keys through the Management API via `gcloud`
-(auto-provisioning a `Unified Admin <username> App` for any developer without one), fans live
+(provisioning a `Unified Admin <username> App` for any developer without one), sends live
 requests across `/auto`, `gemini-3.5-flash-lite`, `gemini-3.1-pro-preview` and the other catalog models,
 then applies immediate micro-dollar wallet adjustments so prepaid balances reflect the consumption
-straight away. No consumer key is ever hardcoded.
+straight away.
 
 ```bash
 python3 apigee/scripts/generate_demo_traffic.py --requests-per-user 3
@@ -1358,10 +1361,9 @@ runs the offline unit suite and, when `ui/.env` exists, the live suite.
 exercises the 300 tokens/min demo cap against `/models/claude-haiku-5-5:generateContent` with
 the same 4 steps as the UI demo (stateless, `maxOutputTokens: 90`), under a fresh per-run email so
 it starts from an empty window. It asserts each status and the `x-gateway-token-quota-status`
-header: 200 `ok` → 200 `near-threshold` → 200 `exhausted` → **HTTP 429**. No consumer key is
-committed to the repo, so `API_KEY` is a **required** environment variable: the script prints
-`ERROR: API_KEY is not set.` and exits `1` if it is missing. `BASE_URL` and `USER_EMAIL` are
-optional overrides, and `-v` enables `set -x` tracing.
+header: 200 `ok` → 200 `near-threshold` → 200 `exhausted` → **HTTP 429**. `API_KEY` is a
+**required** environment variable: the script prints `ERROR: API_KEY is not set.` and exits `1` if
+it is missing. `BASE_URL` and `USER_EMAIL` are optional overrides, and `-v` enables `set -x` tracing.
 
 ```bash
 export API_KEY=<consumer key>

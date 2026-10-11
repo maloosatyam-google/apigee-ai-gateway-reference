@@ -167,8 +167,7 @@ on the right.
 
 ## 5. Results: cost, speed, consumption
 
-**Screen:** Scroll to **Session scoreboard** (the per-run table was shown after scenario
-1, because the last run is the blocked prompt injection). Point at **Total cost**,
+**Screen:** Scroll to **Session scoreboard**. Point at **Total cost**,
 **Average time**, **Tokens sent** and **Controls applied**; then click the **Agent
 comparison** view.
 

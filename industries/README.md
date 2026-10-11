@@ -1,6 +1,6 @@
 # Industry packs
 
-One JSON file per industry (`<id>.json`) drives that industry's MCP tools across the demo:
+An industry pack gives one industry its own MCP server, tools, personas, Apigee products, demo story and Agent Showcase scenarios. Each pack is one JSON file, `<id>.json`, in this folder. These components read it:
 
 | Consumer | Reads | How |
 |---|---|---|
@@ -36,11 +36,11 @@ One JSON file per industry (`<id>.json`) drives that industry's MCP tools across
 | Telecom | `/telecom/mcp` | Customer Care / Revenue Analysts | Jamie Carter (ACC-4101) | `issueBillCredit` | `BILL_CREDIT_APPROVAL_LIMIT` over $50 |
 | Travel (hotels) | `/travel/mcp` | Guest Services / Revenue Mgmt | Jamie Collins (GST-4001) | `issueFolioCredit` | `FOLIO_CREDIT_LIMIT` over $50 |
 
-Every pack's story has a $30 charge within policy and a $120 one over the limit. The backend only refuses a refund larger than what remains (`EXCEEDS_*`); the $50 rule is Apigee's. Tool names and preset ids are unique across packs (`node services/packs/check.js <id>` checks one pack, the services tests check all).
+Every pack's story has a $30 charge within policy and a $120 one over the limit. Apigee enforces the $50 limit. The backend refuses only a refund larger than the amount that remains (`EXCEEDS_*`). Tool names and preset ids must be unique across packs: `node services/packs/check.js <id>` checks one pack, and the services tests check all of them.
 
-Industries the theme agent adds to the library have no pack and keep the generic `/mcp` tools and scenarios.
+Industries the theme agent adds to the library have no pack and use the generic `/mcp` tools and scenarios.
 
-Every pack fills the same outcome slots, so the story works in every industry:
+Every pack fills the same outcome slots, so the demo story runs the same way in every industry:
 
 | Slot | Persona | Gateway outcome |
 |---|---|---|
@@ -77,14 +77,14 @@ bash agents/deploy.sh                                     # agent service loads 
 
 Then deploy the UI (the MCP tab and showcase read the generated `ui/src/data/industryPacks.js`).
 
-`validate.js` lists the rules. Changing `limit.max` means regenerating and redeploying the proxy, because Apigee conditions compare against literals.
+`validate.js` lists the rules. After you change `limit.max`, regenerate and redeploy the proxy (`gen_industry_mcp.py`, then `provision_industry_pack.py`).
 
 ### API hub
 
-The last step of `provision_industry_pack.py` runs `apihub_catalog.py --only <id>-mcp` against API hub (`your-gcp-project`, `asia-southeast1`). It sets the proxy's Business Unit, Team, owner (`<team>@example.com`), style **MCP**, service type **Code**, maturity **Level 3**, target users Internal + Partner, and a description built from the pack. Versions are set to **Production**. If API hub fails, the step only prints a warning and the command to re-run; it never undoes the deploy.
+The last step of `provision_industry_pack.py` runs `apihub_catalog.py --only <id>-mcp` against API hub (`your-gcp-project`, `asia-southeast1`). It sets the proxy's Business Unit, Team, owner (`<team>@example.com`), style **MCP**, service type **Code**, maturity **Level 3**, target users Internal + Partner, and a description built from the pack. Versions are set to **Production**. If API hub fails, the step prints a warning and the command to re-run; the proxy deploy stays in place.
 
 > [!IMPORTANT]
-> API hub only picks up a new Apigee proxy when the built-in Apigee X/Hybrid plugin runs its `sync-metadata` action. That runs every 6 hours, at 02:10, 08:10, 14:10 and 20:10 UTC (07:40, 13:40, 19:40 and 01:40 IST), and API hub rejects manual runs. On a first deploy the step therefore usually warns that `<id>-mcp` is not in the hub yet and prints the next sync time. Re-run `python3 apigee/scripts/apihub_catalog.py --only <id>-mcp` after that sync. `--wait <seconds>` polls for it instead.
+> API hub picks up a new Apigee proxy only when the built-in Apigee X/Hybrid plugin runs its `sync-metadata` action. It runs every 6 hours, at 02:10, 08:10, 14:10 and 20:10 UTC (07:40, 13:40, 19:40 and 01:40 IST), and API hub rejects manual runs. On a first deploy, expect the step to warn that `<id>-mcp` is not in the hub yet and to print the next sync time. Re-run `python3 apigee/scripts/apihub_catalog.py --only <id>-mcp` after that sync, or add `--wait <seconds>` to poll for it.
 
 Choose the pack's Business Unit and Team with an optional `apihub` block in `<id>.json`:
 
@@ -94,6 +94,6 @@ Choose the pack's Business Unit and Team with an optional `apihub` block in `<id
 
 - `businessUnit` must be one of the BU ids in `BUSINESS_UNITS` in [apihub_catalog.py](../apigee/scripts/apihub_catalog.py): `ai-platform`, `financial-services`, `health-public-services`, `energy-industrial`, `consumer-digital`, `enterprise-technology`, `platform-engineering`.
 - `team` can be an existing team id (for example `retail-commerce`) or a new one. A new team is added to the hub's **Team** attribute automatically, with `teamName` as its display name.
-- Without the block, the 15 original packs use `INDUSTRY_TEAMS`. A new pack gets its own team `<id>`, named after `label`, in `consumer-digital`, and the script prints a warning.
+- Without the block, the 15 built-in packs use `INDUSTRY_TEAMS`. A new pack gets its own team `<id>`, named after `label`, in `consumer-digital`, and the script prints a warning.
 
 To re-catalogue a pack by hand, or to retry after the sync: `python3 apigee/scripts/apihub_catalog.py --only <id>-mcp` (add `--dry-run` to preview). A full `python3 apigee/scripts/apihub_catalog.py` run also catalogues every pack that has synced.

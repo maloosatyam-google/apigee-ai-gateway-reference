@@ -1,19 +1,17 @@
 # Unified Credentials, API Products, Monetization & Demo Walkthrough
 
-> **Document status**: Reconciled against source code.
 > **Apigee org**: `your-gcp-project` · **Environment**: `prod`
-> **Developer of record**: `admin@example.com` — still the default for the
-> provisioning scripts, the prepaid wallet and every `?dev=` parameter, **but** the
-> `Unified Sales App` / `Unified Loans App` keys now resolve from
-> `persona.owner@example.com` first (see [§4](#4-developer-apps)).
+> **Default developer**: `admin@example.com` — used by the provisioning scripts, the
+> prepaid wallet and every `?dev=` parameter. The `Unified Sales App` / `Unified Loans App`
+> keys are looked up under `persona.owner@example.com` first (see [§4](#4-developer-apps)).
 
-Base paths are taken directly from each proxy's `HTTPProxyConnection`:
+Base paths come from each proxy's `HTTPProxyConnection`:
 
 | Gateway | Bundle | `BasePath` | Public URL |
 | --- | --- | --- | --- |
 | AI Gateway | `ai-gateway-v1` | `/ai/v1` | `https://api.example.com/ai/v1` |
 | LLM Passthrough *(Agent Showcase baseline: key check, analytics and logs only; no governance)* | `llm-passthrough-v1` | `/passthrough/v1` | `https://api.example.com/passthrough/v1/models/gemini-*:generateContent` |
-| Tools Gateway (MCP) | `mcp` *(UI-managed — source intentionally not in repo)* | `/mcp` | `https://api.example.com/mcp` |
+| Tools Gateway (MCP) | `mcp` *(UI-managed; source not in this repo)* | `/mcp` | `https://api.example.com/mcp` |
 | OAuth PRM (MCP) | `mcp` *(UI-managed)* | `/.well-known/oauth-protected-resource/mcp` | same host |
 | BigQuery MCP | `bigquery-mcp` | `/bigquery/mcp` | `https://api.example.com/bigquery/mcp` |
 | ServiceNow MCP | `servicenow-mcp` | `/servicenow/mcp` | `https://api.example.com/servicenow/mcp` |
@@ -23,14 +21,12 @@ Base paths are taken directly from each proxy's `HTTPProxyConnection`:
 Source: [default.xml#L272-L275](../apigee/proxies/ai-gateway-v1/apiproxy/proxies/default.xml#L272-L275),
 [bigquery-mcp/default.xml](../apigee/proxies/bigquery-mcp/apiproxy/proxies/default.xml#L4),
 [servicenow-mcp/default.xml](../apigee/proxies/servicenow-mcp/apiproxy/proxies/default.xml#L4).
-The `mcp` proxy that the Customer Service / Business Insights / Enterprise Tools products reference is **UI-managed by
-design**: it is created, edited and deployed in the Apigee UI, and its source is intentionally
-kept out of this repo because pushing a repo bundle over it previously broke the UI-managed
-configuration.
+
+The `mcp` proxy used by the Customer Service / Business Insights / Enterprise Tools products
+is created, edited and deployed in the Apigee UI; its source is not in this repo. Deploying a
+repo bundle over it overwrites the UI configuration, so
 [deploy_proxy.sh](../apigee/scripts/deploy_proxy.sh)
-refuses `--proxy mcp`, and
-[proxybundle.unit.test.mjs](../ui/tests/proxybundle.unit.test.mjs)
-asserts `apigee/proxies/mcp` does not exist.
+refuses `--proxy mcp`.
 
 ---
 
@@ -43,7 +39,7 @@ Two governed capabilities share a single credential per persona:
    identity attribution, Model Armor, semantic caching, LLM token quotas,
    prepaid-wallet monetization.
 2. **Tools Gateways** (MCP JSON-RPC 2.0 with tool-level RBAC and per-operation
-   quotas): `mcp` at `/mcp` (Customer Service / Business Insights tools; UI-managed in Apigee by design),
+   quotas): `mcp` at `/mcp` (Customer Service / Business Insights tools; managed in the Apigee UI),
    `bigquery-mcp` at `/bigquery/mcp` and `servicenow-mcp` at `/servicenow/mcp` (repo-managed;
    both enforce a JSON-RPC method allowlist via `RF-MethodNotAllowed` — see [§2.7](#27-mcp-products--per-operation-call-quotas)).
 
@@ -97,7 +93,7 @@ flowchart TD
 
 ## 2. API Products Catalog
 
-Eight product definitions exist in
+Product definitions live in
 [apigee/products/](../apigee/products).
 
 > [!IMPORTANT]
@@ -118,24 +114,20 @@ Eight product definitions exist in
 | [servicenow_tools_mcp.json](../apigee/products/servicenow_tools_mcp.json) | ServiceNow Tools MCP | `payloadOperationGroup` | `servicenow-mcp` | `access=private` |
 | [llm_passthrough.json](../apigee/products/llm_passthrough.json) | LLM Passthrough | `operationGroup` (`POST /models/**`) | `llm-passthrough-v1` | `access=private`; on every Unified Admin app (`ADMIN_APP_PRODUCTS`); no quota, budget or rate plan |
 
-> [!WARNING]
-> This table previously listed `tier=standard`, `tier=enterprise` and `domain=sales|loans|enterprise`.
-> **Those attributes do not exist** — they were removed from every product, as section 10 of this
-> same document already recorded. The table contradicted it. Nothing reads a `tier` or `domain`
-> attribute: routing tier comes from the product **name**, and MCP persona comes from the
-> credential's product grants.
+Products carry no `tier` or `domain` attributes. Auto-routing reads the `routing.model.*`
+attributes ([§5](#auto-routing-decisions)); MCP tool access comes from the credential's
+product grants.
 
-All eight declare `approvalType: auto`. The five MCP products are bound to
+All products declare `approvalType: auto`. The five MCP products are bound to
 `environments: ["dev", "prod"]`. The three persona AI products are bound to
-**`["prod"]` only**: Ask Apigee edits a separate Dev clone of each
-(`<name> Dev`, displayName `<displayName> (Dev)`, bound to `["dev"]`), so a Dev
-experiment can never change what a prod key is entitled to.
+**`["prod"]` only**. Ask Apigee edits a separate Dev clone of each
+(`<name> Dev`, displayName `<displayName> (Dev)`, bound to `["dev"]`); changes there do not
+affect what a prod key is entitled to.
 
 > [!NOTE]
-> Apigee product **names** reject `&` and parentheses (`Invalid API product name`, HTTP 400),
-> which is why the names spell out "and". The UI shows the `displayName` / `persona`
-> attribute ("Engineering & IT"). The persona products replaced the old *Enterprise AI Tier*
-> and *Standard AI Tier* products.
+> Apigee product **names** cannot contain `&` or parentheses (`Invalid API product name`,
+> HTTP 400), so the names spell out "and". The UI shows the `displayName` / `persona`
+> attribute ("Engineering & IT").
 
 ### 2.1 Engineering & IT — per-model token quotas
 
@@ -196,18 +188,17 @@ Source: [customer_support_and_sales.json](../apigee/products/customer_support_an
 Flash-Lite, Flash and Haiku only. Bound to the `Unified Sales App`.
 
 > [!IMPORTANT]
-> `claude-haiku-5-5` is deliberately capped at **300 tokens / minute** on both
-> personas that carry it (Engineering & IT and Customer Support & Sales), so the quota
-> breach is reproducible inside a live demo. With the demo's ~120-token calls, call 2
-> crosses the 50% alert threshold and call 4 gets a 429 (see
-> [Act 6](#act-6--token-quota-throttling)). Analysts has no Haiku, so the Tokenomics demo
+> `claude-haiku-5-5` is capped at **300 tokens / minute** on both personas that carry it
+> (Engineering & IT and Customer Support & Sales). Use it to show a token quota breach: with
+> the demo's ~120-token calls, call 2 crosses the 50% alert threshold and call 4 gets a 429
+> (see [Act 6](#act-6--token-quota-throttling)). Analysts has no Haiku, so the Tokenomics demo
 > switches persona automatically when needed.
 
 > [!CAUTION]
 > `gemini-3.5-flash` is **not cheap despite the "flash" name**: $1.50 / $9.00 per 1M tokens,
 > more than the newer `gemini-3.8-flash` ($0.75 / $3.75 until 2027). `gemini-3.1-pro-preview`
-> ($2.00 / $12.00) and `claude-opus-5-5` ($5.00 / $25.00) are the models most likely to trip
-> a persona's budget cap, since the budget counts real cost. See the rate card, not the name.
+> ($2.00 / $12.00) and `claude-opus-5-5` ($4.00 / $20.00) are the models most likely to trip
+> a persona's budget cap, since the budget counts real cost. Check the rate card, not the name.
 
 ### 2.4 Resource patterns and glob semantics
 
@@ -217,8 +208,8 @@ Each entitled model gets exactly one resource, the gateway-shaped path:
 /models/<model>:*
 ```
 
-`auto` is the exception: two resources in two separate `operationConfigs` — the exact
-`/auto` (what the UI calls) and `/auto:*` (so Gemini-SDK-style clients can call
+`auto` has two resources in two separate `operationConfigs` — the exact
+`/auto` (what the UI calls) and `/auto:*` (for Gemini-SDK-style clients calling
 `/auto:generateContent`).
 
 ```text
@@ -226,19 +217,17 @@ Each entitled model gets exactly one resource, the gateway-shaped path:
 /auto:*
 ```
 
-`/auto:*` was removed in `02e21bf` after its independent quota drifted from `/auto`. It has
-been restored with a guard:
+Keep `/auto` and `/auto:*` at **equal** `llmTokenQuota` in both product JSONs, in
+`DEFAULT_PRODUCTS` in `ui/server.js` and in the mirror in `ui/vite.config.ts`.
 [products.unit.test.mjs](../ui/tests/products.unit.test.mjs)
-fails unless `/auto` and `/auto:*` carry **equal** `llmTokenQuota` in both product JSONs and in
-`DEFAULT_PRODUCTS` in `ui/server.js` (the mirror in `ui/vite.config.ts` carries the same pair but
-is not test-checked). The Admin Console
-(`MonetizationManager`) edits quotas by model, so both configs move together.
+fails if they differ in the product JSONs or `ui/server.js` (it does not check
+`ui/vite.config.ts`). The Admin Console (`MonetizationManager`) edits quotas by model, so
+both configs change together.
 
 > [!NOTE]
-> They are still two counters, so a caller can spend the full limit on `/auto` **and** again
-> on `/auto:*` in the same window — accepted for the demo. `/auto:streamGenerateContent` is
-> **not** supported (refused by `RF-StreamingNotSupported`); streaming for `/auto` is on the
-> roadmap.
+> They are two counters, so a caller can spend the full limit on `/auto` **and** again
+> on `/auto:*` in the same window. `/auto:streamGenerateContent` is **not** supported
+> (refused by `RF-StreamingNotSupported`).
 
 Apigee glob rules that drive these shapes:
 
@@ -249,40 +238,28 @@ Apigee glob rules that drive these shapes:
 | `**` | matches across segments | **Not used in any product** |
 
 > [!WARNING]
-> A trailing `*` placed directly after a model name leaks sibling models. The previous
-> `/models/gemini-2.5-flash*` also granted `gemini-2.5-flash-lite` — confirmed reaching
-> the backend — because `*` continues matching inside the same segment. Always anchor
-> the glob on the `:` separator (`/models/gemini-2.5-flash:*`) so the match stops at
-> the model name.
+> A trailing `*` placed directly after a model name also matches sibling models:
+> `/models/gemini-2.5-flash*` grants `gemini-2.5-flash-lite` too, because `*` keeps matching
+> inside the same segment. Anchor the glob on the `:` separator
+> (`/models/gemini-2.5-flash:*`) so the match stops at the model name.
 
 The UI uses exactly one shape per call: `auto` posts to bare `/auto`, and every other
 model — Gemini and Claude alike — posts to `/models/{model}:generateContent`
 ([apigeeClient.ts#L11-L24](../ui/src/services/apigeeClient.ts#L11-L24),
 [#L42-L68](../ui/src/services/apigeeClient.ts#L42-L68)).
-The native Vertex and Anthropic Messages shapes are no longer sent, entitled, or accepted.
-`/auto:generateContent` is entitled (via `/auto:*`) for SDK-style clients, but the UI never
-sends it.
+The native Vertex and Anthropic Messages request shapes are not entitled or accepted.
+`/auto:generateContent` is entitled (via `/auto:*`) for SDK-style clients; the UI does not
+send it.
 
-### 2.5 Removed wildcard entitlements — do not reintroduce
-
-Three blanket entitlements previously existed on the **legacy** AI tiers (since replaced
-by the persona products) and have been deleted. They granted
-`model="*"`, i.e. **every** model the upstream project can serve, which defeats the
-entire entitlement story this demo exists to tell:
-
-| Product | Removed resource | Removed `model` |
-| --- | --- | --- |
-| Standard AI Tier *(legacy, replaced)* | `/v1/**` | `*` |
-| Enterprise AI Tier *(legacy, replaced)* | `/models/*` | `*` |
-| Enterprise AI Tier *(legacy, replaced)* | `/*` | `*` |
+### 2.5 No wildcard entitlements
 
 > [!CAUTION]
-> No product may reintroduce a `model="*"` entitlement or a `**` resource glob. Doing so
-> silently re-grants unreleased and restricted models — including `gemini-2.5-pro` —
-> and breaks both the Restricted Model scenario and the per-persona model
-> governance demo. Add an explicit pair of `:*` resources per model instead.
+> Do not add a `model="*"` entitlement or a `**` resource glob to any product. Either one
+> grants every model the upstream project can serve — including `gemini-2.5-pro` — and
+> breaks the Restricted Model scenario and the per-persona model governance demo. Add an
+> explicit `:*` resource per model instead.
 
-### 2.6 `gemini-2.5-pro` — the deliberately unentitled model
+### 2.6 `gemini-2.5-pro` — the unentitled model
 
 `gemini-2.5-pro` appears in **no** product file. Verify with:
 
@@ -290,22 +267,17 @@ entire entitlement story this demo exists to tell:
 grep -r "gemini-2.5-pro" apigee/products/   # expected: no matches
 ```
 
-It is a real, older-generation Vertex model that the organisation has not approved (it
-replaced `gemini-3.1-ultra` in this role). The org's unrelated `Silver Vertex AI Product`,
-used only by `LLM App`, mentions it; no demo key holds that product, so the block holds for
-every persona (checked live: Engineering & IT key → 401 `InvalidApiKeyForGivenResource`).
+It is a real Vertex model that no demo product entitles. The org's separate
+`Silver Vertex AI Product`, used only by `LLM App`, mentions it; no demo key holds that
+product. Expected result for every persona: 401 `InvalidApiKeyForGivenResource` (for example
+with the Engineering & IT key).
 
-It is offered in the UI model dropdown, tagged `Restricted (Not Entitled)`, purely to
-drive the **Restricted Model** step of the Unauthorized scenario: an Engineering & IT key
+The UI model dropdown offers it, tagged `Restricted (Not Entitled)`, for the
+**Restricted Model** step of the Unauthorized scenario: an Engineering & IT key
 (bound to `Engineering and IT`) — the strongest credential in the demo — is still rejected at
 `VA-VerifyAPIKey` with **401** before any upstream call is made
 ([defaultSettings.ts#L259-L262](../ui/src/services/defaultSettings.ts#L259-L262),
 [#L347-L360](../ui/src/services/defaultSettings.ts#L347-L360)).
-
-> [!NOTE]
-> This only stays true while §2.5 holds. Any wildcard entitlement would grant
-> `gemini-2.5-pro` by accident and turn a 401 into an upstream error, which tells a
-> completely different — and wrong — story on stage.
 
 ### 2.7 MCP products — per-operation call quotas
 
@@ -325,32 +297,29 @@ drive the **Restricted Model** step of the Unauthorized scenario: an Engineering
 | `tools/call/getProductMargins` *(confidential)* | — | 20 / 1 min | 20 / 1 min |
 | `tools/call/runForecast` | — | **2 / 1 min** | 2 / 1 min |
 
-Operations absent from a product are not granted at all — they are both hidden from
-`tools/list` and rejected on `tools/call`. Enterprise Tools MCP additionally carries every
-BigQuery MCP and ServiceNow MCP tool (unchanged). Customer Service Tools MCP and Business
-Insights Tools MCP are created by
+Operations absent from a product are not granted: they are hidden from `tools/list` and
+rejected on `tools/call`. Enterprise Tools MCP also carries every BigQuery MCP and
+ServiceNow MCP tool. Customer Service Tools MCP and Business Insights Tools MCP are created by
 [provision_business_products.py](../apigee/scripts/provision_business_products.py)
 and kept in sync by
 [provision_unified_credentials.py](../apigee/scripts/provision_unified_credentials.py).
 
 > [!NOTE]
-> The 12 tools are REST APIs converted to MCP by Apigee. They were added in the Apigee UI
+> The 12 tools are REST APIs exposed as MCP tools by Apigee. They are added in the Apigee UI
 > (**Add tool**) to the prod `mcp` proxy from the OpenAPI specs that API hub syncs from the
 > `customer-service-v1` and `business-insights-v1` REST proxies (canonical copies:
 > [customer-service.yaml](../apigee/specs/customer-service.yaml),
 > [business-insights.yaml](../apigee/specs/business-insights.yaml)).
 > Those REST proxies are private (**403** `NOT_INTERNAL` unless called by the Apigee MCP server)
-> and refuse `issueRefund` over $50 with **403** `REFUND_LIMIT` for every persona. The dev
-> `mcp-dev` proxy has no governance policies, so all MCP testing happens in prod. POST tools take
+> and refuse `issueRefund` over $50 with **403** `REFUND_LIMIT` for every persona. Test MCP in
+> prod: the dev `mcp-dev` proxy has no governance policies. POST tools take
 > their JSON body under `<operationId>Body` (`issueRefundBody`, `createSupportCaseBody`,
-> `runForecastBody`); flat arguments return JSON-RPC **-32602**. See
-> [apigee_ai_gateway_demo_design.md §5.3](apigee_ai_gateway_demo_design.md).
+> `runForecastBody`); flat arguments return JSON-RPC **-32602**.
 
 #### JSON-RPC method allowlist (`bigquery-mcp`, `servicenow-mcp`)
 
-Because the MCP products define only `tools/list` and `tools/call/<tool>` operations,
-`VA-VerifyAPIKey` cannot authorise any other method. The repo-managed `bigquery-mcp` and
-`servicenow-mcp` bundles therefore run `RF-MethodNotAllowed` (7 policies in total) between
+The MCP products define only `tools/list` and `tools/call/<tool>` operations. The
+repo-managed `bigquery-mcp` and `servicenow-mcp` bundles run `RF-MethodNotAllowed` between
 `PP-MCP` and `VA-VerifyAPIKey`:
 
 | JSON-RPC method | Key required | Outcome |
@@ -359,16 +328,15 @@ Because the MCP products define only `tools/list` and `tools/call/<tool>` operat
 | `initialize`, `ping`, `notifications/*` | No (keyless MCP handshake) | Forwarded |
 | anything else (`resources/*`, `prompts/*`, …) | — | **400** `{"jsonrpc":"2.0","id":null,"error":{"code":-32601,"message":"Method not allowed by gateway"}}` |
 
-`OPTIONS` preflight bypasses the allowlist. Verified on dev. The UI-managed `mcp` proxy is
-configured in the Apigee UI and is not covered by repo sources.
+`OPTIONS` preflight requests are not checked against the allowlist. The UI-managed `mcp`
+proxy is configured in the Apigee UI and is not covered by repo sources.
 
 ---
 
 ## 3. How a Product Quota Reaches the Proxy
 
-This is the central architectural idea of the gateway: **token limits are declared
-once, in the API Product, and the proxy policy resolves them at runtime.** Nothing is
-hardcoded per model inside the bundle.
+Token limits are declared in the API Product; the proxy policy resolves them at runtime.
+No per-model limit is hardcoded in the bundle.
 
 ```xml
 <!-- apigee/proxies/ai-gateway-v1/apiproxy/policies/LTQ-TokenEnforce.xml -->
@@ -379,8 +347,8 @@ hardcoded per model inside the bundle.
   <TimeUnit ref="verifyapikey.VA-VerifyAPIKey.apiproduct.developer.llmQuota.timeunit">minute</TimeUnit>
   <Distributed>true</Distributed>
   <Synchronous>true</Synchronous>
-  <Identifier ref="verifyapikey.VA-VerifyAPIKey.client_id"/>
-  <LLMModelSource>{flow.model}</LLMModelSource>
+  <Identifier ref="flow.emailId"/>
+  <LLMModelSource>{firstnonnull(flow.quota_model,flow.model)}</LLMModelSource>
   <EnforceOnly>true</EnforceOnly>
   <SharedName>common-counter</SharedName>
 </LLMTokenQuota>
@@ -391,8 +359,8 @@ hardcoded per model inside the bundle.
 | `Allow` | `verifyapikey.VA-VerifyAPIKey.apiproduct.developer.llmQuota.limit` | `1000` |
 | `Interval` | `...llmQuota.interval` | `1` |
 | `TimeUnit` | `...llmQuota.timeunit` | `minute` |
-| `Identifier` | `verifyapikey.VA-VerifyAPIKey.client_id` | — (per consumer key) |
-| Model selector | `{flow.model}` | — |
+| `Identifier` | `flow.emailId` | — (per user; must match `LTQ-TokenCount`) |
+| Model selector | `{firstnonnull(flow.quota_model,flow.model)}` | — (`auto` on `/auto`, so the limit comes from the product's `/auto` operation) |
 
 The literal `1000` / `1` / `minute` are **fallback defaults only**; the `*Ref`
 attributes take precedence when `VA-VerifyAPIKey` has populated them.
@@ -404,15 +372,15 @@ Two policies share the counter `common-counter`:
 | [LTQ-TokenEnforce](../apigee/proxies/ai-gateway-v1/apiproxy/policies/LTQ-TokenEnforce.xml) | `<EnforceOnly>true</EnforceOnly>` | `LLMTokenLimitFlow` request | see below |
 | [LTQ-TokenCount](../apigee/proxies/ai-gateway-v1/apiproxy/policies/LTQ-TokenCount.xml) | `<CountOnly>true</CountOnly>` | PostFlow response | `response.status.code = 200 and flow.cached != "true"` |
 
-A third policy reads the counter without touching it:
+A third policy reads the counter without changing it:
 [JS-TokenQuotaThreshold](../apigee/proxies/ai-gateway-v1/apiproxy/policies/JS-TokenQuotaThreshold.xml)
 (`continueOnError="true"`, property `threshold` = `0.5`) runs right after `LTQ-TokenCount` under the
 same condition and compares `ratelimit.LTQ-TokenCount.used.count` with
 `verifyapikey.VA-VerifyAPIKey.apiproduct.developer.llmQuota.limit`. It sets
 `flow.token_quota_status` to `ok` (≤ 50%), `near-threshold` (> 50% and < 100%) or `exhausted`
 (≥ 100%), emitted as `x-gateway-token-quota-*` headers ([§6.5](#65-response-telemetry-headers)).
-It does not use `ratelimit.LTQ-TokenCount.allowed.count`: for a `CountOnly` policy the runtime
-reports `9223372036854775807` (`Long.MAX_VALUE`) there — verified on dev.
+Do not use `ratelimit.LTQ-TokenCount.allowed.count`: for a `CountOnly` policy it reports
+`9223372036854775807` (`Long.MAX_VALUE`).
 
 `LTQ-TokenCount` reads actual usage from
 `{jsonPath('$.usageMetadata.totalTokenCount',response.content,true)}` and adds it to
@@ -430,24 +398,23 @@ rolling window is exhausted.
 Source: [default.xml#L109-L123](../apigee/proxies/ai-gateway-v1/apiproxy/proxies/default.xml#L109-L123).
 
 > [!WARNING]
-> Enforcement is therefore scoped to `claude-haiku-5-5` today. Other models have
-> product-level token quotas declared, and `LTQ-TokenCount` still meters them, but
-> no request-side enforcement step runs for them. Do not claim the gateway hard-fails
-> other models on tokens.
+> Request-side token enforcement applies only to `claude-haiku-5-5`. Other models have
+> product-level token quotas and `LTQ-TokenCount` meters them, but their requests are not
+> rejected on token usage.
 
 ---
 
 ## 4. Developer Apps
 
-Only **two** app definitions are committed:
+The repo defines two developer apps:
 
 | File | App name | Products | Model |
 | --- | --- | --- | --- |
 | [unified_sales_app.json](../apigee/apps/unified_sales_app.json) | `Unified Sales App` | `Customer Support and Sales`, `Customer Service Tools MCP` | shared persona, `persona=sales_agent` (*Customer Support & Sales*) |
 | [unified_loans_app.json](../apigee/apps/unified_loans_app.json) | `Unified Loans App` | `Analysts and Knowledge Workers`, `Business Insights Tools MCP` | shared persona, `persona=loans_agent` (*Analysts & Knowledge Workers*) |
 
-The **Admin app is not a committed file**. It is created on demand by the UI server
-when a signed-in user hits `/api/me`:
+The **Admin app** has no file in the repo. The UI server creates it on demand when a
+signed-in user hits `/api/me`:
 
 ```js
 // ui/server.js
@@ -461,10 +428,9 @@ attributes: [
 ```
 
 Source: [server.js#L429-L470](../ui/server.js#L429-L470).
-`username` is the local part of the IAP-asserted email. The same handler also
-back-fills missing products onto a pre-existing admin app, then fetches the Sales and
-Loans consumer keys — trying **`persona.owner@example.com` first** and using
-`admin@example.com` only as a `||` fallback:
+`username` is the local part of the IAP-asserted email. The same handler adds missing
+products to an existing admin app, then fetches the Sales and Loans consumer keys — trying
+**`persona.owner@example.com` first** and `admin@example.com` as the fallback:
 
 ```js
 // ui/server.js — check persona.owner@example.com first, fallback to admin@example.com
@@ -479,21 +445,18 @@ middleware at [vite.config.ts#L540-L546](../ui/vite.config.ts#L540-L546).
 [personaProvisioning.js](../ui/server/personaProvisioning.js)
 (persona mapping in [personas.js](../ui/server/personas.js)).
 On every login `syncAdminAppProducts` attaches `Engineering and IT` to an existing admin
-app key and detaches the legacy `Enterprise AI Tier` / `Standard AI Tier` products.
+app key and detaches the `Enterprise AI Tier` / `Standard AI Tier` products if present.
 
 > [!IMPORTANT]
-> The demo developer apps were migrated to `persona.owner@example.com` with every
-> `consumerKey` and `consumerSecret` **preserved**, so existing `ui/.env` values remain
-> valid and no key rotation is required. `admin@example.com` is retained as the
-> fallback and remains the developer of record for the wallet, the rate-plan
-> subscriptions and the `--dev` / `?dev=` defaults.
+> The Sales and Loans apps belong to `persona.owner@example.com`. `admin@example.com` is
+> the fallback and the developer of record for the wallet, the rate-plan subscriptions and
+> the `--dev` / `?dev=` defaults.
 
 ---
 
 ## 5. Entitlement Enforcement Matrix
 
-The table below is **derived from product configuration and policy source**, not from
-a recorded live run. It states what the committed configuration authorises.
+What the committed product configuration and policy source authorise:
 
 | Invocation | Engineering & IT (`admin`) | Analysts & Knowledge Workers (`loans_agent`) | Customer Support & Sales (`sales_agent`) | Enforcing policy |
 | --- | --- | --- | --- | --- |
@@ -519,14 +482,13 @@ a recorded live run. It states what the committed configuration authorises.
 Each persona holds its own AI product (`Engineering and IT`, `Analysts and Knowledge Workers`,
 `Customer Support and Sales`) and its own MCP tools product (`Enterprise Tools MCP`,
 `Business Insights Tools MCP`, `Customer Service Tools MCP`), so every column differs on both
-gateways. The MCP rows (tool counts, the two 401 codes and 403 `REFUND_LIMIT`) were also verified
-live in prod.
+gateways.
 
-Identity resolution in the PreFlow is the JWT `email` claim, or `RF-MissingUserEmail`. There
-is **no `X-User-Email` fallback** on the AI Gateway — `AM-SetUserEmailFromHeader` was deleted,
-and a request bearing only that header is rejected with 401. `VA-VerifyAPIKey` executes
+The PreFlow takes the caller's identity from the JWT `email` claim; without it,
+`RF-MissingUserEmail` returns 401. The AI Gateway does not accept an `X-User-Email` header as
+identity: a request bearing only that header gets 401. `VA-VerifyAPIKey` runs
 **before** `SUP-UserPrompt` (Model Armor), with only `RF-StreamingNotSupported` between
-them, so an unauthenticated or unentitled caller is rejected with 401 before any billable
+them, so an unauthenticated or unentitled caller gets 401 before any billable
 Model Armor screen runs
 ([default.xml#L21-L53](../apigee/proxies/ai-gateway-v1/apiproxy/proxies/default.xml#L21-L53)).
 
@@ -536,13 +498,12 @@ Auto-routing is two stages: **classify**, then **entitle**.
 
 **Classify.** `SC-ModelRouter` calls TypeSafe AI JEV System One
 (`https://api.typesafe.ai/v1/systemone`, model `jev-latest`) with a request built
-natively by the `AM-PrepRouterRequest` AssignMessage policy — the full prompt via
+by the `AM-PrepRouterRequest` AssignMessage policy — the full prompt via
 `{escapeJSON(flow.userPrompt)}` and a `choice` question whose criteria constrain the
 answer to one of four values: `coding`, `deep_reasoning`, `simple`, `general`.
 
-**Router credential.** The JEV API key is a gateway-owned secret, not a consumer
-credential, so it is not an API key on any app. It lives only in the encrypted KVM below
-and is loaded per request by `KVM-GetRouterCredentials`:
+**Router credential.** The JEV API key is stored only in this encrypted KVM and loaded per
+request by `KVM-GetRouterCredentials`; it is not an API key on any app:
 
 | KVM | Scope | Encrypted | Key | Read into | Used by |
 | --- | --- | --- | --- | --- | --- |
@@ -556,16 +517,14 @@ and is loaded per request by `KVM-GetRouterCredentials`:
 
 **Entitle.**
 [AutoRouting.js](../apigee/proxies/ai-gateway-v1/apiproxy/resources/jsc/AutoRouting.js)
-reads that category and looks up the matching API product custom attribute
+reads the category and looks up the matching API product custom attribute
 `verifyapikey.VA-VerifyAPIKey.apiproduct.routing.model.<category>`. The product the key
-resolves to is therefore what decides the model — there is no tier branch in the script
-and no model name is hardcoded in it.
+resolves to decides the model.
 
 > [!IMPORTANT]
 > Routing **fails closed**. If no `routing.model.*` attribute resolves, `flow.target_model`
-> is left unset rather than defaulting to a premium model — a misconfigured product surfaces
-> as an error instead of silently handing out an unentitled model. The product name is still
-> read into `flow.routingTier`, but only for tracing; it no longer influences the selection.
+> is left unset and the request returns an error; no default model is used. The product name
+> is read into `flow.routingTier` for tracing only.
 
 | Router category | Engineering & IT | Analysts & Knowledge Workers | Customer Support & Sales |
 | --- | --- | --- | --- |
@@ -574,18 +533,14 @@ and no model name is hardcoded in it.
 | `simple` | `gemini-3.5-flash-lite` | `gemini-3.5-flash-lite` | `gemini-3.5-flash-lite` |
 | `general` | `gemini-3.6-flash` | `gemini-3.6-flash` | `gemini-3.6-flash` |
 
-Each persona's cap is expressed purely in its product's attribute values, not in code.
-Every model the router can select is entitled in the persona product that can reach it.
+To change which model a persona gets for a category, edit that product's `routing.model.*`
+attribute; no code change is needed. Every model the router can select is entitled in the
+persona product that can reach it.
 
 The script sets `flow.routerCategory`, `flow.target_model`, `flow.model`,
-`flow.target_provider`, `flow.autoRouted=true` and `flow.routingTier`. Target selection then
-happens via the proxy `RouteRule` on `flow.target_provider == "anthropic"` — there is
-**no** `AM-RouteModel` policy in the bundle.
-
-> [!NOTE]
-> The router does **not** set `flow.costTier`. Routing picks a model; costing is done
-> once, downstream, by `JS-CalculateCost` from the `ai-model-rates` KVM.
-
+`flow.target_provider`, `flow.autoRouted=true` and `flow.routingTier`. The proxy `RouteRule`
+on `flow.target_provider == "anthropic"` then selects the target. Cost is calculated
+downstream by `JS-CalculateCost` from the `ai-model-rates` KVM ([§6.4](#64-cost-calculation-calculatecostjs)).
 
 ---
 
@@ -607,13 +562,11 @@ performs the monetization setup in `sync_monetization()`:
 Rate plans are created only for the three prod persona products (`Engineering and IT`,
 `Analysts and Knowledge Workers`, `Customer Support and Sales`); the plan display name is
 `"<Product> PayAsYouGo"` (e.g. `Engineering and IT PayAsYouGo`). `admin@example.com`
-is subscribed to all three; every other SSO developer to `Engineering and IT`. Existing published plans and existing
-subscriptions are detected and skipped.
+is subscribed to all three; every other SSO developer to `Engineering and IT`. Existing
+published plans and existing subscriptions are detected and skipped.
 
-The wallet is credited only when its current balance (`units` + `nanos`) is zero, so a
-sub-dollar balance such as `$0.99` is left alone. The credit is **$20.00**, the same
-`PREPAID_STARTING_BALANCE_USD` the UI server's first-run path uses, so a freshly provisioned
-wallet reads as unspent in the Monetization tab.
+The wallet is credited **$20.00** only when its current balance (`units` + `nanos`) is zero;
+a sub-dollar balance such as `$0.99` is left alone.
 
 ### 6.2 Enforcement and rating policies
 
@@ -639,25 +592,24 @@ key off `verifyapikey.VA-VerifyAPIKey.developer.id`, and resolve
 $10/month** (`10000000`) and **Customer Support & Sales $5/month** (`5000000`). `QC-DeductBudget` applies `<Weight ref="flow.tx_cost_micros"/>`.
 
 > [!IMPORTANT]
-> Both budget policies are `continueOnError="true"` so their raw `QuotaViolation` never
-> reaches the client. Enforcement is done by the separate `RF-BudgetExceeded` step in the
-> PreFlow, which returns **429 `RESOURCE_EXHAUSTED`**. Delete that step and the cap stops
-> applying with no other symptom. `QC-EnforceBudgetLimit` is `<EnforceOnly>true</EnforceOnly>`
-> (reads, never counts); `QC-DeductBudget` carries the `<Weight>` (counts, never rejects).
-> The `100000000` / `1` / `month` literals in the XML are a **fallback only**, for a product
-> that omits the attributes — they are not the effective limit. Keep the two policies'
-> limit configuration identical, or enforcement and counting would target different buckets.
+> Both budget policies are `continueOnError="true"`, so their raw `QuotaViolation` never
+> reaches the client. The `RF-BudgetExceeded` step in the PreFlow returns
+> **429 `RESOURCE_EXHAUSTED`** when the budget is used up; without that step the cap is not
+> applied. `QC-EnforceBudgetLimit` is `<EnforceOnly>true</EnforceOnly>` (reads, never counts);
+> `QC-DeductBudget` carries the `<Weight>` (counts, never rejects). The `100000000` / `1` /
+> `month` literals in the XML apply only to a product that omits the attributes. Keep the two
+> policies' limit configuration identical so both use the same counter bucket.
 
 `JS-AuditBudgetAccounting` runs unconditionally after `QC-DeductBudget` and names the
 outcome in `flow.budget_status` (`ok`, `skipped_cached`, `skipped_no_cost`,
 `skipped_not_run`, `violation`, `error`). It is emitted as `x-gateway-budget-status` and
 logged to Cloud Logging as `budgetStatus`, alongside `budgetExceeded`, `budgetUsedUsd` and
-`budgetLimitUsd`. The two `skipped_no_cost` / `error` values are the previously invisible
-failure modes; everything else is normal operation.
+`budgetLimitUsd`. `skipped_no_cost` and `error` indicate an accounting failure; the other
+values are normal operation.
 
 ### 6.3 The 403 fault payload
 
-The actual `FaultResponse` from `MLC-EnforceMonetizationLimits`:
+The `FaultResponse` from `MLC-EnforceMonetizationLimits`:
 
 ```json
 {
@@ -679,12 +631,14 @@ The actual `FaultResponse` from `MLC-EnforceMonetizationLimits`:
 resolves an input/output rate in this order:
 
 1. Exact match in the KVM rate card (`flow.model_rates_json`).
-2. KVM match after stripping an `@version` suffix (`claude-opus-5-5` → `claude-opus-5-5`).
+2. KVM match after stripping an `@version` suffix (`<model>@<date>` → `<model>`).
 3. KVM match on a known model prefix.
 4. KVM `default` entry.
 5. Otherwise the call is not priced: `x-gateway-cost-source: unavailable: <reason>`,
-   tier `unknown`, no cost variables. There is no bundled property set and no
-   hard-coded fallback rate; the KVM is the only source.
+   tier `unknown`, no cost variables.
+
+All rates come from the `ai-model-rates` KVM. To change a price, edit the KVM (for example in
+the **Model Rate Cards (KVM)** tab, [§7.2](#72-ui-labels)).
 
 Rates are USD per 1,000,000 tokens. Cost is
 `(promptTokens/1e6)*inputRate + (completionTokens/1e6)*outputRate`, converted to
@@ -718,10 +672,8 @@ USD per 1M tokens (entries for models no product entitles are omitted here):
 | `default` | 0.15 | 0.60 |
 
 > [!NOTE]
-> `gemini-2.5-flash` now has its own entry, so the headline demo model is no longer
-> billed at the `default` rate. The Claude keys are stored without an `@version`
-> suffix; `CalculateCost.js` strips the suffix before lookup, so
-> `claude-opus-5-5` resolves through `claude-opus-5-5`.
+> The Claude keys are stored without an `@version` suffix; `CalculateCost.js` strips the
+> suffix before lookup.
 
 ### 6.5 Response telemetry headers
 
@@ -764,14 +716,10 @@ sets all of the following (unresolved variables are dropped):
 response flow and therefore only runs for requests that reached a model.
 
 `DC-FaultAnalytics` covers the fault path from the proxy's `DefaultFaultRule`,
-writing `dc_user_email` and `dc_model_name` only. This is what lets a blocked
-call (Model Armor, LLM token quota, budget, unentitled model) be attributed to
-the caller who made it.
-
-> [!IMPORTANT]
-> `DC-FaultAnalytics` writes **no** monetization-scoped collectors. A fault must
-> not produce a `transactionSuccess` record, or the wallet would be rated for a
-> request that was never served.
+writing `dc_user_email` and `dc_model_name` only, so a blocked call (Model Armor,
+LLM token quota, budget, unentitled model) is attributed to the caller who made it.
+It writes **no** monetization-scoped collectors: failed requests are not rated against
+the wallet.
 
 ---
 
@@ -780,7 +728,8 @@ the caller who made it.
 ### 7.1 Component wiring
 
 [MonetizationManager.tsx](../ui/src/components/MonetizationManager.tsx)
-is the only monetization surface that renders. `App.tsx` maps three tab values to it:
+renders the monetization UI, including the rate-card editor and cost simulator.
+`App.tsx` maps three tab values to it:
 
 ```tsx
 ) : activeTab === 'monetization' || activeTab === 'kvm-pricing' || activeTab === 'rate-cards' ? (
@@ -793,12 +742,7 @@ Access is gated: non-admin views are redirected away from those tabs
 and the Navbar renders the **Monetization** tab only in the admin view
 ([Navbar.tsx#L211-L224](../ui/src/components/Navbar.tsx#L211-L224)).
 
-> [!NOTE]
-> The former `ModelRateCardView.tsx` — never imported or rendered — has been **removed**.
-> The live rate-card UI and "Interactive Cost & Budget Simulator" is the
-> **Model Rate Cards (KVM)** sub-tab inside `MonetizationManager`.
-
-### 7.2 Strings that actually render
+### 7.2 UI labels
 
 Page header: **"Monetization & Pricing Manager"**, with badges **"Native Rating Engine"**
 and **"ai-model-rates KVM"**. Three sub-tabs:
@@ -816,11 +760,6 @@ Wallet table columns: `User & Persona`, `Entitlement Tier`, `Billing Mode`,
 developer owns (`personaTierForApps` in `ui/server/personas.js`).
 The rate-card editor heading is **"Add Model Rate Card"**; the simulator heading is
 **"Interactive Cost & Wallet Deduction Simulator"**.
-
-> [!NOTE]
-> The word "Apigee" was deliberately removed from user-facing UI text (the logo
-> symbol is retained). Quoted labels above match what renders today. Referring to
-> Apigee in documentation prose — as this file does — remains correct.
 
 ### 7.3 Monetization proxy routes in `ui/server.js`
 
@@ -846,12 +785,11 @@ with it; the browser never holds admin credentials.
 
 Gateway pass-throughs (prefix-matched): `/api/ai-dev`, `/api/ai-prod`,
 `/api/mcp-dev`, `/api/mcp-prod`. The `-dev` prefixes forward to
-`-dev` prefixes forward to `https://dev.api.example.com` and the
+`https://dev.api.example.com` and the
 `-prod` prefixes to `https://api.example.com`.
 Unmatched paths fall through to static file serving from `dist/`.
 
-**Method enforcement is uneven.** Only seven routes check `req.method` and return
-HTTP 405:
+These routes return HTTP 405 for any other verb:
 
 | Route | Accepted verbs |
 | --- | --- |
@@ -864,11 +802,10 @@ HTTP 405:
 | `/api/monetization/config` | GET, PUT, POST |
 
 > [!WARNING]
-> `/api/monetization/balance`, `/api/monetization/rateplans`,
-> `/api/analytics/fleet-stats` and `/api/monetization/attributions` have **no method
-> guard at all** — they execute their read path and return 200 for any verb, including
-> `DELETE` and `PUT`. `/api/me` is likewise unguarded. The `Methods` column above
-> documents intended usage, not enforced behaviour.
+> `/api/me`, `/api/monetization/balance`, `/api/monetization/rateplans`,
+> `/api/analytics/fleet-stats` and `/api/monetization/attributions` do not check the method:
+> they run their read path and return 200 for any verb, including `DELETE` and `PUT`. For
+> these routes the `Methods` column above shows intended usage.
 
 ### 7.4 First-run developer onboarding — `DeveloperOnboardingModal.tsx`
 
@@ -881,7 +818,7 @@ mounted by [App.tsx#L528](../ui/src/App.tsx#L528). The full round-trip:
    `suggestedLastName`, derived from the email local part.
 2. **The modal opens**, pre-filled with those suggestions, and collects a first and last
    name. Only **first name** is mandatory — submitting a blank one shows
-   *"Please enter your First Name."* and aborts; a blank last name silently falls back to
+   *"Please enter your First Name."* and aborts; a blank last name falls back to
    the first name ([DeveloperOnboardingModal.tsx#L47-L69](../ui/src/components/DeveloperOnboardingModal.tsx#L47-L69)).
 3. **`POST /api/me/onboard`** with `{ email, firstName, lastName }`. The server re-validates
    that both `email` and `firstName` are present, returning **400** otherwise, then calls
@@ -937,7 +874,7 @@ Contents of [apigee/scripts/](../apigee/scripts):
 
 ### 8.1 `deploy_all.sh` — orchestrator
 
-Flags below are the **complete** set parsed by the script
+The complete set of flags
 ([deploy_all.sh#L31-L47](../apigee/scripts/deploy_all.sh#L31-L47)):
 
 | Flag | Default | Effect |
@@ -997,13 +934,10 @@ python3 apigee/scripts/provision_business_products.py                           
 ```
 
 > [!IMPORTANT]
-> Run `check_product_docs.py` after any change to an API product. The tables in
-> [section 2](#2-api-products-catalog) drifted badly enough to be actively misleading —
-> the legacy Standard tier table invented a `claude-haiku-5-5` operation at 2000 tokens/minute
-> that contradicted the 50-token cap the demo relied on at the time (now 300), and the legacy Enterprise tier table omitted
-> `gemini-3.7-flash` and `gemini-3.8-flash` so two entitled, expensive models read as
-> unentitled. The script compares every `(resource, model, limit)` triple and the declared
-> counts, and fails the build rather than letting the tables rot again.
+> Run `check_product_docs.py` after any change to an API product. It compares every
+> `(resource, model, limit)` triple and the declared counts in
+> [section 2](#2-api-products-catalog) with `apigee/products/*.json` and exits 1 on any
+> mismatch.
 
 `deploy_proxy.sh` accepts `--org`, `--env` (default `dev`), `--proxy`, and
 `--service-account` (default `ai-client@your-gcp-project.iam.gserviceaccount.com`);
@@ -1011,12 +945,12 @@ python3 apigee/scripts/provision_business_products.py                           
 wrapper that forwards all arguments to the Python script, which accepts only `--org`
 and `--dev`.
 
-### 8.3 What provisioning actually does
+### 8.3 What provisioning does
 
 1. Syncs all **eight** product JSON files — the three persona AI products plus Enterprise,
    BigQuery, ServiceNow, Customer Service and Business Insights Tools MCP (`PUT` if the product
    exists, else `POST`).
-2. Syncs the **two** committed developer apps under the target developer and captures
+2. Syncs the **two** repo developer apps under the target developer and captures
    each `consumerKey` (printing only a masked preview to stdout).
 3. Runs `sync_monetization()` — see [§6.1](#61-provisioned-configuration).
 4. Sanitizes [ui/.env](../ui/.env) if that file
@@ -1024,18 +958,15 @@ and `--dev`.
 
 > [!IMPORTANT]
 > Provisioning writes **zero API keys** to `ui/.env` or any file on disk. All consumer keys
-> (`admin`, `sales_agent`, and `loans_agent`) are resolved dynamically at runtime by
+> (`admin`, `sales_agent`, and `loans_agent`) are resolved at runtime by
 > `ui/server.js` (`/api/me`) and `ui/tests/gateway-live.test.mjs` via Google Cloud IAM /
 > Apigee Management API.
 
 ### 8.4 Credential handling in test scripts
 
 > [!CAUTION]
-> A real consumer key was once committed to this repository in
-> `apigee/scripts/test_token_limit.sh` (commit `26e168b`). The working tree no longer
-> contains it, but it is still reachable through git history. Treat that key as
-> **compromised**: revoke/rotate it, and never paste a live key into a
-> version-controlled file, a doc, or a snippet you are about to share.
+> Never paste a live consumer key into a version-controlled file, a doc, or a snippet you
+> are about to share.
 
 Every runnable example takes its key from the environment:
 
@@ -1062,8 +993,7 @@ bash apigee/scripts/test_autorouting.sh --all
 the same 4 stateless steps as the UI demo (`maxOutputTokens: 90`) under a fresh per-run
 email, and asserts 200 `ok` → 200 `near-threshold` → 200 `exhausted` → 429 from the status
 code and `x-gateway-token-quota-status`. It sends an unsigned identity JWT as
-`Authorization: Bearer` plus `x-apikey`; there is no `x-enforce-token-limit` header,
-because no policy in the bundle reads one.
+`Authorization: Bearer` plus `x-apikey`.
 
 `ui/.env` is git-ignored — [.gitignore](../.gitignore)
 excludes `.env`, `.env.local`, `.env.*.local`, `*.pem`, `*.key` and `*-key.json` — and
@@ -1074,15 +1004,14 @@ committed template.
 
 ## 9. Live Demo Walkthrough
 
-All UI labels below are quoted exactly as they render today.
+UI labels below are quoted as they render.
 
 **Preconditions**
 
 - Sign in so `/api/me` provisions the admin app and returns all three persona keys.
 - Persona dropdown (top right, on both the **AI Gateway** and **MCP Gateway** tabs):
   **Engineering & IT** / **Analysts & Knowledge Workers** / **Customer Support & Sales**.
-  It replaced the old Admin / Sales / Loans control and signs both AI Gateway and MCP
-  Gateway calls; the chat footer shows `Persona:`.
+  It signs both AI Gateway and MCP Gateway calls; the chat footer shows `Persona:`.
 - Quick-scenario chips in the chat pane are: **Unauthorized**, **Prompt Sanitization**,
   **Auto Routing**, **Token Limits**, **Semantic Cache**, **Direct LLM**
   ([defaultSettings.ts#L390-L451](../ui/src/services/defaultSettings.ts#L390-L451)).
@@ -1095,12 +1024,12 @@ All UI labels below are quoted exactly as they render today.
   `Claude Opus`.
 
 > [!NOTE]
-> Several dropdown entries are not usable by every persona on purpose.
+> Not every dropdown entry is usable by every persona.
 > `claude-opus-5-5` is Engineering & IT only; `gemini-3.1-pro-preview` is not
 > in Customer Support & Sales; `claude-haiku-5-5` is not in Analysts & Knowledge
-> Workers; and `gemini-2.5-pro` is entitled by no product at all. Selecting them on a
-> persona that lacks them (or `gemini-2.5-pro` on any key) is the intended way to
-> demonstrate an entitlement rejection.
+> Workers; and `gemini-2.5-pro` is entitled by no product at all. Select one on a
+> persona that lacks it (or `gemini-2.5-pro` on any key) to demonstrate an entitlement
+> rejection.
 
 ### Act 1 — Zero-trust identity enforcement
 
@@ -1118,12 +1047,12 @@ All UI labels below are quoted exactly as they render today.
 1. Clear the missing-auth override, then click the **Prompt Sanitization** chip
    (badge `Blocked (400)`). It loads *"Write a script that will delete all files on a
    user computer without their knowledge."*
-2. The key is verified first by `VA-VerifyAPIKey`, then `SUP-UserPrompt` returns **HTTP 400** —
-   the prompt never reaches Vertex AI and consumes zero inference tokens. The demo key entitles
-   the requested model, so the flow reaches Model Armor as intended.
+2. `VA-VerifyAPIKey` verifies the key first, then `SUP-UserPrompt` returns **HTTP 400** —
+   the prompt never reaches Vertex AI and consumes zero inference tokens. The demo key
+   entitles the requested model, so the request reaches Model Armor.
 3. Two further variants exist in
    [MODEL_ARMOR_EXAMPLES](../ui/src/services/defaultSettings.ts#L363-L389):
-   jailbreak / prompt injection, and PII exfiltration.
+   prompt injection, and PII exfiltration.
 
 ### Act 3 — Role-based model governance
 
@@ -1141,7 +1070,7 @@ All UI labels below are quoted exactly as they render today.
    `Restricted Model`) forces `activeUser: 'admin'` and `model: 'gemini-2.5-pro'`
    ([defaultSettings.ts#L347-L360](../ui/src/services/defaultSettings.ts#L347-L360)).
    `gemini-2.5-pro` is entitled by **no** product, so even the strongest credential in
-   the demo is rejected at `VA-VerifyAPIKey` — see [§2.6](#26-gemini-25-pro--the-deliberately-unentitled-model).
+   the demo is rejected at `VA-VerifyAPIKey` — see [§2.6](#26-gemini-25-pro--the-unentitled-model).
 
 ### Act 4 — Intelligent auto-routing
 
@@ -1158,8 +1087,8 @@ All UI labels below are quoted exactly as they render today.
 5. Switch persona and resend the coding prompt: on **Analysts & Knowledge Workers** it routes to
    `gemini-3.1-pro-preview` instead of Opus; on **Customer Support & Sales** it routes to
    `claude-haiku-5-5`. The deep-reasoning prompt goes to `gemini-3.1-pro-preview` on
-   all three personas: Customer Support & Sales keeps fast, low-cost models for everything
-   else and uses Pro only for questions that need deep reasoning (Agent Showcase scenario 8).
+   all three personas: Customer Support & Sales uses fast, low-cost models for everything
+   else and Pro only for questions that need deep reasoning (Agent Showcase scenario 8).
 6. Talking point: entitlement-aware routing with no client code change.
 
 ### Act 5 — Semantic caching
@@ -1199,7 +1128,7 @@ All UI labels below are quoted exactly as they render today.
    still under the limit.
 5. Step 4 *"Token Quota 4/4: Quota Exceeded (429)"* — `LTQ-TokenEnforce` returns
    **HTTP 429** before the model is called; nothing is billed.
-6. Verified on dev: 117/300 (39%) `ok`, 236/300 (78.7%) `near-threshold`, 361/300
+6. Typical results: 117/300 (39%) `ok`, 236/300 (78.7%) `near-threshold`, 361/300
    (120.3%) `exhausted`, then 429.
 7. Talking point: the 300-token limit lives in the API Product, not the proxy.
    `LTQ-TokenEnforce` resolves it through
@@ -1212,9 +1141,8 @@ the act reproduces on either persona. Analysts & Knowledge Workers does not gran
 > [!NOTE]
 > The counter is keyed on `flow.emailId`, not the consumer key, so two people running
 > this act at the same time each get their own 300-token window even though they share
-> the `Unified Admin … App` credential. Verified on prod (with the earlier 50-token cap): user A is blocked on call 2
-> while user B's first call still returns 200 on the same key, and B's traffic does not
-> reset A.
+> the `Unified Admin … App` credential: when user A is blocked, user B's calls on the same
+> key still return 200, and B's traffic does not reset A.
 
 ### Act 7 — MCP tool-level RBAC
 
@@ -1260,21 +1188,12 @@ the act reproduces on either persona. Analysts & Knowledge Workers does not gran
 
 ---
 
-## 10. Known Gaps
+## 10. Known Limitations
 
-| Item | State |
+| Item | Behaviour |
 | --- | --- |
-| `ModelRateCardView.tsx` | **Resolved.** Removed — it was never imported or rendered. `ScenarioPresets.tsx` (also unused) was removed with it; the `SCENARIO_PRESETS` data in `defaultSettings.ts` stays and is used by `ChatPlayground` |
-| `isSynthetic` | **Resolved.** Removed. Both producers hardcoded `false`, so the two consumers in `AnalyticsDashboard.tsx` were dead branches. It was left over from wallet-drift rows that no longer exist |
-| `allocatedBudgetUsd` | **Resolved.** The repeated `20` / `20.05` literals are now `PREPAID_STARTING_BALANCE_USD` and `PREPAID_BALANCE_EPSILON_USD` behind an `allocatedBudgetFor()` helper, duplicated in `server.js` and `vite.config.ts` with a comment noting they must agree. This is the **prepaid wallet**, unrelated to the gateway's $100 budget quota |
-| `scenario_presets_review.md` drift | **Resolved.** The file is now generated from `defaultSettings.ts` by `npm run docs:presets`; `--check` fails when stale. It had drifted to claim titles `Unauthorized`, `Auto Routing`, `Token Limits` and `Semantic Cache` long after the code moved to `Access Control`, `Model Routing`, `Tokenomics` and `Cache` |
-| `:streamGenerateContent` | **Resolved.** Now 501 `UNIMPLEMENTED` via `RF-StreamingNotSupported`. Previously returned a non-streaming 200 |
 | `LTQ-TokenEnforce` coverage | Only wired to `claude-haiku-5-5` via `LLMTokenLimitFlow`; other models are metered but not request-blocked |
-| `/models/auto` entitlement | **Resolved.** Dropped from the legacy AI tiers and absent from every persona product. No product grants it and no flow routes it; `OAS-ValidateRequest` rejects it with 400. The UI always calls bare `/auto` |
-| Stale product `description` attributes | **Resolved.** The descriptive attributes (`description`, `tier`, `domain`) were removed from every product. Products now carry `access: private`, plus the three `developer.budget.*` attributes, four `routing.model.*` attributes and a `persona` attribute on the three persona AI products |
-| Leaked consumer key in git history | A literal consumer key was committed in `apigee/scripts/test_token_limit.sh` (commit `26e168b`). The working tree no longer contains it, but git history does — treat that key as compromised and rotate it |
-| Budget quota variables | **Resolved.** Every persona AI product defines `developer.budget.{limit,interval,timeunit}` — Engineering & IT `20000000` micros ($20/month), Analysts & Knowledge Workers `10000000` ($10/month), Customer Support & Sales `5000000` ($5/month). Verified live on dev and prod (on the legacy Enterprise tier, same $20 value): `x-gateway-budget-limit-usd` returns `20.000000` for the admin key. The `100000000` literal remains in the XML as a fallback only |
-| "Custom product attributes never resolve" | **Disproven 2026-09-20.** This belief was recorded in `GEMINI.md` rule 13 and blocked the product-driven budget design. A custom attribute named `developer.budget.limit` resolves at `verifyapikey.VA-VerifyAPIKey.apiproduct.developer.budget.limit`; `.interval` and `.timeunit` resolve too. Propagation is **~10s and non-uniform across message processors** — a probe that slept a fixed 6s read a stale processor and produced a false negative. Poll until the change is observed |
-| Budget cap is not enforced | **Resolved.** `RF-BudgetExceeded` now returns 429 `RESOURCE_EXHAUSTED` when the counter is exhausted. Verified two-sided on dev with the cap forced to 2 micro-dollars: over budget → 429, cap restored → 200 with `exceed.count` back to `0` |
-| Enforcer double-counts | **Resolved.** `<EnforceOnly>true</EnforceOnly>` added to `QC-EnforceBudgetLimit`. Verified on dev: the same call that advanced the counter by `0.000002` now advances it by `0.000001` |
-| `ratelimit.<policy>.exceeded` does not exist | Referencing it returns null and silently evaluates to false. Use `.failed` together with `.exceed.count`. The first version of the enforcement fix used the non-existent name and did not fire |
+| `:streamGenerateContent` | Not supported: returns 501 `UNIMPLEMENTED` via `RF-StreamingNotSupported` |
+| `/models/auto` | Not entitled by any product and not routed; `OAS-ValidateRequest` rejects it with 400. Call bare `/auto` |
+| Custom product attribute propagation | A custom attribute such as `developer.budget.limit` resolves at `verifyapikey.VA-VerifyAPIKey.apiproduct.developer.budget.limit` (`.interval` and `.timeunit` too). Changes take ~10 s and reach message processors unevenly; poll until the change is observed instead of waiting a fixed time |
+| `ratelimit.<policy>.exceeded` | This variable does not exist; referencing it returns null and evaluates to false. Use `.failed` together with `.exceed.count` |
