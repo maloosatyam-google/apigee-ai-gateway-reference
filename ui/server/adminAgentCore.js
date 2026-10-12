@@ -310,6 +310,8 @@ export function assertDevOnlyEnvironments(environments) {
 }
 
 const MAX_QUOTA_LIMIT = 10_000_000;
+/** Largest relative change a single update_dev_product call may make to a quota. */
+const MAX_QUOTA_FACTOR = 10;
 
 /**
  * Classify and validate a change path *before* it reaches the Apigee
@@ -422,6 +424,18 @@ export function validateChangeList(changes) {
   return changes.map((c) => {
     if (!c || typeof c !== 'object') throw new AdminAgentError('Each change must be an object.');
     const descriptor = parseChangePath(c.path);
+    // Relative quota change ("double", "halve", "+50%"): the server multiplies the current
+    // limit, so the model never does the arithmetic (it got "double 2000" wrong as 40000).
+    if (c.multiplyBy !== undefined && c.multiplyBy !== null && c.multiplyBy !== '') {
+      if (descriptor.kind !== 'quota') {
+        throw new AdminAgentError('multiplyBy only applies to llmTokenQuota.<resource>.limit changes.');
+      }
+      const factor = Number(c.multiplyBy);
+      if (!Number.isFinite(factor) || factor <= 0 || factor > MAX_QUOTA_FACTOR) {
+        throw new AdminAgentError(`multiplyBy must be a number above 0 and at most ${MAX_QUOTA_FACTOR}, got "${c.multiplyBy}".`);
+      }
+      return { ...descriptor, multiplyBy: factor };
+    }
     return { ...descriptor, value: normalizeChangeValue(descriptor, c.value) };
   });
 }
@@ -594,7 +608,14 @@ export function applyChangeSet(product, validatedChanges) {
         ? `llmTokenQuota.${descriptor.resolvedResource}.limit`
         : descriptor.path;
     const before = readChangePath(next, descriptor);
-    writeChangePath(next, descriptor, descriptor.value);
+    let value = descriptor.value;
+    if (descriptor.multiplyBy !== undefined) {
+      if (before === null) {
+        throw new AdminAgentError(`${canonicalPath} has no current limit to multiply; set an absolute value instead.`);
+      }
+      value = normalizeChangeValue(descriptor, String(Math.max(1, Math.round(Number(before) * descriptor.multiplyBy))));
+    }
+    writeChangePath(next, descriptor, value);
     const after = readChangePath(next, descriptor);
     if (before !== after) {
       diff.push({
@@ -1080,10 +1101,15 @@ export function buildFunctionDeclarations(scope = 'admin') {
                 value: {
                   type: 'string',
                   description:
-                    'The new value. For environments pass a JSON array string such as ["dev"]; dev is the only environment a sandbox copy may be attached to.',
+                    'The new absolute value. For environments pass a JSON array string such as ["dev"]; dev is the only environment a sandbox copy may be attached to. Omit when using multiplyBy.',
+                },
+                multiplyBy: {
+                  type: 'number',
+                  description:
+                    'For relative token-quota changes only: the factor to apply to the current limit (2 to double, 0.5 to halve, 1.5 for +50%). The server computes the new limit. Use this instead of value whenever the admin asks for a relative change.',
                 },
               },
-              required: ['path', 'value'],
+              required: ['path'],
             },
           },
         },
@@ -1381,6 +1407,9 @@ WHAT TO DO
   git. If the admin asks you to promote, publish, or apply something to prod,
   tell them plainly that the change is ready on dev and that going live needs a
   pull request. Do not treat this as a failure -- it is how the platform works.
+- For relative quota changes ("double", "halve", "raise by 50%") pass multiplyBy
+  on each llmTokenQuota change and leave value out; never compute the new numbers
+  yourself. Report the before and after values from the returned diff.
 - Never guess a model id. Model names carry versions and suffixes that you will
   get wrong from memory. Read the product first and use the exact id it returns.
 - If a tool fails and the error message lists the valid values, immediately

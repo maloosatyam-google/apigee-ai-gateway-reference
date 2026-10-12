@@ -17,7 +17,7 @@ Each scene lists **Screen** (what is on screen and what gets clicked) and **Voic
 | 6 | AI Gateway capabilities, persona-based routing | 1:45 |
 | 7 | MCP Gateway: persona-scoped tools | 1:00 |
 | 8 | Analytics, Admin Console, Finance, AI CoE | 1:30 |
-| 9 | Close, then bonus: themes and industries | 1:00 |
+| 9 | Close, Ask Apigee, then bonus: themes and industries | 1:30 |
 
 ---
 
@@ -189,7 +189,7 @@ the same coding step: *Routed to Claude Haiku*. Click **Request Flow** on the re
 
 **Voice-over:**
 > Now let's dig deeper into the AI Gateway. A call without a valid identity
-> is rejected with a 401, before any model is involved. A jailbreak attempt is stopped by
+> is rejected with a 401, before any model is involved. A prompt injection attempt is stopped by
 > Model Armor with a 400, for every model behind the gateway.
 >
 > Model integration is one endpoint. The app posts to slash auto and never names a model.
@@ -256,17 +256,28 @@ sandbox", model counts above 0). Open each page with a click as it is named:
 
 ---
 
-## 9. Close, then bonus: themes and industries
+## 9. Close, Ask Apigee, then bonus: themes and industries
 
-**Screen:** Full-screen slide **Apigee as Centralized AI & Tools (MCP) gateway: Key
-Capabilities & Insights** during the closing line. The slide is
-[video/closing_slide.html](video/closing_slide.html): edit its `CARDS` list to change it. Then palette button → **Customer
-theme** studio: library list, **Request a theme** (name + website), then a theme's
-industry field.
+**Screen:** Full-screen slide **Apigee provides unified governance across models and tools** during
+the closing line: AI Gateway capabilities on the left, MCP Gateway on the right, and the capabilities
+both share in between; the footer highlights deployment on any cloud or on-prem. The slide is
+[video/closing_slide.html](video/closing_slide.html): edit its `GROUPS` list to change it. Then
+**Admin Console** as **Platform**: in the **Ask Apigee** panel click the suggestion
+**Double the Customer Support & Sales token quota** and send it. Point at the before/after table
+on the change card, the **Revert** button and *Prod changes go through a PR*, then click
+**Revert**. Then palette button → **Customer theme** studio: library list, **Request a theme**
+(name + website), then a theme's industry field.
 
 **Voice-over:**
-> That's Apigee as the AI and tools gateway: one place to secure, route, cache, meter and
-> govern every model and every tool your agents use.
+> That's Apigee: unified governance across every model and every tool your agents use, on
+> Google Cloud, any other cloud, or on-premises.
+>
+> One more thing: Ask Apigee, the agent built into the Admin Console. Platform admins can
+> inspect and change gateway policy in plain English.
+>
+> I ask it to double the Customer Support and Sales token quota. It reads the product, makes
+> the change on the dev sandbox only, and shows exactly what changed, before and after, with a
+> one-click revert. Production still changes only through a pull request.
 >
 > And an added bonus: Googlers can customize this demo for their customer. Open the theme
 > studio, pick an existing customer theme from the shared library, or request a new one

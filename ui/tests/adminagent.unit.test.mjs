@@ -1522,3 +1522,22 @@ test('executeTool without a role behaves as Platform Admin (existing callers unc
   );
   assert.equal(result.applied, true);
 });
+
+test('relative quota changes: multiplyBy is computed server-side from the current limit', () => {
+  const product = standardDevProduct();
+  const changes = validateChangeList([
+    { path: 'llmTokenQuota./auto.limit', multiplyBy: 2 },
+    { path: 'llmTokenQuota.gemini-3.6-flash.limit', multiplyBy: 2, value: '40000' }, // multiplyBy wins
+  ]);
+  const { diff } = applyChangeSet(product, changes);
+  assert.deepEqual(diff.map((d) => [d.before, d.after]), [['2000', '4000'], ['2000', '4000']]);
+  // Halving rounds and never goes below 1.
+  const half = applyChangeSet(product, validateChangeList([{ path: 'llmTokenQuota./auto.limit', multiplyBy: 0.5 }]));
+  assert.equal(half.diff[0].after, '1000');
+});
+
+test('relative quota changes: multiplyBy is rejected outside quotas or out of range', () => {
+  assert.throws(() => validateChangeList([{ path: 'attributes.access', multiplyBy: 2 }]), /only applies to llmTokenQuota/);
+  assert.throws(() => validateChangeList([{ path: 'llmTokenQuota./auto.limit', multiplyBy: 0 }]), /above 0/);
+  assert.throws(() => validateChangeList([{ path: 'llmTokenQuota./auto.limit', multiplyBy: 50 }]), /at most 10/);
+});
