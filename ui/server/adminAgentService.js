@@ -109,6 +109,8 @@ function projectProduct(product, exists, logicalName) {
       (cfg.llmOperations || []).map((op) => ({
         resource: op.resource,
         model: op.model,
+        // The exact update_dev_product path for this quota, so the model never builds one.
+        changePath: `llmTokenQuota.${op.resource}.limit`,
         limit: cfg.llmTokenQuota?.limit ?? null,
         interval: cfg.llmTokenQuota?.interval ?? null,
         timeUnit: cfg.llmTokenQuota?.timeUnit ?? null,

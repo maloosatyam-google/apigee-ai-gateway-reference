@@ -1541,3 +1541,12 @@ test('relative quota changes: multiplyBy is rejected outside quotas or out of ra
   assert.throws(() => validateChangeList([{ path: 'llmTokenQuota./auto.limit', multiplyBy: 0 }]), /above 0/);
   assert.throws(() => validateChangeList([{ path: 'llmTokenQuota./auto.limit', multiplyBy: 50 }]), /at most 10/);
 });
+
+test('quota paths: the resource alone or with ":limit" names the same quota as ".limit"', () => {
+  for (const path of ['llmTokenQuota./auto:*.limit', 'llmTokenQuota./auto:*', 'llmTokenQuota./auto:*:limit']) {
+    assert.equal(parseChangePath(path).resource, '/auto:*', path);
+  }
+  assert.equal(parseChangePath('llmTokenQuota./auto:limit').resource, '/auto');
+  assert.equal(parseChangePath('llmTokenQuota.gemini-3.6-flash').resource, 'gemini-3.6-flash');
+  assert.throws(() => parseChangePath('llmTokenQuota.'), /Unsupported change path/);
+});

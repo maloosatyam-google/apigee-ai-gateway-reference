@@ -70,8 +70,9 @@ export const SANDBOX_APP_NAME = 'admin-copilot-dev';
 
 /**
  * The agent runs on the same gateway it administers, so its own usage is
- * metered and shows up in the demo's analytics. Claude cannot be substituted:
- * the proxy's Gemini->Claude bridge drops `tools` and discards `tool_use`.
+ * metered and shows up in the demo's analytics. Flash-Lite is used because it
+ * is entitled on both tiers with low tool-turn latency, zero thinking overhead,
+ * and lowest cost (Claude is reserved for high-complexity coding routes).
  *
  * Model chosen by benchmark, not by reputation. The Gemini candidates were
  * driven through the real gateway with this file's own SYSTEM_INSTRUCTION and
@@ -335,7 +336,9 @@ export function parseChangePath(path) {
     return { kind: 'attribute', path: p, attribute: attr };
   }
 
-  const quota = /^llmTokenQuota\.(.+)\.limit$/.exec(p);
+  // Canonical form is llmTokenQuota.<resource>.limit. Models also send the resource alone
+  // (llmTokenQuota./auto:*) or with ":limit"; all three name the same quota.
+  const quota = /^llmTokenQuota\.(.+?)(?:[.:]limit)?$/.exec(p);
   if (quota) {
     const resource = quota[1].trim();
     if (!resource || resource.length > 120 || /[\s"'<>]/.test(resource)) {
@@ -1096,7 +1099,7 @@ export function buildFunctionDeclarations(scope = 'admin') {
                 path: {
                   type: 'string',
                   description:
-                    'One of: attributes.<name> (access, developer.budget.limit, developer.budget.interval, developer.budget.timeunit, routing.model.coding|deep_reasoning|simple|general), llmTokenQuota.<resource>.limit (resource may be a model id such as gemini-3.6-flash), or environments.',
+                    'One of: attributes.<name> (access, developer.budget.limit, developer.budget.interval, developer.budget.timeunit, routing.model.coding|deep_reasoning|simple|general), llmTokenQuota.<resource>.limit (copy tokenQuotas[].changePath from get_product; resource may also be a model id such as gemini-3.6-flash), or environments.',
                 },
                 value: {
                   type: 'string',
