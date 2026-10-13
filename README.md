@@ -11,6 +11,10 @@ the **Apigee MCP Tools Gateway** and **Google ADK (Agent Development Kit)** micr
 live policy trace telemetry, identity-driven entitlements, product-driven LLM token quotas and
 Apigee native monetization.
 
+**Watch the demo** (11 min, 4K):
+
+[![Apigee AI & Tools Gateway demo video](https://img.youtube.com/vi/kKV7XHD9tOA/maxresdefault.jpg)](https://www.youtube.com/watch?v=kKV7XHD9tOA)
+
 ---
 
 ## 🏁 Set it up in your own project

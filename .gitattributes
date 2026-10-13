@@ -5,3 +5,4 @@ docs/ui_semantic_cache_and_governance_spec.md export-ignore
 docs/architecture_review.md export-ignore
 docs/phase2_apigee_provisioning.md export-ignore
 scenario_presets_review.md export-ignore
+docs/video/recorder/** export-ignore
