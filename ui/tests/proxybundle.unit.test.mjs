@@ -479,4 +479,140 @@ describe("FormatClaudeResponse.js - Anthropic response -> Gemini candidates", ()
   it("always returns at least one part", () => {
     assert.deepStrictEqual(format({ content: [] }).candidates[0].content.parts, [{ text: "" }]);
   });
+
+  it("round-trips signed Claude 5 thinking blocks between FormatClaudeResponse.js and ClaudeRequestPrep.js", () => {
+    const firstTurn = format({
+      model: "claude-opus-5-5",
+      stop_reason: "tool_use",
+      content: [
+        { type: "thinking", thinking: "Step 1: check order status.", signature: "sig_claude5_abc123" },
+        { type: "tool_use", id: "toolu_99", name: "getOrder", input: { orderId: "ORD-1042" } },
+      ],
+      usage: { input_tokens: 40, output_tokens: 25 },
+    });
+
+    const parts = firstTurn.candidates[0].content.parts;
+    assert.deepStrictEqual(parts, [
+      { thought: true, text: "Step 1: check order status.", thoughtSignature: "sig_claude5_abc123" },
+      { functionCall: { id: "toolu_99", name: "getOrder", args: { orderId: "ORD-1042" } } },
+    ]);
+
+    const prepCtx = runJs(claudePrepCode, {
+      "flow.convert_gemini_to_claude": "true",
+      "request.content": JSON.stringify({
+        contents: [
+          { role: "user", parts: [{ text: "Where is order ORD-1042?" }] },
+          { role: "model", parts },
+          { role: "user", parts: [{ functionResponse: { name: "getOrder", response: { status: "late" } } }] },
+        ],
+        tools: [{ functionDeclarations: [{ name: "getOrder", description: "Fetch order", parameters: { type: "OBJECT" } }] }],
+        generationConfig: { maxOutputTokens: 90 },
+      }),
+    });
+
+    const claudeReq = JSON.parse(prepCtx["request.content"]);
+    assert.strictEqual(claudeReq.max_tokens, 90, "explicit maxOutputTokens cap must not be overwritten when tools are present");
+    assert.deepStrictEqual(claudeReq.messages[1].content, [
+      { type: "thinking", thinking: "Step 1: check order status.", signature: "sig_claude5_abc123" },
+      { type: "tool_use", id: "toolu_99", name: "getOrder", input: { orderId: "ORD-1042" } },
+    ]);
+  });
+});
+
+describe("Security, billing & gateway governance invariants", () => {
+  const aiProxyDir = path.join(proxiesRoot, "ai-gateway-v1", "apiproxy");
+  const extractPromptCode = readText(path.join(aiProxyDir, "resources/jsc/ExtractPromptAndModel.js"));
+
+  it("isolates semantic cache keys by product, route, and systemInstruction and bypasses caching when tools are declared", () => {
+    const ctxNoToolsA = runJs(extractPromptCode, {
+      "proxy.pathsuffix": "/models/gemini-3.8-flash:generateContent",
+      "request.content": JSON.stringify({
+        systemInstruction: { parts: [{ text: "You are a banking assistant." }] },
+        contents: [{ role: "user", parts: [{ text: "What is my balance?" }] }],
+      }),
+    });
+    const ctxNoToolsB = runJs(extractPromptCode, {
+      "proxy.pathsuffix": "/models/gemini-3.8-flash:generateContent",
+      "request.content": JSON.stringify({
+        systemInstruction: { parts: [{ text: "You are an airline agent." }] },
+        contents: [{ role: "user", parts: [{ text: "What is my balance?" }] }],
+      }),
+    });
+    assert.notStrictEqual(ctxNoToolsA["flow.sys_tag"], ctxNoToolsB["flow.sys_tag"]);
+    assert.notStrictEqual(ctxNoToolsA["flow.has_tools"], "true");
+
+    const ctxWithTools = runJs(extractPromptCode, {
+      "proxy.pathsuffix": "/models/gemini-3.8-flash:generateContent",
+      "request.content": JSON.stringify({
+        contents: [{ role: "user", parts: [{ text: "Check ticket" }] }],
+        tools: [{ functionDeclarations: [{ name: "getTicket" }] }],
+      }),
+    });
+    assert.strictEqual(ctxWithTools["flow.has_tools"], "true");
+
+    const setCacheXml = readText(path.join(aiProxyDir, "policies/AM-SetCacheHitExpected.xml"));
+    const lookupXml = readText(path.join(aiProxyDir, "policies/SCL-Semantic-Cache-Lookup.xml"));
+    const defaultProxyXml = stripComments(readText(path.join(aiProxyDir, "proxies/default.xml")));
+
+    assert.match(setCacheXml, /<Name>flow\.cacheKey<\/Name>/);
+    assert.match(lookupXml, /<UserPromptSource>\{flow\.cacheKey\}<\/UserPromptSource>/);
+    assert.ok(
+      defaultProxyXml.indexOf("<Name>SMR-SanitizeModelResponse</Name>") <
+        defaultProxyXml.indexOf("<Name>SCP-Semantic-Cache-Populate</Name>"),
+      "SMR-SanitizeModelResponse must execute before SCP-Semantic-Cache-Populate"
+    );
+  });
+
+  it("enforces async token refresh, bounded request bodies, IAP email priority, top-up caps, and cache-hit cost exclusion in UI servers", async () => {
+    const serverSrc = readText(path.join(repoRoot, "ui/server.js"));
+    const viteSrc = readText(path.join(repoRoot, "ui/vite.config.ts"));
+
+    assert.ok(!serverSrc.includes("execSync("), "server.js must not block the event loop with execSync");
+    assert.match(serverSrc, /function readJsonBody\(/);
+    assert.match(serverSrc, /const MAX_TOPUP_USD = 100/);
+    assert.match(serverSrc, /cleanHeader \|\| queryEmail/);
+    assert.match(viteSrc, /cleanHeader \|\| queryEmail/);
+    assert.match(serverSrc, /stats\/dc_user_email,dc_model_name,dc_cache_status/);
+    assert.match(viteSrc, /stats\/dc_user_email,dc_model_name,dc_cache_status/);
+
+    const { imageLightness, createThemeLibraryService } = await import("../server/themeLibrary.js");
+    // Crafted PNG claiming 1x1 dimensions but containing a zlib stream expanding well beyond expected scanline bytes
+    const { deflateSync } = await import("node:zlib");
+    const sig = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+    const ihdrData = Buffer.alloc(13);
+    ihdrData.writeUInt32BE(1, 0);
+    ihdrData.writeUInt32BE(1, 4);
+    ihdrData[8] = 8; // depth
+    ihdrData[9] = 6; // RGBA
+    ihdrData[12] = 0; // non-interlaced
+    const chunk = (type, data) => {
+      const len = Buffer.alloc(4);
+      len.writeUInt32BE(data.length, 0);
+      return Buffer.concat([len, Buffer.from(type), data, Buffer.alloc(4)]);
+    };
+    const oversizedRaw = deflateSync(Buffer.alloc(4096, 0xff));
+    const bombPng = Buffer.concat([sig, chunk("IHDR", ihdrData), chunk("IDAT", oversizedRaw), chunk("IEND", Buffer.alloc(0))]);
+    assert.strictEqual(imageLightness({ bytes: bombPng, type: "image/png" }), null, "pngLightness must reject oversized zlib payloads");
+
+    // Verify themeLibrary safePublicFetch refuses 302 redirect to metadata/private IP before making second hop
+    const fetchedUrls = [];
+    const svc = createThemeLibraryService({
+      getToken: async () => "tok",
+      provision: async () => ({ apiKey: "k" }),
+      identityToken: () => "jwt",
+      fetchImpl: async (url) => {
+        fetchedUrls.push(String(url));
+        if (String(url).includes("public-brand.example")) {
+          return {
+            status: 302,
+            ok: false,
+            headers: new Headers({ location: "http://169.254.169.254/latest/meta-data/" }),
+          };
+        }
+        return { status: 404, ok: false, headers: new Headers(), text: async () => "" };
+      },
+    });
+    assert.ok(svc);
+    assert.ok(!fetchedUrls.some((u) => u.includes("169.254.169.254")));
+  });
 });

@@ -9,6 +9,10 @@
     <Name>flow.cacheStatus</Name>
     <Value>HIT</Value>
   </AssignVariable>
+  <AssignVariable>
+    <Name>flow.cacheKey</Name>
+    <Template>[product={verifyapikey.VA-VerifyAPIKey.apiproduct.name} route={proxy.pathsuffix} sys={flow.sys_tag}] {flow.userPrompt}</Template>
+  </AssignVariable>
   <!--
     Sets cache STATE only. It deliberately does not set flow.tx_cost_usd: costing
     is owned solely by JS-CalculateCost, which now runs on cache hits too and
@@ -17,3 +21,4 @@
   -->
   <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
 </AssignMessage>
+

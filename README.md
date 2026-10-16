@@ -298,13 +298,17 @@ Expected values on dev: 117/300 (39%) `ok`, 236/300 (78.7%) `near-threshold`, 36
 ### 5. ⚡ Cache (Vertex AI Vector Search)
 
 [SCL-Semantic-Cache-Lookup.xml](apigee/proxies/ai-gateway-v1/apiproxy/policies/SCL-Semantic-Cache-Lookup.xml)
-embeds the prompt with Vertex AI `text-embedding-005` and queries a Vertex AI Vector Search index
+embeds `flow.cacheKey` with Vertex AI `text-embedding-005` and queries a Vertex AI Vector Search index
 endpoint (`DeployedIndexID: semantic_cache`) with a similarity **threshold of 0.95**.
-`SCP-Semantic-Cache-Populate` writes successful responses back.
+`AM-SetCacheHitExpected` constructs `flow.cacheKey` as
+`[product={apiproduct.name} route={proxy.pathsuffix} sys={flow.sys_tag}] {flow.userPrompt}`, isolating
+cached entries across persona products, routes and `systemInstruction` hashes (`flow.sys_tag`, computed by
+`ExtractPromptAndModel.js`). `SMR-SanitizeModelResponse` runs before `SCP-Semantic-Cache-Populate` in the
+response PostFlow so only sanitized model responses are stored.
 
-Caching is **opt-in per request**: the lookup runs only when the `use-cache` or `x-use-cache`
-header is `true`. On a hit, `flow.cached` is `"true"`, which skips `QC-DeductBudget` and
-`LTQ-TokenCount`, so a cache hit costs no tokens and no wallet balance.
+Caching is **opt-in per request**: lookup and population run only when the `use-cache` or `x-use-cache`
+header is `true` and no tools are declared (`flow.has_tools != "true"`). On a hit, `flow.cached` is `"true"`,
+which skips `QC-DeductBudget` and `LTQ-TokenCount`, so a cache hit costs no tokens and no wallet balance.
 
 `KVM-GetModelRates` and `JS-CalculateCost` still run on a hit (they are gated on
 `response.status.code = 200` alone), so a cached response carries `x-gateway-cost-tier`.

@@ -52,6 +52,25 @@ if (reqContent) {
       prompt = (typeof payload.prompt === "string") ? payload.prompt : JSON.stringify(payload.prompt);
     }
 
+    if (payload.tools && Array.isArray(payload.tools) && payload.tools.length > 0) {
+      context.setVariable("flow.has_tools", "true");
+    }
+    if (payload.systemInstruction && payload.systemInstruction.parts && Array.isArray(payload.systemInstruction.parts)) {
+      var sysText = "";
+      for (var si = 0; si < payload.systemInstruction.parts.length; si++) {
+        if (payload.systemInstruction.parts[si] && payload.systemInstruction.parts[si].text) {
+          sysText += payload.systemInstruction.parts[si].text;
+        }
+      }
+      if (sysText) {
+        var h = 5381;
+        for (var ci = 0; ci < sysText.length; ci++) {
+          h = ((h << 5) + h) + sysText.charCodeAt(ci);
+          h = h & 0x7fffffff;
+        }
+        context.setVariable("flow.sys_tag", h.toString(16));
+      }
+    }
     if (prompt) {
       context.setVariable("flow.userPrompt", prompt);
     }
@@ -70,3 +89,4 @@ if (reqContent) {
     // Non-JSON or parsing error; continue flow
   }
 }
+

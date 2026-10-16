@@ -507,9 +507,15 @@ function pngLightness(bytes) {
   }
   const channels = { 0: 1, 2: 3, 4: 2, 6: 4 }[color];
   if (!channels || depth !== 8 || interlace !== 0 || !w || !h || w * h > 4_000_000) return null;
-  const raw = inflateSync(Buffer.concat(idat));
   const stride = w * channels;
-  if (raw.length < h * (stride + 1)) return null;
+  const expectedBytes = h * (stride + 1);
+  let raw;
+  try {
+    raw = inflateSync(Buffer.concat(idat), { maxOutputLength: expectedBytes + 64 });
+  } catch {
+    return null;
+  }
+  if (raw.length < expectedBytes) return null;
   let prev = Buffer.alloc(stride);
   let sum = 0;
   let n = 0;
@@ -1002,11 +1008,29 @@ export function createThemeLibraryService({
     return theme;
   }
 
+  /** Follows up to 5 HTTP redirects while verifying every intermediate hop passes publicUrl(). */
+  async function safePublicFetch(initialUrl, init = {}) {
+    let currentUrl = initialUrl;
+    for (let hop = 0; hop < 6; hop++) {
+      if (!publicUrl(currentUrl, 'invalid.example')) return null;
+      const res = await fetchImpl(currentUrl, { ...init, redirect: 'manual' });
+      if (res.status >= 300 && res.status < 400) {
+        const loc = res.headers?.get('location');
+        if (!loc) return null;
+        currentUrl = new URL(loc, currentUrl).toString();
+        continue;
+      }
+      if (res.url && !publicUrl(res.url, 'invalid.example')) return null;
+      return res;
+    }
+    return null;
+  }
+
   /** Fetches an image from a fixed https URL, with size and type checks. */
   async function fetchImage(url, headers = undefined) {
     try {
-      const res = await fetchImpl(url, { redirect: 'follow', signal: AbortSignal.timeout(6000), ...(headers ? { headers } : {}) });
-      if (!res.ok) return null;
+      const res = await safePublicFetch(url, { signal: AbortSignal.timeout(6000), ...(headers ? { headers } : {}) });
+      if (!res || !res.ok) return null;
       const type = String(res.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
       if (!LOGO_TYPES.includes(type)) return null;
       const bytes = Buffer.from(await res.arrayBuffer());
@@ -1020,14 +1044,11 @@ export function createThemeLibraryService({
   /** A text resource (HTML/CSS) from a public https URL, capped in size and time; '' on any failure. */
   async function fetchText(url, maxBytes) {
     try {
-      const res = await fetchImpl(url, {
-        redirect: 'follow',
+      const res = await safePublicFetch(url, {
         headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ApigeeDemoThemeAgent/1.0)', Accept: 'text/html,text/css;q=0.9,*/*;q=0.5' },
         signal: AbortSignal.timeout(SITE_FETCH_TIMEOUT_MS),
       });
-      if (!res.ok) return '';
-      // A redirect must not land on a private host.
-      if (res.url && !publicUrl(res.url, 'invalid.example')) return '';
+      if (!res || !res.ok) return '';
       const type = String(res.headers.get('content-type') || '').toLowerCase();
       if (type && !/text\/(html|css|plain)|application\/xhtml/.test(type)) return '';
       const bytes = Buffer.from(await res.arrayBuffer());

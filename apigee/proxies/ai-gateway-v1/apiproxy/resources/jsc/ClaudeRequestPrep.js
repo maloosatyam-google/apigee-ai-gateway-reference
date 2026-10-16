@@ -78,7 +78,13 @@ try {
             var part = item.parts[p];
             if (!part) continue;
 
-            if (part.text) {
+            if (part.thought && part.thoughtSignature) {
+              blocks.push({
+                type: "thinking",
+                thinking: part.text || "",
+                signature: part.thoughtSignature
+              });
+            } else if (part.text) {
               blocks.push({ type: "text", text: part.text });
             } else if (part.functionCall) {
               syntheticId++;
@@ -194,8 +200,8 @@ try {
         var mapped = toClaudeTools(body.tools);
         if (mapped.length) {
           claudePayload.tools = mapped;
-          // A tool-bearing turn needs room for the tool_use block plus an answer.
-          if (claudePayload.max_tokens < 2048) claudePayload.max_tokens = 2048;
+          // A tool-bearing turn needs room for the tool_use block plus an answer when caller left default ceiling.
+          if (gc.maxOutputTokens === undefined && claudePayload.max_tokens < 2048) claudePayload.max_tokens = 2048;
         }
       }
 

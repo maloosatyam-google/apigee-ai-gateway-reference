@@ -24,7 +24,17 @@ try {
         for (var i = 0; i < claudeJson.content.length; i++) {
           var block = claudeJson.content[i] || {};
 
-          if (block.type === "text" && block.text) {
+          if (block.type === "thinking" && block.signature) {
+            if (textResult) {
+              parts.push({ text: textResult });
+              textResult = "";
+            }
+            parts.push({
+              thought: true,
+              text: block.thinking || "",
+              thoughtSignature: block.signature
+            });
+          } else if (block.type === "text" && block.text) {
             // Coalesce consecutive text blocks into a single part, matching
             // what Gemini itself returns for a plain answer.
             textResult += block.text;
@@ -43,8 +53,7 @@ try {
               }
             });
           }
-          // Other block types (e.g. "thinking") are intentionally dropped:
-          // they have no Gemini equivalent the caller can act on.
+          // Unsigned thinking blocks are dropped: they carry no signature for multi-turn verification.
         }
 
         if (textResult) {

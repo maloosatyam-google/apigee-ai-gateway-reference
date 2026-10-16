@@ -2,7 +2,7 @@
 <SemanticCacheLookup async="false" continueOnError="true" enabled="true" name="SCL-Semantic-Cache-Lookup">
   <DisplayName>SCL-Semantic-Cache-Lookup</DisplayName>
   <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
-  <UserPromptSource>{flow.userPrompt}</UserPromptSource>
+  <UserPromptSource>{flow.cacheKey}</UserPromptSource>
   <Embeddings>
     <VertexAI>
       <URL>https://__GCP_REGION__-aiplatform.googleapis.com/v1/projects/__GCP_PROJECT_ID__/locations/__GCP_REGION__/publishers/google/models/text-embedding-005:predict</URL>

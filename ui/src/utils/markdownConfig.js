@@ -2,11 +2,12 @@
 import React from 'react';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
+import { common } from 'lowlight';
 
 /** GitHub-flavoured Markdown: tables, strikethrough, task lists, autolinks. */
 export const MARKDOWN_REMARK_PLUGINS = [remarkGfm];
-/** Syntax highlighting for fenced code; `detect` guesses the language when the fence has none. */
-export const MARKDOWN_REHYPE_PLUGINS = [[rehypeHighlight, { detect: true }]];
+/** Syntax highlighting for fenced code; uses common language subset and `detect` guesses when fence has none. */
+export const MARKDOWN_REHYPE_PLUGINS = [[rehypeHighlight, { languages: common, detect: true }]];
 
 /** Plain text of rendered React children (used by the code block's Copy button). */
 export function textOf(node) {

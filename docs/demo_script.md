@@ -115,7 +115,8 @@ same question twice the same way."*
 
 > [!IMPORTANT]
 > On a cache hit the panel says **"Served from cache"** and credits *no* model: no model
-> ran and the router was not called. If asked, say the cache is keyed on the prompt alone.
+> ran and the router was not called. If asked, say the cache key scopes the prompt by product,
+> route and system prompt (`flow.cacheKey`), and skips tool-calling turns.
 
 ---
 

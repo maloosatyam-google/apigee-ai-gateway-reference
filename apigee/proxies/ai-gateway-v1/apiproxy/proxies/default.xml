@@ -95,11 +95,11 @@
       </Step>
       <Step>
         <Name>AM-SetCacheHitExpected</Name>
-        <Condition>request.verb != "OPTIONS" and ((request.header.use-cache is true) or (request.header.use-cache = "true") or (request.header.x-use-cache is true) or (request.header.x-use-cache = "true")) and flow.guardrail.semanticCache != "off"</Condition>
+        <Condition>request.verb != "OPTIONS" and ((request.header.use-cache is true) or (request.header.use-cache = "true") or (request.header.x-use-cache is true) or (request.header.x-use-cache = "true")) and flow.guardrail.semanticCache != "off" and flow.has_tools != "true"</Condition>
       </Step>
       <Step>
         <Name>SCL-Semantic-Cache-Lookup</Name>
-        <Condition>request.verb != "OPTIONS" and ((request.header.use-cache is true) or (request.header.use-cache = "true") or (request.header.x-use-cache is true) or (request.header.x-use-cache = "true")) and flow.guardrail.semanticCache != "off"</Condition>
+        <Condition>request.verb != "OPTIONS" and ((request.header.use-cache is true) or (request.header.use-cache = "true") or (request.header.x-use-cache is true) or (request.header.x-use-cache = "true")) and flow.guardrail.semanticCache != "off" and flow.has_tools != "true"</Condition>
       </Step>
     </Request>
     <Response/>
@@ -135,8 +135,8 @@
       It lives here rather than in the PreFlow for two reasons.
 
       1. Ordering. Conditional flows run after the whole PreFlow, so the chain lands
-         after SCL-Semantic-Cache-Lookup. The cache keys on {flow.userPrompt} alone -
-         the model is not part of the key - so the router's verdict is not an input to
+         after SCL-Semantic-Cache-Lookup. The cache keys on {flow.cacheKey} (scoped to
+         product, route and system prompt) so the router's verdict is not an input to
          the lookup, and classifying before it bought nothing on a hit while costing the
          full round trip (~926 ms, roughly half of a "$0 instant cache hit"). On a hit
          the lookup short-circuits and this flow does not run; on a miss it runs and
@@ -260,13 +260,18 @@
         <Name>DC-ModelAnalytics</Name>
         <Condition>response.status.code = 200</Condition>
       </Step>
-      <Step>
-        <Name>SCP-Semantic-Cache-Populate</Name>
-        <Condition>response.status.code = 200 and ((request.header.use-cache is true) or (request.header.use-cache = "true") or (request.header.x-use-cache is true) or (request.header.x-use-cache = "true")) and flow.cached != "true" and flow.guardrail.semanticCache != "off"</Condition>
-      </Step>
+      <!--
+        Sanitize BEFORE populating the semantic cache so redacted PII/secrets or blocked
+        unsafe outputs never enter Vertex Vector Search. Tool-bearing requests/responses are
+        also excluded from cache populate.
+      -->
       <Step>
         <Name>SMR-SanitizeModelResponse</Name>
         <Condition>response.status.code = 200 and (flow.target_provider != "anthropic" or flow.convert_claude_to_gemini_resp == "true") and flow.guardrail.armorResponse != "off"</Condition>
+      </Step>
+      <Step>
+        <Name>SCP-Semantic-Cache-Populate</Name>
+        <Condition>response.status.code = 200 and ((request.header.use-cache is true) or (request.header.use-cache = "true") or (request.header.x-use-cache is true) or (request.header.x-use-cache = "true")) and flow.cached != "true" and flow.guardrail.semanticCache != "off" and flow.has_tools != "true"</Condition>
       </Step>
       <Step>
         <Name>AM-SetResponseHeaders</Name>

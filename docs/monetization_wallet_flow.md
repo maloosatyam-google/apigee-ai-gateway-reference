@@ -97,8 +97,8 @@ Thinking tokens are billed at the **output** rate.
 
 | Call outcome | Wallet (Monetization) | Budget counter | Analytics / dashboards | UI live balance |
 | --- | --- | --- | --- | --- |
-| 200, model call, priced | **cost** | cost (micros, min 1) | tokens + model | − cost |
-| 200, semantic cache **HIT** | $0 (`transactionSuccess=false`, multiplier 0) | skipped | tokens, `HIT` | − $0 |
+| 200, model call, priced | **cost** | cost (micros, min 1) | tokens + model (**cost**) | − cost |
+| 200, semantic cache **HIT** | $0 (`transactionSuccess=false`, multiplier 0) | skipped | tokens, `dc_cache_status=HIT` (**$0.00**) | − $0 |
 | 200, model not listed in the rate card | **cost at the card's `default` rate** (live: $0.15 in / $0.60 out per 1M, tier medium) | cost (micros, min 1) | tokens + model | − cost |
 | 200 but the rate card could not be read (KVM missing, invalid JSON, no `default` entry) | $0 (`transactionSuccess=false`) | skipped | recorded, `x-gateway-cost-source` names the gap | − $0 |
 | Any fault: 401 key / product, 400 Model Armor, 403 MLC, 429 budget or token quota, upstream error | $0 (fault path omits monetization collectors) | not deducted | `DC-FaultAnalytics` row | no debit |

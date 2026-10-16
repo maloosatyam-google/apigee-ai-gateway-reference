@@ -707,7 +707,9 @@ export default defineConfig(({ mode }) => {
             req.on('end', async () => {
               try {
                 const payload = JSON.parse(body || '{}');
-                const email = (payload.email || '').trim();
+                const incomingHeader = (req.headers['x-goog-authenticated-user-email'] as string) || '';
+                const cleanHeader = incomingHeader.replace(/^accounts\.google\.com:/, '').trim();
+                const email = (cleanHeader || payload.email || '').trim();
                 let firstName = (payload.firstName || '').trim();
                 let lastName = (payload.lastName || '').trim();
                 const rawFullName = (payload.fullName || '').trim();
@@ -790,7 +792,7 @@ export default defineConfig(({ mode }) => {
             const sso = getGcpIdentityToken();
             const saToken = await getGcpAccessToken();
 
-            const email = (queryEmail || cleanHeader || sso.email || SSO_USER_EMAIL).trim();
+            const email = (cleanHeader || queryEmail || sso.email || SSO_USER_EMAIL).trim();
             // In local dev, if email matches gcloud user, use gcloud access token to resolve OAuth2 userinfo profile name
             const effectiveAuthHeader = reqAuthHeader || (saToken && (!queryEmail || queryEmail === sso.email) ? `Bearer ${saToken}` : '');
             const resolvedName = await resolveUserFullName(email, iapJwtHeader, sso.name || '', effectiveAuthHeader);
@@ -1341,7 +1343,7 @@ export default defineConfig(({ mode }) => {
               // environment-wide, so without it `mcp` traffic (which never sets dc_user_email)
               // lands in the `(not set)` bucket and is rendered as anonymous AI Gateway callers.
               const proxyFilter = encodeURIComponent(`(apiproxy eq 'ai-gateway-v1')`);
-              const statsUrl = `https://apigee.googleapis.com/v1/organizations/${org}/environments/${apigeeEnv}/stats/dc_user_email,dc_model_name?select=sum(message_count),sum(is_error),sum(dc_prompt_token_count),sum(dc_candidates_token_count),sum(dc_total_token_count)&timeRange=${encodeURIComponent(apigeeTimeRange)}&filter=${proxyFilter}`;
+              const statsUrl = `https://apigee.googleapis.com/v1/organizations/${org}/environments/${apigeeEnv}/stats/dc_user_email,dc_model_name,dc_cache_status?select=sum(message_count),sum(is_error),sum(dc_prompt_token_count),sum(dc_candidates_token_count),sum(dc_total_token_count)&timeRange=${encodeURIComponent(apigeeTimeRange)}&filter=${proxyFilter}`;
 
               // 2. Fetch Proxy stats (for overall SLA, latency, error count)
               const proxyStatsUrl = `https://apigee.googleapis.com/v1/organizations/${org}/environments/${apigeeEnv}/stats/apiproxy?select=sum(message_count),sum(is_error),avg(total_response_time)&timeRange=${encodeURIComponent(apigeeTimeRange)}`;
@@ -1397,12 +1399,14 @@ export default defineConfig(({ mode }) => {
               let flashCalls = 0;
               let proCalls = 0;
 
-              const consumptionRows: any[] = [];
+              const rowMap = new Map<string, any>();
               let totalAttributedErrors = 0;
 
               for (const dim of rawDimensions) {
-                const rawUser = dim.individualNames?.[0] || dim.name?.split(',')[0] || '(not set)';
-                const rawModel = dim.individualNames?.[1] || dim.name?.split(',')[1] || '(not set)';
+                const parts = dim.individualNames || String(dim.name || '').split(',');
+                const rawUser = parts[0] || '(not set)';
+                const rawModel = parts[1] || '(not set)';
+                const rawCacheStatus = String(parts[2] || '').toUpperCase();
 
                 const mc = Number(dim.metrics?.find((m: any) => m.name === 'sum(message_count)')?.values?.[0] || 0);
                 const ec = Number(dim.metrics?.find((m: any) => m.name === 'sum(is_error)')?.values?.[0] || 0);
@@ -1448,7 +1452,8 @@ export default defineConfig(({ mode }) => {
 
                 const inRate = matchedRate.input ?? 0.15;
                 const outRate = matchedRate.output ?? 0.60;
-                const cost = isAbsent(rawModel) ? 0 : (pt / 1_000_000) * inRate + (ct / 1_000_000) * outRate;
+                const isCacheHit = rawCacheStatus === 'HIT';
+                const cost = isAbsent(rawModel) || isCacheHit ? 0 : (pt / 1_000_000) * inRate + (ct / 1_000_000) * outRate;
 
                 totalTraffic += mc;
                 totalPromptTokens += pt;
@@ -1464,19 +1469,33 @@ export default defineConfig(({ mode }) => {
                   else flashCalls += mc;
                 }
 
-                consumptionRows.push({
-                  userEmail,
-                  model,
-                  provider,
-                  tier,
-                  totalTraffic: mc,
-                  errorCount: ec,
-                  inputTokens: pt,
-                  outputTokens: ct,
-                  costUsd: Number(cost.toFixed(4)),
-                  isUnauthenticated,
-                });
+                const mergeKey = `${userEmail}||${model}`;
+                const existing = rowMap.get(mergeKey);
+                if (existing) {
+                  existing.totalTraffic += mc;
+                  existing.errorCount += ec;
+                  existing.inputTokens += pt;
+                  existing.outputTokens += ct;
+                  existing._rawCost += cost;
+                  existing.costUsd = Number(existing._rawCost.toFixed(4));
+                } else {
+                  rowMap.set(mergeKey, {
+                    userEmail,
+                    model,
+                    provider,
+                    tier,
+                    totalTraffic: mc,
+                    errorCount: ec,
+                    inputTokens: pt,
+                    outputTokens: ct,
+                    _rawCost: cost,
+                    costUsd: Number(cost.toFixed(4)),
+                    isUnauthenticated,
+                  });
+                }
               }
+
+              const consumptionRows = Array.from(rowMap.values()).map(({ _rawCost, ...row }) => row);
 
               consumptionRows.sort((a, b) => b.costUsd - a.costUsd || b.totalTraffic - a.totalTraffic);
 
@@ -1604,7 +1623,7 @@ export default defineConfig(({ mode }) => {
               try {
                 const dynamicRange = getApigeeTimeRange('30d');
                 const monFilter = encodeURIComponent(`(apiproxy eq 'ai-gateway-v1')`);
-                const sUrl = `https://apigee.googleapis.com/v1/organizations/${org}/environments/prod/stats/dc_user_email,dc_model_name?select=sum(message_count),sum(dc_total_token_count),sum(dc_prompt_token_count),sum(dc_candidates_token_count)&timeRange=${encodeURIComponent(dynamicRange)}&filter=${monFilter}`;
+                const sUrl = `https://apigee.googleapis.com/v1/organizations/${org}/environments/prod/stats/dc_user_email,dc_model_name,dc_cache_status?select=sum(message_count),sum(dc_total_token_count),sum(dc_prompt_token_count),sum(dc_candidates_token_count)&timeRange=${encodeURIComponent(dynamicRange)}&filter=${monFilter}`;
                 const rcUrl = `https://apigee.googleapis.com/v1/organizations/${org}/environments/prod/keyvaluemaps/ai-model-rates/entries/rate_card`;
                 const [sRes, rcRes] = await Promise.all([
                   fetch(sUrl, { headers: { Authorization: `Bearer ${token}` } }),
@@ -1626,6 +1645,7 @@ export default defineConfig(({ mode }) => {
                     const names = d.individualNames || String(d.name || '').split(',');
                     const email = names[0];
                     const model = names[1] || '';
+                    const cacheStatus = String(names[2] || '').toUpperCase();
                     if (!email || email === '(not set)' || email === 'null') continue;
 
                     const calls = Number(d.metrics?.find((m: any) => m.name === 'sum(message_count)')?.values?.[0] || 0);
@@ -1641,7 +1661,7 @@ export default defineConfig(({ mode }) => {
                     const matched = (rateKey ? monRates[rateKey] : null) || monRates[model] || monRates['default'] || {};
                     const inRate = matched.input ?? 0.15;
                     const outRate = matched.output ?? 0.60;
-                    const cost = (pt / 1_000_000) * inRate + (ct / 1_000_000) * outRate;
+                    const cost = cacheStatus === 'HIT' ? 0 : (pt / 1_000_000) * inRate + (ct / 1_000_000) * outRate;
 
                     const acc = statsByUser[email] || { calls: 0, tokens: 0, costUsd: 0 };
                     acc.calls += calls;
@@ -1903,6 +1923,45 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api\/servicenow-mcp-prod/, ''),
           secure: false,
+        },
+      },
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('lucide-react')) return 'vendor-icons';
+              if (
+                id.includes('react-markdown') ||
+                id.includes('remark-') ||
+                id.includes('rehype-') ||
+                id.includes('lowlight') ||
+                id.includes('highlight.js') ||
+                id.includes('micromark') ||
+                id.includes('mdast') ||
+                id.includes('hast') ||
+                id.includes('unified')
+              ) {
+                return 'vendor-markdown';
+              }
+              if (id.includes('/react/') || id.includes('/react-dom/') || id.includes('scheduler')) {
+                return 'vendor-react';
+              }
+            }
+            if (id.includes('/src/data/industryPacks')) {
+              return 'data-industries';
+            }
+            if (id.includes('/src/components/ArchitectureBlueprintModal')) {
+              return 'ui-blueprint';
+            }
+            if (
+              id.includes('/src/components/MonetizationManager') ||
+              id.includes('/src/components/GuardrailsPoliciesView')
+            ) {
+              return 'ui-monetization';
+            }
+          },
         },
       },
     },

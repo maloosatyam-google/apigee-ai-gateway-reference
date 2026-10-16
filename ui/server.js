@@ -2,7 +2,8 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { execSync } from 'node:child_process';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { createAdminAgentService } from './server/adminAgentService.js';
 import { createAgentShowcaseService } from './server/agentShowcase.js';
@@ -22,6 +23,7 @@ import { ADMIN_APP_PRODUCTS, requiredSubscriptionsFor, syncAdminAppProducts } fr
 import { handleConsoleProducts, handleConsoleProductsReset, normalizeConsoleEnv, consoleWriteGuard } from './server/consoleEnv.js';
 import { GCP_PROJECT_ID, APIGEE_ORG, APIGEE_BASE_PROD, APIGEE_BASE_DEV, SSO_USER_EMAIL, DEMO_ADMIN_EMAIL, PERSONA_APP_DEVELOPERS, UI_MGMT_SA, publicRuntimeConfig } from './server/deployConfig.js';
 
+const execFileAsync = promisify(execFile);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST_DIR = path.join(__dirname, 'dist');
 
@@ -71,6 +73,7 @@ const PREPAID_STARTING_BALANCE_USD = 20;
 // with sub-cent precision, so an untouched wallet can read fractionally above the credited
 // amount; comparing for exact equality would misclassify it as partially spent.
 const PREPAID_BALANCE_EPSILON_USD = 0.05;
+const MAX_TOPUP_USD = 100;
 
 /**
  * The denominator behind the "spent X of Y" reading in the Monetization tab.
@@ -95,6 +98,7 @@ function allocatedBudgetFor(hasWallet, balanceUsd, consumedUsd) {
 // In-memory token cache for Apigee Management API
 let cachedToken = '';
 let tokenExpiry = 0;
+let tokenRefreshPromise = null;
 
 // Real-time session debit ledger per developer email to bridge Apigee's 15-min Analytics settlement window
 // Map<emailLowerCase, { debitedUsd: number, lastCreditTimeSeen: string }>
@@ -105,94 +109,108 @@ async function getGcpAccessToken() {
   if (cachedToken && now < tokenExpiry) {
     return cachedToken;
   }
+  if (tokenRefreshPromise) {
+    return tokenRefreshPromise;
+  }
+  tokenRefreshPromise = (async () => {
+    // 1. Optional explicit GOOGLE_APPLICATION_CREDENTIALS (never use repo-local key files)
+    const keyPaths = [
+      process.env.GOOGLE_APPLICATION_CREDENTIALS,
+    ].filter(Boolean);
 
-  // 1. Optional explicit GOOGLE_APPLICATION_CREDENTIALS (never use repo-local key files)
-  const keyPaths = [
-    process.env.GOOGLE_APPLICATION_CREDENTIALS,
-  ].filter(Boolean);
+    for (const keyPath of keyPaths) {
+      if (fs.existsSync(keyPath)) {
+        try {
+          const keyData = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
+          if (keyData.client_email && keyData.private_key) {
+            const header = Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT' })).toString('base64url');
+            const nowSec = Math.floor(Date.now() / 1000);
+            const payload = Buffer.from(
+              JSON.stringify({
+                iss: keyData.client_email,
+                scope: 'https://www.googleapis.com/auth/cloud-platform',
+                aud: 'https://oauth2.googleapis.com/token',
+                exp: nowSec + 3600,
+                iat: nowSec,
+              })
+            ).toString('base64url');
 
-  for (const keyPath of keyPaths) {
-    if (fs.existsSync(keyPath)) {
-      try {
-        const keyData = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
-        if (keyData.client_email && keyData.private_key) {
-          const header = Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT' })).toString('base64url');
-          const nowSec = Math.floor(Date.now() / 1000);
-          const payload = Buffer.from(
-            JSON.stringify({
-              iss: keyData.client_email,
-              scope: 'https://www.googleapis.com/auth/cloud-platform',
-              aud: 'https://oauth2.googleapis.com/token',
-              exp: nowSec + 3600,
-              iat: nowSec,
-            })
-          ).toString('base64url');
+            const signer = crypto.createSign('RSA-SHA256');
+            signer.update(`${header}.${payload}`);
+            const signature = signer.sign(keyData.private_key, 'base64url');
+            const jwt = `${header}.${payload}.${signature}`;
 
-          const signer = crypto.createSign('RSA-SHA256');
-          signer.update(`${header}.${payload}`);
-          const signature = signer.sign(keyData.private_key, 'base64url');
-          const jwt = `${header}.${payload}.${signature}`;
+            const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: new URLSearchParams({
+                grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+                assertion: jwt,
+              }),
+            });
 
-          const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({
-              grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-              assertion: jwt,
-            }),
-          });
-
-          if (tokenRes.ok) {
-            const data = await tokenRes.json();
-            if (data.access_token) {
-              cachedToken = data.access_token;
-              tokenExpiry = now + 50 * 60 * 1000;
-              return cachedToken;
+            if (tokenRes.ok) {
+              const data = await tokenRes.json();
+              if (data.access_token) {
+                cachedToken = data.access_token;
+                tokenExpiry = Date.now() + 50 * 60 * 1000;
+                return cachedToken;
+              }
             }
           }
+        } catch (err) {
+          console.warn(`[Server] SA key auth error at ${keyPath}:`, err.message);
         }
-      } catch (err) {
-        console.warn(`[Server] SA key auth error at ${keyPath}:`, err.message);
       }
     }
-  }
 
-  // 2. Query Cloud Run / Compute Metadata Server
-  try {
-    const metaRes = await fetch(
-      'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token',
-      { headers: { 'Metadata-Flavor': 'Google' } }
-    );
-    if (metaRes.ok) {
-      const metaData = await metaRes.json();
-      if (metaData.access_token) {
-        cachedToken = metaData.access_token;
-        const expiresInSec = metaData.expires_in || 3600;
-        tokenExpiry = now + Math.max(300, expiresInSec - 300) * 1000;
-        return cachedToken;
-      }
-    }
-  } catch {
-    // Not running on Cloud Run / GCE
-  }
-
-  // 3. Fallback to gcloud
-  try {
+    // 2. Query Cloud Run / Compute Metadata Server
     try {
-      cachedToken = execSync(
-        `gcloud auth print-access-token --impersonate-service-account=${UI_MGMT_SA} 2>/dev/null`
-      )
-        .toString()
-        .trim();
+      const metaRes = await fetch(
+        'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token',
+        { headers: { 'Metadata-Flavor': 'Google' }, signal: AbortSignal.timeout(3000) }
+      );
+      if (metaRes.ok) {
+        const metaData = await metaRes.json();
+        if (metaData.access_token) {
+          cachedToken = metaData.access_token;
+          const expiresInSec = metaData.expires_in || 3600;
+          tokenExpiry = Date.now() + Math.max(300, expiresInSec - 300) * 1000;
+          return cachedToken;
+        }
+      }
     } catch {
-      cachedToken = execSync('gcloud auth print-access-token').toString().trim();
+      // Not running on Cloud Run / GCE
     }
-    tokenExpiry = now + 4 * 60 * 1000;
-    return cachedToken;
-  } catch (err) {
-    console.error('[Server] Failed to get gcloud auth token:', err.message);
-    return '';
-  }
+
+    // 3. Fallback to non-blocking gcloud subprocess
+    try {
+      try {
+        const { stdout } = await execFileAsync(
+          'gcloud',
+          ['auth', 'print-access-token', `--impersonate-service-account=${UI_MGMT_SA}`],
+          { timeout: 8000 }
+        );
+        cachedToken = stdout.trim();
+      } catch {
+        const { stdout } = await execFileAsync(
+          'gcloud',
+          ['auth', 'print-access-token'],
+          { timeout: 8000 }
+        );
+        cachedToken = stdout.trim();
+      }
+      tokenExpiry = Date.now() + 4 * 60 * 1000;
+      return cachedToken;
+    } catch (err) {
+      console.error('[Server] Failed to get gcloud auth token:', err.message);
+      return '';
+    }
+  })().finally(() => {
+    tokenRefreshPromise = null;
+  });
+
+  return tokenRefreshPromise;
 }
 
 async function fetchAppConsumerKey(org, token, devEmail, appName) {
@@ -772,6 +790,36 @@ async function proxyRequest(req, res, targetUrl) {
   }
 }
 
+const MAX_JSON_BODY_BYTES = 256 * 1024;
+
+function readJsonBody(req, maxBytes = MAX_JSON_BODY_BYTES) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    let total = 0;
+    req.on('data', (chunk) => {
+      total += chunk.length;
+      if (total > maxBytes) {
+        const err = new Error('Payload too large');
+        err.statusCode = 413;
+        req.destroy(err);
+        reject(err);
+        return;
+      }
+      chunks.push(chunk);
+    });
+    req.on('end', () => {
+      try {
+        const raw = Buffer.concat(chunks).toString('utf8');
+        resolve(raw ? JSON.parse(raw) : {});
+      } catch (err) {
+        err.statusCode = 400;
+        reject(err);
+      }
+    });
+    req.on('error', reject);
+  });
+}
+
 const server = http.createServer(async (req, res) => {
   const reqUrl = req.url || '/';
   const parsedUrl = new URL(reqUrl, `http://${req.headers.host || 'localhost'}`);
@@ -802,7 +850,7 @@ const server = http.createServer(async (req, res) => {
     const iapJwtHeader = req.headers['x-goog-iap-jwt-assertion'] || '';
     const authHeader = req.headers['authorization'] || '';
     const cleanHeader = String(incomingHeader).replace(/^accounts\.google\.com:/, '').trim();
-    const email = (queryEmail || cleanHeader || SSO_USER_EMAIL).trim();
+    const email = (cleanHeader || queryEmail || SSO_USER_EMAIL).trim();
     const resolvedName = await resolveUserFullName(email, iapJwtHeader, '', authHeader);
     let name = resolvedName.fullName || email.split('@')[0] || 'SSO User';
 
@@ -890,69 +938,67 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    let body = '';
-    req.on('data', (chunk) => { body += chunk; });
-    req.on('end', async () => {
-      try {
-        const payload = JSON.parse(body || '{}');
-        const email = (payload.email || '').trim();
-        let firstName = (payload.firstName || '').trim();
-        let lastName = (payload.lastName || '').trim();
-        const rawFullName = (payload.fullName || '').trim();
+    try {
+      const payload = await readJsonBody(req);
+      const incomingHeader = req.headers['x-goog-authenticated-user-email'] || '';
+      const cleanHeader = String(incomingHeader).replace(/^accounts\.google\.com:/, '').trim();
+      const email = (cleanHeader || payload.email || '').trim();
+      let firstName = (payload.firstName || '').trim();
+      let lastName = (payload.lastName || '').trim();
+      const rawFullName = (payload.fullName || '').trim();
 
-        if (!firstName && rawFullName) {
-          const parts = rawFullName.split(/\s+/).filter(Boolean);
-          firstName = parts[0] || '';
-          lastName = parts.slice(1).join(' ');
-        }
-
-        if (!email || !firstName) {
-          res.statusCode = 400;
-          res.end(JSON.stringify({ error: 'Both email and firstName are required' }));
-          return;
-        }
-
-        const fullName = lastName && lastName !== firstName ? `${firstName} ${lastName}`.trim() : firstName;
-
-        const saToken = await getGcpAccessToken();
-        if (!saToken) {
-          res.statusCode = 500;
-          res.end(JSON.stringify({ error: 'Could not obtain GCP access token' }));
-          return;
-        }
-
-        const org = APIGEE_ORG;
-        const provResult = await provisionUserDeveloperAndApp(
-          org,
-          saToken,
-          email,
-          fullName,
-          '',
-          '',
-          {
-            allowCreate: true,
-            explicitFirstName: firstName,
-            explicitLastName: lastName || firstName,
-          }
-        );
-
-        res.end(JSON.stringify({
-          status: 'ok',
-          email,
-          firstName,
-          lastName: lastName || firstName,
-          fullName,
-          name: fullName,
-          username: provResult.username || email.split('@')[0],
-          apiKey: provResult.apiKey || '',
-          apiKeys: provResult.apiKeys || {},
-          needsOnboarding: false,
-        }));
-      } catch (err) {
-        res.statusCode = 500;
-        res.end(JSON.stringify({ error: err.message }));
+      if (!firstName && rawFullName) {
+        const parts = rawFullName.split(/\s+/).filter(Boolean);
+        firstName = parts[0] || '';
+        lastName = parts.slice(1).join(' ');
       }
-    });
+
+      if (!email || !firstName) {
+        res.statusCode = 400;
+        res.end(JSON.stringify({ error: 'Both email and firstName are required' }));
+        return;
+      }
+
+      const fullName = lastName && lastName !== firstName ? `${firstName} ${lastName}`.trim() : firstName;
+
+      const saToken = await getGcpAccessToken();
+      if (!saToken) {
+        res.statusCode = 500;
+        res.end(JSON.stringify({ error: 'Could not obtain GCP access token' }));
+        return;
+      }
+
+      const org = APIGEE_ORG;
+      const provResult = await provisionUserDeveloperAndApp(
+        org,
+        saToken,
+        email,
+        fullName,
+        '',
+        '',
+        {
+          allowCreate: true,
+          explicitFirstName: firstName,
+          explicitLastName: lastName || firstName,
+        }
+      );
+
+      res.end(JSON.stringify({
+        status: 'ok',
+        email,
+        firstName,
+        lastName: lastName || firstName,
+        fullName,
+        name: fullName,
+        username: provResult.username || email.split('@')[0],
+        apiKey: provResult.apiKey || '',
+        apiKeys: provResult.apiKeys || {},
+        needsOnboarding: false,
+      }));
+    } catch (err) {
+      res.statusCode = err.statusCode || 500;
+      res.end(JSON.stringify({ error: err.message }));
+    }
     return;
   }
 
@@ -1007,58 +1053,54 @@ const server = http.createServer(async (req, res) => {
         res.end(JSON.stringify({ error: err.message }));
       }
     } else if (req.method === 'PUT' || req.method === 'POST') {
-      let body = '';
-      req.on('data', (chunk) => { body += chunk; });
-      req.on('end', async () => {
-        try {
-          const payload = JSON.parse(body || '{}');
-          // Unknown / missing env is treated as prod, which the console may not write.
-          const targetEnv = normalizeConsoleEnv(payload.env ?? parsedUrl.searchParams.get('env'));
-          const guard = consoleWriteGuard(targetEnv);
-          if (guard) {
-            res.statusCode = guard.status;
-            res.end(JSON.stringify(guard.body));
-            return;
-          }
-          const newRates = payload.rates;
-          if (!newRates || typeof newRates !== 'object') {
-            res.statusCode = 400;
-            res.end(JSON.stringify({ error: 'Missing or invalid "rates" object in request body' }));
-            return;
-          }
-
-          const targetUrl = `https://apigee.googleapis.com/v1/organizations/${org}/environments/${targetEnv}/keyvaluemaps/${kvmName}/entries/${entryKey}`;
-          const updateRes = await fetch(targetUrl, {
-            method: 'PUT',
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              name: entryKey,
-              value: JSON.stringify(newRates),
-            }),
-          });
-
-          if (!updateRes.ok) {
-            const errText = await updateRes.text();
-            res.statusCode = updateRes.status;
-            res.end(JSON.stringify({ error: `Failed to update KVM (${updateRes.status}): ${errText}` }));
-            return;
-          }
-
-          res.end(JSON.stringify({
-            status: 'ok',
-            env: targetEnv,
-            message: `Successfully updated ${entryKey} in ${targetEnv} KVM`,
-            rates: newRates,
-            updatedAt: new Date().toISOString(),
-          }));
-        } catch (err) {
-          res.statusCode = 500;
-          res.end(JSON.stringify({ error: err.message }));
+      try {
+        const payload = await readJsonBody(req);
+        // Unknown / missing env is treated as prod, which the console may not write.
+        const targetEnv = normalizeConsoleEnv(payload.env ?? parsedUrl.searchParams.get('env'));
+        const guard = consoleWriteGuard(targetEnv);
+        if (guard) {
+          res.statusCode = guard.status;
+          res.end(JSON.stringify(guard.body));
+          return;
         }
-      });
+        const newRates = payload.rates;
+        if (!newRates || typeof newRates !== 'object') {
+          res.statusCode = 400;
+          res.end(JSON.stringify({ error: 'Missing or invalid "rates" object in request body' }));
+          return;
+        }
+
+        const targetUrl = `https://apigee.googleapis.com/v1/organizations/${org}/environments/${targetEnv}/keyvaluemaps/${kvmName}/entries/${entryKey}`;
+        const updateRes = await fetch(targetUrl, {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: entryKey,
+            value: JSON.stringify(newRates),
+          }),
+        });
+
+        if (!updateRes.ok) {
+          const errText = await updateRes.text();
+          res.statusCode = updateRes.status;
+          res.end(JSON.stringify({ error: `Failed to update KVM (${updateRes.status}): ${errText}` }));
+          return;
+        }
+
+        res.end(JSON.stringify({
+          status: 'ok',
+          env: targetEnv,
+          message: `Successfully updated ${entryKey} in ${targetEnv} KVM`,
+          rates: newRates,
+          updatedAt: new Date().toISOString(),
+        }));
+      } catch (err) {
+        res.statusCode = err.statusCode || 500;
+        res.end(JSON.stringify({ error: err.message }));
+      }
     } else {
       res.statusCode = 405;
       res.end(JSON.stringify({ error: 'Method Not Allowed' }));
@@ -1112,22 +1154,18 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    let body = '';
-    req.on('data', (chunk) => { body += chunk; });
-    req.on('end', async () => {
-      try {
-        const payload = JSON.parse(body || '{}');
-        const dev = (payload.developer || DEMO_ADMIN_EMAIL).toLowerCase();
-        // Starting balance is read from Apigee here, never taken from the client.
-        const token = await getGcpAccessToken();
-        const wallet = await fetchApigeeWallet({ org: APIGEE_ORG, dev, token });
-        const result = recordDebit(sessionLedgerByDev, dev, payload.amountUsd, wallet);
-        res.end(JSON.stringify({ status: 'ok', ...result }));
-      } catch (err) {
-        res.statusCode = 500;
-        res.end(JSON.stringify({ error: err.message }));
-      }
-    });
+    try {
+      const payload = await readJsonBody(req);
+      const dev = (payload.developer || DEMO_ADMIN_EMAIL).toLowerCase();
+      // Starting balance is read from Apigee here, never taken from the client.
+      const token = await getGcpAccessToken();
+      const wallet = await fetchApigeeWallet({ org: APIGEE_ORG, dev, token });
+      const result = recordDebit(sessionLedgerByDev, dev, payload.amountUsd, wallet);
+      res.end(JSON.stringify({ status: 'ok', ...result }));
+    } catch (err) {
+      res.statusCode = err.statusCode || 500;
+      res.end(JSON.stringify({ error: err.message }));
+    }
     return;
   }
 
@@ -1149,50 +1187,52 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    let body = '';
-    req.on('data', (chunk) => { body += chunk; });
-    req.on('end', async () => {
-      try {
-        const payload = JSON.parse(body || '{}');
-        const dev = payload.developer || DEMO_ADMIN_EMAIL;
-        const units = String(payload.units || '50');
-        const org = APIGEE_ORG;
-        const txId = `topup-${Date.now()}`;
-
-        const creditUrl = `https://apigee.googleapis.com/v1/organizations/${org}/developers/${encodeURIComponent(dev)}/balance:credit`;
-        const creditRes = await fetch(creditUrl, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            transactionAmount: {
-              currencyCode: 'USD',
-              units,
-              nanos: 0,
-            },
-            transactionId: txId,
-          }),
-        });
-
-        // Clear session debit ledger on top-up so balance reflects the fresh credit
-        sessionLedgerByDev.delete(dev.toLowerCase());
-
-        const data = await creditRes.json();
-        res.statusCode = creditRes.status;
-        res.end(JSON.stringify({
-          status: creditRes.ok ? 'ok' : 'error',
-          developer: dev,
-          credited: units,
-          transactionId: txId,
-          data,
-        }));
-      } catch (err) {
-        res.statusCode = 500;
-        res.end(JSON.stringify({ error: err.message }));
+    try {
+      const payload = await readJsonBody(req);
+      const dev = payload.developer || DEMO_ADMIN_EMAIL;
+      const numericUnits = Number(payload.units ?? 50);
+      if (!Number.isFinite(numericUnits) || numericUnits <= 0 || numericUnits > MAX_TOPUP_USD) {
+        res.statusCode = 400;
+        res.end(JSON.stringify({ error: `units must be between 1 and ${MAX_TOPUP_USD}` }));
+        return;
       }
-    });
+      const units = String(Math.floor(numericUnits));
+      const org = APIGEE_ORG;
+      const txId = `topup-${Date.now()}`;
+
+      const creditUrl = `https://apigee.googleapis.com/v1/organizations/${org}/developers/${encodeURIComponent(dev)}/balance:credit`;
+      const creditRes = await fetch(creditUrl, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          transactionAmount: {
+            currencyCode: 'USD',
+            units,
+            nanos: 0,
+          },
+          transactionId: txId,
+        }),
+      });
+
+      // Clear session debit ledger on top-up so balance reflects the fresh credit
+      sessionLedgerByDev.delete(dev.toLowerCase());
+
+      const data = await creditRes.json();
+      res.statusCode = creditRes.status;
+      res.end(JSON.stringify({
+        status: creditRes.ok ? 'ok' : 'error',
+        developer: dev,
+        credited: units,
+        transactionId: txId,
+        data,
+      }));
+    } catch (err) {
+      res.statusCode = err.statusCode || 500;
+      res.end(JSON.stringify({ error: err.message }));
+    }
     return;
   }
 
@@ -1281,35 +1321,31 @@ const server = http.createServer(async (req, res) => {
         res.end(JSON.stringify({ error: err.message }));
       }
     } else if (req.method === 'POST') {
-      let body = '';
-      req.on('data', (c) => { body += c; });
-      req.on('end', async () => {
-        try {
-          const payload = JSON.parse(body || '{}');
-          const targetDev = payload.developer || dev;
-          const apiproduct = payload.apiproduct;
-          const subRes = await fetch(
-            `https://apigee.googleapis.com/v1/organizations/${org}/developers/${encodeURIComponent(targetDev)}/subscriptions`,
-            {
-              method: 'POST',
-              headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                apiproduct,
-                startTime: String(Date.now()),
-              }),
-            }
-          );
-          const data = await subRes.json();
-          res.statusCode = subRes.status;
-          res.end(JSON.stringify({ status: subRes.ok ? 'ok' : 'error', data }));
-        } catch (err) {
-          res.statusCode = 500;
-          res.end(JSON.stringify({ error: err.message }));
-        }
-      });
+      try {
+        const payload = await readJsonBody(req);
+        const targetDev = payload.developer || dev;
+        const apiproduct = payload.apiproduct;
+        const subRes = await fetch(
+          `https://apigee.googleapis.com/v1/organizations/${org}/developers/${encodeURIComponent(targetDev)}/subscriptions`,
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              apiproduct,
+              startTime: String(Date.now()),
+            }),
+          }
+        );
+        const data = await subRes.json();
+        res.statusCode = subRes.status;
+        res.end(JSON.stringify({ status: subRes.ok ? 'ok' : 'error', data }));
+      } catch (err) {
+        res.statusCode = err.statusCode || 500;
+        res.end(JSON.stringify({ error: err.message }));
+      }
     } else {
       res.statusCode = 405;
       res.end(JSON.stringify({ error: 'Method Not Allowed' }));
@@ -1346,28 +1382,24 @@ const server = http.createServer(async (req, res) => {
         res.end(JSON.stringify({ error: err.message }));
       }
     } else if (req.method === 'PUT' || req.method === 'POST') {
-      let body = '';
-      req.on('data', (c) => { body += c; });
-      req.on('end', async () => {
-        try {
-          const payload = JSON.parse(body || '{}');
-          const billingType = payload.billingType || 'PREPAID';
-          const apiRes = await fetch(cfgUrl, {
-            method: 'PUT',
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ billingType }),
-          });
-          const data = await apiRes.json();
-          res.statusCode = apiRes.status;
-          res.end(JSON.stringify({ status: apiRes.ok ? 'ok' : 'error', developer: dev, config: data }));
-        } catch (err) {
-          res.statusCode = 500;
-          res.end(JSON.stringify({ error: err.message }));
-        }
-      });
+      try {
+        const payload = await readJsonBody(req);
+        const billingType = payload.billingType || 'PREPAID';
+        const apiRes = await fetch(cfgUrl, {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ billingType }),
+        });
+        const data = await apiRes.json();
+        res.statusCode = apiRes.status;
+        res.end(JSON.stringify({ status: apiRes.ok ? 'ok' : 'error', developer: dev, config: data }));
+      } catch (err) {
+        res.statusCode = err.statusCode || 500;
+        res.end(JSON.stringify({ error: err.message }));
+      }
     } else {
       res.statusCode = 405;
       res.end(JSON.stringify({ error: 'Method Not Allowed' }));
@@ -1453,7 +1485,7 @@ const server = http.createServer(async (req, res) => {
       // unfiltered 126 calls / 45 errors, filtered 76 / 39 — the latter matching the apiproxy
       // dimension exactly. Without the filter, attributedErrorCount can exceed isErrorCount.
       const proxyFilter = encodeURIComponent(`(apiproxy eq 'ai-gateway-v1')`);
-      const statsUrl = `https://apigee.googleapis.com/v1/organizations/${org}/environments/${apigeeEnv}/stats/dc_user_email,dc_model_name?select=sum(message_count),sum(is_error),sum(dc_prompt_token_count),sum(dc_candidates_token_count),sum(dc_total_token_count)&timeRange=${encodeURIComponent(apigeeTimeRange)}&filter=${proxyFilter}`;
+      const statsUrl = `https://apigee.googleapis.com/v1/organizations/${org}/environments/${apigeeEnv}/stats/dc_user_email,dc_model_name,dc_cache_status?select=sum(message_count),sum(is_error),sum(dc_prompt_token_count),sum(dc_candidates_token_count),sum(dc_total_token_count)&timeRange=${encodeURIComponent(apigeeTimeRange)}&filter=${proxyFilter}`;
       const proxyStatsUrl = `https://apigee.googleapis.com/v1/organizations/${org}/environments/${apigeeEnv}/stats/apiproxy?select=sum(message_count),sum(is_error),avg(total_response_time)&timeRange=${encodeURIComponent(apigeeTimeRange)}`;
       const kvmUrl = `https://apigee.googleapis.com/v1/organizations/${org}/environments/${apigeeEnv}/keyvaluemaps/ai-model-rates/entries/rate_card`;
       // Real semantic-cache signal. dc_cache_status is HIT / MISS / DISABLED, captured by
@@ -1504,12 +1536,14 @@ const server = http.createServer(async (req, res) => {
       let flashCalls = 0;
       let proCalls = 0;
 
-      const consumptionRows = [];
+      const rowMap = new Map();
       let totalAttributedErrors = 0;
 
       for (const dim of rawDimensions) {
-        const rawUser = dim.individualNames?.[0] || dim.name?.split(',')[0] || '(not set)';
-        const rawModel = dim.individualNames?.[1] || dim.name?.split(',')[1] || '(not set)';
+        const parts = dim.individualNames || String(dim.name || '').split(',');
+        const rawUser = parts[0] || '(not set)';
+        const rawModel = parts[1] || '(not set)';
+        const rawCacheStatus = String(parts[2] || '').toUpperCase();
 
         const mc = Number(dim.metrics?.find((m) => m.name === 'sum(message_count)')?.values?.[0] || 0);
         const ec = Number(dim.metrics?.find((m) => m.name === 'sum(is_error)')?.values?.[0] || 0);
@@ -1558,7 +1592,8 @@ const server = http.createServer(async (req, res) => {
 
         const inRate = matchedRate.input ?? 0.15;
         const outRate = matchedRate.output ?? 0.60;
-        const cost = isAbsent(rawModel) ? 0 : (pt / 1_000_000) * inRate + (ct / 1_000_000) * outRate;
+        const isCacheHit = rawCacheStatus === 'HIT';
+        const cost = isAbsent(rawModel) || isCacheHit ? 0 : (pt / 1_000_000) * inRate + (ct / 1_000_000) * outRate;
 
         totalTraffic += mc;
         totalPromptTokens += pt;
@@ -1576,19 +1611,33 @@ const server = http.createServer(async (req, res) => {
           else flashCalls += mc;
         }
 
-        consumptionRows.push({
-          userEmail,
-          model,
-          provider,
-          tier,
-          totalTraffic: mc,
-          errorCount: ec,
-          inputTokens: pt,
-          outputTokens: ct,
-          costUsd: Number(cost.toFixed(4)),
-          isUnauthenticated,
-        });
+        const mergeKey = `${userEmail}||${model}`;
+        const existing = rowMap.get(mergeKey);
+        if (existing) {
+          existing.totalTraffic += mc;
+          existing.errorCount += ec;
+          existing.inputTokens += pt;
+          existing.outputTokens += ct;
+          existing._rawCost += cost;
+          existing.costUsd = Number(existing._rawCost.toFixed(4));
+        } else {
+          rowMap.set(mergeKey, {
+            userEmail,
+            model,
+            provider,
+            tier,
+            totalTraffic: mc,
+            errorCount: ec,
+            inputTokens: pt,
+            outputTokens: ct,
+            _rawCost: cost,
+            costUsd: Number(cost.toFixed(4)),
+            isUnauthenticated,
+          });
+        }
       }
+
+      const consumptionRows = Array.from(rowMap.values()).map(({ _rawCost, ...row }) => row);
 
       // NOTE: there was previously a "wallet reconciliation" block here that invented
       // consumption rows for any developer whose prepaid balance had dropped below its
@@ -1740,7 +1789,7 @@ const server = http.createServer(async (req, res) => {
       try {
         const dynamicRange = getApigeeTimeRange('30d');
         const monFilter = encodeURIComponent(`(apiproxy eq 'ai-gateway-v1')`);
-        const sUrl = `https://apigee.googleapis.com/v1/organizations/${org}/environments/prod/stats/dc_user_email,dc_model_name?select=sum(message_count),sum(dc_total_token_count),sum(dc_prompt_token_count),sum(dc_candidates_token_count)&timeRange=${encodeURIComponent(dynamicRange)}&filter=${monFilter}`;
+        const sUrl = `https://apigee.googleapis.com/v1/organizations/${org}/environments/prod/stats/dc_user_email,dc_model_name,dc_cache_status?select=sum(message_count),sum(dc_total_token_count),sum(dc_prompt_token_count),sum(dc_candidates_token_count)&timeRange=${encodeURIComponent(dynamicRange)}&filter=${monFilter}`;
         const rcUrl = `https://apigee.googleapis.com/v1/organizations/${org}/environments/prod/keyvaluemaps/ai-model-rates/entries/rate_card`;
         const [sRes, rcRes] = await Promise.all([
           fetch(sUrl, { headers: { Authorization: `Bearer ${token}` } }),
@@ -1762,6 +1811,7 @@ const server = http.createServer(async (req, res) => {
             const names = d.individualNames || String(d.name || '').split(',');
             const email = names[0];
             const model = names[1] || '';
+            const cacheStatus = String(names[2] || '').toUpperCase();
             if (!email || email === '(not set)' || email === 'null') continue;
 
             const calls = Number(d.metrics?.find((m) => m.name === 'sum(message_count)')?.values?.[0] || 0);
@@ -1777,7 +1827,7 @@ const server = http.createServer(async (req, res) => {
             const matched = (rateKey ? monRates[rateKey] : null) || monRates[model] || monRates['default'] || {};
             const inRate = matched.input ?? 0.15;
             const outRate = matched.output ?? 0.60;
-            const cost = (pt / 1_000_000) * inRate + (ct / 1_000_000) * outRate;
+            const cost = cacheStatus === 'HIT' ? 0 : (pt / 1_000_000) * inRate + (ct / 1_000_000) * outRate;
 
             const acc = statsByUser[email] || { calls: 0, tokens: 0, costUsd: 0 };
             acc.calls += calls;
