@@ -19,6 +19,7 @@ import { generateScale, scaleToCssVars, normalizeHex, contrastRatio, rgbToHex } 
 
 export const DEFAULT_THEME_ID = 'apigee';
 export const STORAGE_KEY = 'apigee_customer_themes_v1';
+export const THEME_PROMPT_DAY_KEY = 'apigee_theme_prompt_day_v1';
 /** Uploaded logos are stored inline in localStorage; keep them small. */
 export const MAX_LOGO_BYTES = 400 * 1024;
 
@@ -885,4 +886,38 @@ export function resolveActiveThemeId({ queryId, runtimeId, savedId, themes }) {
   if (has(runtimeId)) return runtimeId;
   if (has(savedId)) return savedId;
   return DEFAULT_THEME_ID;
+}
+
+/** Local calendar date (`YYYY-MM-DD`) used to show the startup theme picker at most once per day. */
+export function localDayKey(now = new Date()) {
+  const d = now instanceof Date ? now : new Date(now);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+/**
+ * Whether the Customer Theme modal should open automatically on page load.
+ *
+ * Opens on the first load of each local calendar day so presenters can pick the
+ * customer theme for a demo without the dialog popping up on every refresh.
+ * `?customize=open` always opens it; `?customize=closed` (or `0`/`false`) or a
+ * deep link that already selects a customer (`?customer=…`) or opens another
+ * modal (`?tour=open`, `?arch=open`, `?settings=open`) suppresses the auto-open.
+ */
+export function shouldOpenThemeOnLoad({ search = '', lastShownDay = null, now = new Date() } = {}) {
+  const params = search instanceof URLSearchParams ? search : new URLSearchParams(search);
+  const customize = params.get('customize');
+  if (customize === 'open') return true;
+  if (customize === 'closed' || customize === '0' || customize === 'false') return false;
+  if (
+    params.get('customer') ||
+    params.get('tour') === 'open' ||
+    params.get('arch') === 'open' ||
+    params.get('settings') === 'open'
+  ) {
+    return false;
+  }
+  return lastShownDay !== localDayKey(now);
 }

@@ -44,6 +44,9 @@ import {
   setLibraryIndustries,
   addLibraryIndustry,
   brandHeader,
+  THEME_PROMPT_DAY_KEY,
+  localDayKey,
+  shouldOpenThemeOnLoad,
 } from '../src/utils/customerTheme.js';
 import { PERSONAS } from '../src/utils/personas.js';
 
@@ -456,4 +459,43 @@ it('canonicalPersonaNames maps industry team labels back to the product persona 
   assert.equal(canonicalPersonaNames(banking, 'banking'), chip);
   assert.equal(canonicalPersonaNames(chip, 'generic'), chip);
   assert.equal(canonicalPersonaNames('Double the Customer Support & Sales token quota', 'banking'), 'Double the Customer Support & Sales token quota');
+});
+
+describe('daily customer theme startup prompt', () => {
+  it('opens on the first load of a calendar day, skips same-day refreshes, and re-opens the next day', () => {
+    const day1 = new Date(2026, 9, 21, 9, 15, 0);
+    const day1Later = new Date(2026, 9, 21, 17, 45, 0);
+    const day2 = new Date(2026, 9, 22, 8, 30, 0);
+
+    assert.equal(localDayKey(day1), '2026-10-21');
+    assert.equal(shouldOpenThemeOnLoad({ search: '', lastShownDay: null, now: day1 }), true);
+    assert.equal(shouldOpenThemeOnLoad({ search: '', lastShownDay: '2026-10-21', now: day1Later }), false);
+    assert.equal(shouldOpenThemeOnLoad({ search: '', lastShownDay: '2026-10-21', now: day2 }), true);
+  });
+
+  it('honours ?customize=open and suppresses auto-open on ?customize=closed or conflicting deep links', () => {
+    const now = new Date(2026, 9, 21, 10, 0, 0);
+    const today = localDayKey(now);
+
+    assert.equal(shouldOpenThemeOnLoad({ search: '?customize=open', lastShownDay: today, now }), true);
+    assert.equal(shouldOpenThemeOnLoad({ search: '?customize=closed', lastShownDay: null, now }), false);
+    assert.equal(shouldOpenThemeOnLoad({ search: '?customize=0', lastShownDay: null, now }), false);
+    assert.equal(shouldOpenThemeOnLoad({ search: '?customer=icici-bank', lastShownDay: null, now }), false);
+    assert.equal(shouldOpenThemeOnLoad({ search: '?tour=open', lastShownDay: null, now }), false);
+    assert.equal(shouldOpenThemeOnLoad({ search: '?arch=open', lastShownDay: null, now }), false);
+    assert.equal(shouldOpenThemeOnLoad({ search: '?settings=open', lastShownDay: null, now }), false);
+    assert.equal(shouldOpenThemeOnLoad({ search: '?tab=analytics', lastShownDay: null, now }), true);
+  });
+
+  it('wires App.tsx to THEME_PROMPT_DAY_KEY and keeps View logs labelled as logs across personas', () => {
+    assert.equal(THEME_PROMPT_DAY_KEY, 'apigee_theme_prompt_day_v1');
+    const app = readFileSync(new URL('../src/App.tsx', import.meta.url), 'utf8');
+    assert.ok(app.includes('shouldOpenThemeOnLoad('));
+    assert.ok(app.includes('localStorage.setItem(THEME_PROMPT_DAY_KEY, localDayKey())'));
+
+    const dash = readFileSync(new URL('../src/components/AnalyticsDashboard.tsx', import.meta.url), 'utf8');
+    const logsModal = readFileSync(new URL('../src/components/CallLogsModal.tsx', import.meta.url), 'utf8');
+    assert.ok(!dash.includes('View costs'));
+    assert.ok(!logsModal.includes('Loading costs...'));
+  });
 });

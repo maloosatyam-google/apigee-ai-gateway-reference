@@ -1233,9 +1233,9 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                     technical:
                       'One row per developer and model target: calls, prompt and completion tokens and metered cost from Apigee Analytics, merged with wallet reconciliation rows Analytics has not indexed yet. View logs opens the per-call Cloud Logging trail with status codes and the faulting policy.',
                     finance:
-                      'Who is spending, and on which model. Sort by cost to find the biggest spenders; open a row to see the cost of each request.',
+                      'Who is spending, and on which model. Sort by cost to find the biggest spenders; click View logs on a row to see each request and its cost.',
                     ai_coe:
-                      'Which people use which models, and how heavily. Open a row to see individual requests, including any the safety controls blocked.',
+                      'Which people use which models, and how heavily. Click View logs on a row to see individual requests, including any the safety controls blocked.',
                   })}
                 >
                   <Info className="w-3.5 h-3.5 text-slate-400 hover:text-purple-500 cursor-pointer" />
@@ -1362,7 +1362,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
                   {/* Audit trail drill-down (not sortable) */}
                   <th className="pb-3 text-right">
-                    <span>{sp({ technical: 'Logs', finance: 'Detail', ai_coe: 'Requests' })}</span>
+                    <span>Logs</span>
                   </th>
                 </tr>
               </thead>
@@ -1457,13 +1457,13 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                             }
                             title={sp({
                               technical: `Per-call log for ${row.userEmail} on ${row.model}: status, faulting policy, tokens, latency`,
-                              finance: `Cost of each request by ${row.userEmail} on ${row.model}`,
-                              ai_coe: `Every request by ${row.userEmail} to ${row.model}, including blocked ones`,
+                              finance: `Request logs and per-call cost for ${row.userEmail} on ${row.model}`,
+                              ai_coe: `Request logs for ${row.userEmail} on ${row.model}, including blocked ones`,
                             })}
                             className="inline-flex items-center gap-1 text-[11px] font-sans font-semibold text-blue-600 hover:underline cursor-pointer"
                           >
                             <ScrollText className="w-3.5 h-3.5" />
-                            {sp({ technical: 'View logs', finance: 'View costs', ai_coe: 'View requests' })}
+                            View logs
                           </button>
                         </td>
                       </tr>

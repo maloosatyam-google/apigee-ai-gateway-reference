@@ -51,6 +51,7 @@ export interface FontOption {
 
 export const DEFAULT_THEME_ID: string;
 export const STORAGE_KEY: string;
+export const THEME_PROMPT_DAY_KEY: string;
 export const MAX_LOGO_BYTES: number;
 export const FONT_OPTIONS: FontOption[];
 export const OVERRIDABLE_PROMPTS: string[];
@@ -94,3 +95,9 @@ export function resolveActiveThemeId(args: {
   savedId?: string | null;
   themes: CustomerTheme[];
 }): string;
+export function localDayKey(now?: Date | number | string): string;
+export function shouldOpenThemeOnLoad(args?: {
+  search?: string | URLSearchParams;
+  lastShownDay?: string | null;
+  now?: Date | number | string;
+}): boolean;

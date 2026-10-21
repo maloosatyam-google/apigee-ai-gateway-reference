@@ -169,12 +169,12 @@ export const CallLogsModal: React.FC<CallLogsModalProps> = ({
             <ScrollText className="w-5 h-5 text-purple-600 mt-0.5 shrink-0" />
             <div>
               <h2 className="text-base font-bold text-slate-900">
-                {sp({ technical: 'Per-Call Audit Log', finance: 'Cost per request', ai_coe: 'Request history' })}
+                {sp({ technical: 'Per-Call Audit Log', finance: 'Request & Cost Logs', ai_coe: 'Request Logs' })}
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
                 {sp({
                   technical: 'Every request through the AI proxy from',
-                  finance: 'What each request cost for',
+                  finance: 'Every request and its cost for',
                   ai_coe: 'Every prompt sent by',
                 })}{' '}
                 <span className="font-mono font-semibold text-slate-700">
@@ -189,7 +189,7 @@ export const CallLogsModal: React.FC<CallLogsModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            aria-label={sp({ technical: 'Close audit log', finance: 'Close cost view', ai_coe: 'Close request history' })}
+            aria-label={sp({ technical: 'Close audit log', finance: 'Close request logs', ai_coe: 'Close request logs' })}
             className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-200/60 transition cursor-pointer"
           >
             <X className="w-5 h-5" />
@@ -251,14 +251,14 @@ export const CallLogsModal: React.FC<CallLogsModalProps> = ({
               <AlertTriangle className="w-4 h-4 text-rose-600 mt-0.5 shrink-0" />
               <div>
                 <p className="text-sm font-semibold text-rose-700">
-                  {sp({ technical: 'Cloud Logging query failed', finance: 'Could not load request costs', ai_coe: 'Could not load request history' })}
+                  {sp({ technical: 'Cloud Logging query failed', finance: 'Could not load request logs', ai_coe: 'Could not load request logs' })}
                 </p>
                 <p className="text-xs text-rose-600 mt-1 font-mono">{error}</p>
               </div>
             </div>
           ) : loading ? (
             <p className="py-16 text-center text-sm text-slate-500">
-              {sp({ technical: 'Querying Cloud Logging...', finance: 'Loading costs...', ai_coe: 'Loading requests...' })}
+              {sp({ technical: 'Querying Cloud Logging...', finance: 'Loading logs...', ai_coe: 'Loading logs...' })}
             </p>
           ) : entries.length === 0 ? (
             <p className="py-16 text-center text-sm text-slate-500">

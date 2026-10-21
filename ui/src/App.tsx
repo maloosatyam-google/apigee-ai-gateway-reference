@@ -11,6 +11,7 @@ import { ToolsAnalytics } from './components/ToolsAnalytics';
 import { GatewaySettingsModal } from './components/GatewaySettingsModal';
 import { ThemeStudioModal } from './components/ThemeStudioModal';
 import { useCustomerTheme } from './components/CustomerThemeProvider';
+import { THEME_PROMPT_DAY_KEY, localDayKey, shouldOpenThemeOnLoad } from './utils/customerTheme';
 import { ArchitectureBlueprintModal } from './components/ArchitectureBlueprintModal';
 import { DeveloperOnboardingModal, DeveloperOnboardingResult } from './components/DeveloperOnboardingModal';
 import { GuidedTour } from './components/GuidedTour';
@@ -50,18 +51,37 @@ export function App() {
     }
     return false;
   });
-  /** Customer theme panel (logo, colours, font, industry). `?customize=open` deep-links to it. */
+  /**
+   * Customer theme panel (logo, colours, font, industry). Opens once per calendar day
+   * on first load so presenters can set the customer theme before a demo without
+   * popping up on every refresh; `?customize=open` always opens it.
+   */
   // Ask Apigee drawer (every tab except the Admin Console, which docks its own).
   const [isAssistantOpen, setIsAssistantOpen] = useState(() => {
     if (typeof window === 'undefined') return false;
     return new URLSearchParams(window.location.search).get('askApigee') === '1';
   });
   const [isThemeOpen, setIsThemeOpen] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return new URLSearchParams(window.location.search).get('customize') === 'open';
+    if (typeof window === 'undefined') return false;
+    let lastShownDay: string | null = null;
+    try {
+      lastShownDay = localStorage.getItem(THEME_PROMPT_DAY_KEY);
+    } catch {
+      /* storage disabled */
     }
-    return false;
+    return shouldOpenThemeOnLoad({
+      search: window.location.search,
+      lastShownDay,
+    });
   });
+  useEffect(() => {
+    if (!isThemeOpen) return;
+    try {
+      localStorage.setItem(THEME_PROMPT_DAY_KEY, localDayKey());
+    } catch {
+      /* storage disabled */
+    }
+  }, [isThemeOpen]);
   /** A scenario the current tour step wants run, consumed once by ChatPlayground. */
   const [tourAction, setTourAction] = useState<TourActionId | null>(null);
   // Each guided demo starts from the seed data (refunds / cases from earlier runs are undone).
