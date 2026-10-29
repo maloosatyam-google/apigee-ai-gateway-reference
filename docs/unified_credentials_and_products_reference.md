@@ -140,8 +140,8 @@ and `/auto:*` for `/auto:generateContent`; see [§2.4](#24-resource-patterns-and
 
 | # | Resource | `model` | Token limit | Interval |
 | --- | --- | --- | --- | --- |
-| 1 | `/auto` | `auto` | 50000 | 1 minute |
-| 2 | `/auto:*` | `auto` | 50000 | 1 minute |
+| 1 | `/auto` | `auto` | 100000 | 1 minute |
+| 2 | `/auto:*` | `auto` | 100000 | 1 minute |
 | 3 | `/models/gemini-3.5-flash-lite:*` | `gemini-3.5-flash-lite` | 10000 | 1 minute |
 | 4 | `/models/gemini-3.6-flash:*` | `gemini-3.6-flash` | 10000 | 1 minute |
 | 5 | `/models/gemini-3.1-pro-preview:*` | `gemini-3.1-pro-preview` | 10000 | 1 minute |
@@ -160,8 +160,8 @@ AI product on every per-SSO-user `Unified Admin <handle> App`.
 
 | # | Resource | `model` | Token limit | Interval |
 | --- | --- | --- | --- | --- |
-| 1 | `/auto` | `auto` | 30000 | 1 minute |
-| 2 | `/auto:*` | `auto` | 30000 | 1 minute |
+| 1 | `/auto` | `auto` | 60000 | 1 minute |
+| 2 | `/auto:*` | `auto` | 60000 | 1 minute |
 | 3 | `/models/gemini-3.1-pro-preview:*` | `gemini-3.1-pro-preview` | 5000 | 1 minute |
 | 4 | `/models/gemini-3.5-flash-lite:*` | `gemini-3.5-flash-lite` | 5000 | 1 minute |
 | 5 | `/models/gemini-3.6-flash:*` | `gemini-3.6-flash` | 5000 | 1 minute |
@@ -178,8 +178,8 @@ or `claude-haiku-5-5` is rejected by `VA-VerifyAPIKey`. Bound to the
 
 | # | Resource | `model` | Token limit | Interval |
 | --- | --- | --- | --- | --- |
-| 1 | `/auto` | `auto` | 20000 | 2 minutes |
-| 2 | `/auto:*` | `auto` | 20000 | 2 minutes |
+| 1 | `/auto` | `auto` | 40000 | 2 minutes |
+| 2 | `/auto:*` | `auto` | 40000 | 2 minutes |
 | 3 | `/models/gemini-3.5-flash-lite:*` | `gemini-3.5-flash-lite` | 2000 | 1 minute |
 | 4 | `/models/gemini-3.6-flash:*` | `gemini-3.6-flash` | 2000 | 1 minute |
 | 5 | **`/models/claude-haiku-5-5:*`** | `claude-haiku-5-5` | **300** | 1 minute |
@@ -468,7 +468,7 @@ What the committed product configuration and policy source authorise:
 | `gemini-3.1-pro-preview` | allowed, 10000 tok/min | allowed, 5000 tok/min | **not in product** → 401 | `VA-VerifyAPIKey` |
 | `claude-opus-5-5` | allowed, 10000 tok/min | **not in product** → 401 | **not in product** → 401 | `VA-VerifyAPIKey` |
 | `gemini-2.5-pro` | **not in any product** → 401 | **not in any product** → 401 | **not in any product** → 401 | `VA-VerifyAPIKey` |
-| `auto` (`/auto`, `/auto:generateContent`; equal quota on each) | allowed, 50000 tok/min | allowed, 30000 tok/min | allowed, 20000 tok / 2 min | `VA-VerifyAPIKey` + `SC-ModelRouter` + `JS-AutoRouting` |
+| `auto` (`/auto`, `/auto:generateContent`; equal quota on each) | allowed, 100000 tok/min | allowed, 60000 tok/min | allowed, 40000 tok / 2 min | `VA-VerifyAPIKey` + `SC-ModelRouter` + `JS-AutoRouting` |
 | Monthly budget (`developer.budget.limit`) | $20 (`20000000`) | $10 (`10000000`) | $5 (`5000000`) | `QC-EnforceBudgetLimit` + `RF-BudgetExceeded` (429) |
 | MCP `tools/list` | all 12 tools | 5 Business Insights tools | 7 Customer Service tools | `PP-MCP` + `VA-VerifyAPIKey` |
 | `searchCustomers` / `getCustomer` / `listCustomerOrders` / `getOrderStatus` / `getProductPrice` / `createSupportCase` / `issueRefund` | allowed | **not in product** → 401 `InvalidApiKeyForGivenResource` | allowed | `PP-MCP` + `VA-VerifyAPIKey` |

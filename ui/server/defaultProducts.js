@@ -68,7 +68,7 @@ export const DEFAULT_PRODUCTS = {
             }
           ],
           "llmTokenQuota": {
-            "limit": "50000",
+            "limit": "100000",
             "interval": "1",
             "timeUnit": "minute"
           }
@@ -85,7 +85,7 @@ export const DEFAULT_PRODUCTS = {
             }
           ],
           "llmTokenQuota": {
-            "limit": "50000",
+            "limit": "100000",
             "interval": "1",
             "timeUnit": "minute"
           }
@@ -255,7 +255,7 @@ export const DEFAULT_PRODUCTS = {
             }
           ],
           "llmTokenQuota": {
-            "limit": "30000",
+            "limit": "60000",
             "interval": "1",
             "timeUnit": "minute"
           }
@@ -272,7 +272,7 @@ export const DEFAULT_PRODUCTS = {
             }
           ],
           "llmTokenQuota": {
-            "limit": "30000",
+            "limit": "60000",
             "interval": "1",
             "timeUnit": "minute"
           }
@@ -408,7 +408,7 @@ export const DEFAULT_PRODUCTS = {
             }
           ],
           "llmTokenQuota": {
-            "limit": "20000",
+            "limit": "40000",
             "interval": "2",
             "timeUnit": "minute"
           }
@@ -425,7 +425,7 @@ export const DEFAULT_PRODUCTS = {
             }
           ],
           "llmTokenQuota": {
-            "limit": "20000",
+            "limit": "40000",
             "interval": "2",
             "timeUnit": "minute"
           }

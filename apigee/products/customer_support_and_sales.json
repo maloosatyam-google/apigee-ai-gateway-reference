@@ -58,7 +58,7 @@
           }
         ],
         "llmTokenQuota": {
-          "limit": "20000",
+          "limit": "40000",
           "interval": "2",
           "timeUnit": "minute"
         }
@@ -75,7 +75,7 @@
           }
         ],
         "llmTokenQuota": {
-          "limit": "20000",
+          "limit": "40000",
           "interval": "2",
           "timeUnit": "minute"
         }

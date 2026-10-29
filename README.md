@@ -195,7 +195,7 @@ The inline `count="1000"` / `1` / `minute` values are fallback defaults only; th
 > from the rate card, and removing an entry re-prices past traffic at the `default` rate.
 
 **Customer Support & Sales quotas.** `claude-haiku-5-5` is the token-limit demo model at
-300 tokens / 1 minute. `/auto` is 20000 tokens / 2 minutes (rolling) and every other operation in
+300 tokens / 1 minute. `/auto` is 40000 tokens / 2 minutes (rolling) and every other operation in
 [customer_support_and_sales.json](apigee/products/customer_support_and_sales.json) is 2000 tokens / 1 minute.
 `/auto` has a higher cap because one agent turn chains several model calls and thinking tokens count.
 The 2-minute rolling window serves the Agent Showcase quota burst (scenario 7): spent tokens stay
@@ -204,8 +204,8 @@ declares **5 `operationConfigs` across 4 models** (`auto` has two: `/auto` and `
 
 | Resource | Model | Token quota |
 | :--- | :--- | :--- |
-| `/auto` | `auto` | 20000 / 2 min |
-| `/auto:*` | `auto` | 20000 / 2 min (must equal `/auto`) |
+| `/auto` | `auto` | 40000 / 2 min |
+| `/auto:*` | `auto` | 40000 / 2 min (must equal `/auto`) |
 | `/models/gemini-3.5-flash-lite:*` | `gemini-3.5-flash-lite` | 2000 / 1 min |
 | `/models/gemini-3.6-flash:*` | `gemini-3.6-flash` | 2000 / 1 min |
 | **`/models/claude-haiku-5-5:*`** | `claude-haiku-5-5` | **300 / 1 min** |
@@ -543,9 +543,9 @@ globs. Each model gets a single gateway-shaped resource:
 
 | Product | Models | Resources | Token quota |
 | :--- | :--- | :--- | :--- |
-| **[Engineering & IT](apigee/products/engineering_and_it.json)** | `auto`, `gemini-3.5-flash-lite`, `gemini-3.6-flash`, `gemini-3.1-pro-preview`, `claude-haiku-5-5`, `claude-opus-5-5`, `gemini-3.8-flash` — **7** | 8 `operationConfigs` (`auto` has two) | 10000 / min · `auto` → 50000 / min · `claude-haiku-5-5` → **300 / min** |
-| **[Analysts & Knowledge Workers](apigee/products/analysts_and_knowledge_workers.json)** | `auto`, `gemini-3.1-pro-preview`, `gemini-3.5-flash-lite`, `gemini-3.6-flash`, `gemini-3.8-flash` — **5** (no Opus, no Haiku) | 6 `operationConfigs` (`auto` has two) | 5000 / min · `auto` → 30000 / min |
-| **[Customer Support & Sales](apigee/products/customer_support_and_sales.json)** | `auto`, `gemini-3.5-flash-lite`, `gemini-3.6-flash`, `claude-haiku-5-5` — **4** | 5 `operationConfigs` (`auto` has two) | 2000 / min · `auto` → 20000 / 2 min · `claude-haiku-5-5` → **300 / min** |
+| **[Engineering & IT](apigee/products/engineering_and_it.json)** | `auto`, `gemini-3.5-flash-lite`, `gemini-3.6-flash`, `gemini-3.1-pro-preview`, `claude-haiku-5-5`, `claude-opus-5-5`, `gemini-3.8-flash` — **7** | 8 `operationConfigs` (`auto` has two) | 10000 / min · `auto` → 100000 / min · `claude-haiku-5-5` → **300 / min** |
+| **[Analysts & Knowledge Workers](apigee/products/analysts_and_knowledge_workers.json)** | `auto`, `gemini-3.1-pro-preview`, `gemini-3.5-flash-lite`, `gemini-3.6-flash`, `gemini-3.8-flash` — **5** (no Opus, no Haiku) | 6 `operationConfigs` (`auto` has two) | 5000 / min · `auto` → 60000 / min |
+| **[Customer Support & Sales](apigee/products/customer_support_and_sales.json)** | `auto`, `gemini-3.5-flash-lite`, `gemini-3.6-flash`, `claude-haiku-5-5` — **4** | 5 `operationConfigs` (`auto` has two) | 2000 / min · `auto` → 40000 / 2 min · `claude-haiku-5-5` → **300 / min** |
 
 `auto` is granted as **an exact resource plus a verb-suffix resource** in all three persona products, as two
 separate `operationConfigs` with equal quotas:
@@ -746,7 +746,7 @@ Eight preset scenarios, measured on prod (27–28 Sep 2026):
 | 4 | $120 refund | Refund issued | 403 `REFUND_LIMIT` at $50; the agent opens a case |
 | 5 | Confidential data | Hands over the product margin | Margin tool not on the support key |
 | 6 | Prompt injection | Reaches Pro ($0.17) | Model Armor blocks it before any model runs |
-| 7 | Burst (usage limit) | — | 5 governed runs back to back, cache off: 3 answered, then 429 `LLMTokenQuotaViolation` (20000 tokens / 2 min) |
+| 7 | Burst (usage limit) | — | 5 governed runs back to back, cache off: 3 answered, then 429 `LLMTokenQuotaViolation` (40000 tokens / 2 min) |
 | 8 | Cheaper model? | Switched to Flash-Lite for this question: wrong box plan ($41–$48, or a plan that doesn't fit) | Routed `deep_reasoning` to Gemini 3.1 Pro: $40, four Medium boxes, each exactly full, in one step (answer reuse off for this scenario) |
 
 Scenario 8 answers "why not just use a cheaper model?": picking it switches the ungoverned agent's

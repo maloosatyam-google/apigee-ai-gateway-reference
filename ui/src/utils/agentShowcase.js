@@ -70,7 +70,7 @@ export const SHOWCASE_SCENARIOS = [
     step: 7,
     title: 'Burst (usage limit)',
     prompt: 'Summarize everything about order ORD-1042, the customer who placed it, and their other orders, in detail.',
-    expect: 'Sends this question from the governed agent 5 times back to back, without reusing answers. Every run counts toward one per-user usage limit (20,000 tokens per rolling 2 minutes, so earlier scenarios count too): the first runs get through, then the rest are stopped before any model runs.',
+    expect: 'Sends this question from the governed agent 5 times back to back, without reusing answers. Every run counts toward one per-user usage limit (40,000 tokens per rolling 2 minutes, so earlier scenarios count too): the first runs get through, then the rest are stopped before any model runs.',
     burst: 5,
   },
   {

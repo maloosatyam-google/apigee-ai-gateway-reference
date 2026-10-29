@@ -116,6 +116,12 @@ for (const file of PERSONA_PRODUCT_FILES) {
   });
 }
 
+test('/auto token quotas are 100k/min (Engineering), 60k/min (Analysts), and 40k/2min (Support & Sales)', () => {
+  assert.deepEqual(autoQuotas(ENGINEERING)['/auto'].quota, { limit: '100000', interval: '1', timeUnit: 'minute' });
+  assert.deepEqual(autoQuotas(ANALYSTS)['/auto'].quota, { limit: '60000', interval: '1', timeUnit: 'minute' });
+  assert.deepEqual(autoQuotas(SUPPORT)['/auto'].quota, { limit: '40000', interval: '2', timeUnit: 'minute' });
+});
+
 test('server/defaultProducts.js mirrors apigee/products and keeps /auto parity', async () => {
   const { DEFAULT_PRODUCTS } = await import('../server/defaultProducts.js');
   const fromFiles = Object.fromEntries(
